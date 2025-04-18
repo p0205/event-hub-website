@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Sidebar from "@/components/Sidebar";
+import Topbar from "@/components/Topbar";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,10 +27,31 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body>
+        {/* Main container for the entire app layout */}
+
+        <div className="app-layout">
+          {/* The global Topbar */}
+          <Topbar />
+
+          <div className="flex items-stretch min-h-screen">
+          {/* Container for the Sidebar and the main page content */}
+          <div className="sidebar-and-content w-64 bg-white shadow-md">
+            {/* The global Sidebar */}
+          <Sidebar /> </div>
+
+            {/* The main content area where individual pages will be rendered */}
+            <main className="main-content flex-1 bg-gray-100 p-6 space-y-6">
+            <Breadcrumbs />
+
+            {/* Add some space between breadcrumbs and page content */}
+            <div style={{ marginTop: '20px' }}>
+              {children} {/* The content of your page files */}
+            </div>
+            </main>
+          </div>
+          </div>
+        
       </body>
     </html>
   );
