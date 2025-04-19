@@ -1,5 +1,6 @@
 'use client';
 import { Calendar, BarChart, Settings, LogOut } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Sidebar() {
   return (
@@ -9,23 +10,26 @@ export default function Sidebar() {
         <div className="text-gray-500">Home</div>
         <div className="pl-4 text-gray-600 space-y-2">
           <div className="font-semibold cursor-pointer">
-            <a href="/">Dashboard</a>
+            <Link href="/">Dashboard</Link>
             </div>
         </div>
         <div className="text-gray-500">Events</div>
         <div className="font-semibold cursor-pointer pl-4 text-gray-600 space-y-2">
           <div>
-          <a href="/events/create" className="block hover:text-blue-600">Create Event</a>            </div>
-          <div>
-            <a href="/events/pending-events">Pending Events</a>
+          <Link href="/events/create" className="block hover:text-blue-600">Create Event</Link>            
           </div>
           <div>
-            <a href="/events/active-events">Active Events</a>
+            <Link href="/events/pending-events">Pending Events</Link>
           </div>
-          <div>Completed Events</div>
+          <div>
+            <Link href="/events/active-events">Active Events</Link>
+          </div>
+          <div>
+            <Link href="/events/completed-events">Completed Events</Link>
+          </div>
         </div>
         <div className="mt-4 text-gray-500">Reports</div>
-        <div className=" font-semibold cursor-pointer  pl-4 text-gray-600 space-y-2">
+        <div className="font-semibold cursor-pointer  pl-4 text-gray-600 space-y-2">
           <div>Generate Reports</div>
           <div>My Reports</div>
         </div>
