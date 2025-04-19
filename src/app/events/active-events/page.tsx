@@ -154,7 +154,6 @@ export default function ActiveEventsPage() {
   return (
     <div className="page-container">
       <h1>Active Events</h1>
-
       {activeEvents.length === 0 ? (
         <div className="no-events-message form-container"> {/* Use form-container style for the message box */}
           No active events found at this time.
@@ -163,7 +162,7 @@ export default function ActiveEventsPage() {
         <div className="events-list">
           {activeEvents.map(event => (
             // Wrap each event item in a Link component
-            <Link href={`/events/${event.id}`} key={event.id} passHref legacyBehavior>
+            (<Link href={`/events/${event.id}`} key={event.id} passHref legacyBehavior>
               <a className="event-item-link"> {/* Use an anchor tag with a class for styling */}
                 <div className="event-item form-container"> {/* Apply item styling */}
                   <h2>{event.title}</h2>
@@ -179,7 +178,7 @@ export default function ActiveEventsPage() {
                    {/* Note: Full details should be on the dedicated event details page */}
                 </div>
               </a>
-            </Link>
+            </Link>)
           ))}
         </div>
       )}

@@ -6,12 +6,11 @@ import Link from "next/link";
 export default function Topbar() {
   return (
     <nav className="w-full h-16 bg-[#fcba03] shadow-md flex items-center justify-between px-6">
-    {/* Left - Title */}
+      {/* Left - Title */}
       <div className="font-bold text-xl text-black">
         <img src="/ftmkLogo.png" alt="Logo" className="h-8 inline-block mr-2" />
         Event Hub
       </div>
-
       {/* Right - Notification & Profile */}
       <div className="flex items-center gap-4">
         {/* Notification Icon */}
@@ -22,7 +21,7 @@ export default function Topbar() {
         </button>
 
         {/* Profile Image - Link to Profile Settings */}
-        <Link href="/profile-settings">
+        <Link href="/profile-settings" legacyBehavior>
           <img
             src="/profile.png"
             alt="Profile"

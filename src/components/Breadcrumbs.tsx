@@ -41,15 +41,14 @@ export default function Breadcrumbs() {
         {index > 0 && (
           <span className="breadcrumb-separator"> &gt; </span>
         )}
-
         {/* If it's the last item, display as text (current page) */}
         {isLast ? (
           <span className="breadcrumb-current">{name}</span>
         ) : (
           // Otherwise, display as a link
-          <Link href={href} className="breadcrumb-link">
+          (<Link href={href} className="breadcrumb-link" legacyBehavior>
             {name}
-          </Link>
+          </Link>)
         )}
       </React.Fragment>
     );
