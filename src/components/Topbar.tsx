@@ -21,7 +21,7 @@ export default function Topbar() {
         </button>
 
         {/* Profile Image - Link to Profile Settings */}
-        <Link href="/profile-settings" legacyBehavior>
+        <Link href="/profile-settings">
           <img
             src="/profile.png"
             alt="Profile"

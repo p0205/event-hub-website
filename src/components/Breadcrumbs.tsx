@@ -46,7 +46,7 @@ export default function Breadcrumbs() {
           <span className="breadcrumb-current">{name}</span>
         ) : (
           // Otherwise, display as a link
-          (<Link href={href} className="breadcrumb-link" legacyBehavior>
+          (<Link href={href} className="breadcrumb-link" >
             {name}
           </Link>)
         )}

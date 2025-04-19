@@ -162,23 +162,20 @@ export default function ActiveEventsPage() {
         <div className="events-list">
           {activeEvents.map(event => (
             // Wrap each event item in a Link component
-            (<Link href={`/events/${event.id}`} key={event.id} passHref legacyBehavior>
-              <a className="event-item-link"> {/* Use an anchor tag with a class for styling */}
-                <div className="event-item form-container"> {/* Apply item styling */}
-                  <h2>{event.title}</h2>
-                   {/* Display some basic info */}
-                   <p><strong>Status:</strong> {event.status}</p>
-                   {event.maxParticipants !== undefined && (
-                    <p><strong>Expected Participants:</strong> {event.maxParticipants}</p>
-                   )}
-                   {/* You can add more basic info or a snippet of description here */}
-                    {event.sessions && event.sessions.length > 0 && (
-                        <p><strong>First Session:</strong> {event.sessions[0].date} at {event.sessions[0].startTime} at {event.sessions[0].venue.name}</p>
-                    )}
-                   {/* Note: Full details should be on the dedicated event details page */}
-                </div>
-              </a>
-            </Link>)
+          <Link href={`/events/${event.id}`} key={event.id} className="event-item-link">
+            <div className="event-item form-container">
+              <h2>{event.title}</h2>
+              <p><strong>Status:</strong> {event.status}</p>
+              {event.maxParticipants !== undefined && (
+                <p><strong>Expected Participants:</strong> {event.maxParticipants}</p>
+              )}
+              {event.sessions && event.sessions.length > 0 && (
+                <p>
+                  <strong>First Session:</strong> {event.sessions[0].date} at {event.sessions[0].startTime} at {event.sessions[0].venue.name}
+                </p>
+              )}
+            </div>
+          </Link>
           ))}
         </div>
       )}
