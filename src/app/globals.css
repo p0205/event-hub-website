@@ -344,7 +344,7 @@ body {
      border: 1px solid #f5c6cb;
      color: #721c24;
 }
-/* Add this to src/app/globals.css */
+
 
 /* Ensure the list of events uses flex/grid or just default block display */
 .events-list {
@@ -395,5 +395,619 @@ body {
      margin-right: 5px;
 }
 
-/* Reuse no-events-message, loading-message, error-message styles from pending events */
-/* ... (copy those styles if not already global) ... */
+
+/* Add or update these styles in src/app/globals.css */
+
+/* Reuse existing form-container for section cards */
+.section-card {
+  margin-bottom: 20px; /* Space between sections */
+  /* Inherits form-container styles */
+}
+
+/* Styles for section headings within cards */
+.section-card h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.3em; /* Adjust size */
+  color: #333; /* Color for section titles */
+  border-bottom: 1px solid #eee; /* Separator below heading */
+  padding-bottom: 10px;
+}
+
+/* Styles for sub-headings within sections */
+.section-card h3 {
+  margin-top: 15px; /* Space above sub-heading */
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  color: #555;
+}
+
+/* Styles for the description section */
+.description-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee; /* Separator */
+}
+
+.description-section p {
+  margin-bottom: 0; /* Remove bottom margin for paragraphs here */
+  line-height: 1.6;
+}
+
+
+/* Budget Progress Bar Styles */
+.budget-progress-bar-container {
+  width: 100%;
+  background-color: #e0e0e0; /* Background of the bar container */
+  border-radius: 5px;
+  overflow: hidden; /* Hide anything outside the border radius */
+  margin-top: 10px;
+  height: 25px; /* Height of the progress bar */
+}
+
+.budget-progress-bar {
+  height: 100%;
+  background-color: #28a745; /* Green color for progress */
+  text-align: center;
+  color: white;
+  line-height: 25px; /* Center text vertically */
+  font-size: 0.9em;
+  transition: width 0.5s ease-in-out; /* Smooth transition on width change */
+}
+
+.budget-progress-bar .progress-text {
+  padding: 0 8px; /* Padding inside the bar text */
+}
+
+
+/* Sessions List Styles */
+.sessions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.session-item {
+  background-color: #f9f9f9; /* Light background for each session */
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px; /* Space between session items */
+}
+
+.session-item h3 {
+   margin-top: 0;
+   margin-bottom: 10px;
+   font-size: 1em;
+   color: #333;
+}
+
+.session-item p {
+  margin-bottom: 5px;
+  line-height: 1.4;
+  font-size: 0.95em;
+  color: #444;
+}
+
+
+/* Team List Styles */
+.team-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.team-member-item {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex; /* Use flex to space out content and buttons */
+  justify-content: space-between; /* Space out the name/email/role and action buttons */
+  align-items: center;
+  font-size: 0.95em;
+  color: #333;
+}
+
+.team-member-item strong {
+  margin-left: 5px; /* Space between role and name/email */
+}
+
+/* Add Team Member Section Styles */
+.add-team-member-section {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+/* Styles for the search results container */
+.search-results-list {
+  margin-top: 10px;
+  /* Inherits form-container styling */
+  padding: 10px; /* Adjust padding for results list */
+  max-height: 200px; /* Limit height and make it scrollable */
+  overflow-y: auto;
+  border: 1px solid #ccc; /* Add a border */
+  background-color: #fff;
+}
+
+.search-results-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-result-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9em;
+  color: #333;
+}
+
+.search-result-item:last-child {
+  border-bottom: none; /* Remove border for the last item */
+}
+
+.search-result-item button {
+  /* Style for the Add button */
+  margin-left: 10px;
+  padding: 4px 8px;
+  font-size: 0.8em;
+}
+
+
+/* QR Code Section Styles */
+.qr-code-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.qr-code-display {
+  /* Styles for the area displaying the QR code image */
+}
+
+/* Media Upload Section Styles */
+.upload-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.uploaded-media-preview {
+  /* Container for displaying uploaded posters/photos */
+  display: flex;
+  flex-wrap: wrap; /* Allow images to wrap */
+  gap: 10px; /* Space between images */
+}
+
+.uploaded-media-preview img {
+  /* Basic styling for preview images */
+  border: 1px solid #eee;
+  padding: 5px;
+  background-color: white;
+}
+
+/* Styles for each event section (Active, Pending, Completed) */
+.events-section {
+  margin-bottom: 30px; /* Space between sections */
+  /* Add a background or border if you want sections visually separated like cards */
+  /* background-color: #fff; */
+  /* border-radius: 8px; */
+  /* padding: 20px; */
+  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+}
+
+/* Styles for the individual event card */
+.event-card {
+  background-color: #ffffff; /* White background */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  padding: 20px; /* Internal padding */
+  display: flex; /* Use flexbox for layout within the card (icon + content) */
+  align-items: center; /* Vertically align items in the card */
+  gap: 15px; /* Space between icon and content */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Smooth hover effect */
+  height: 100%; /* Ensure cards in the same row have equal height */
+}
+
+/* Hover effect for the event card */
+.event-card-link:hover .event-card {
+  transform: translateY(-5px); /* Lift effect on hover */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* More prominent shadow on hover */
+}
+
+/* Styles for the icon/initials area */
+.event-card-icon {
+  width: 50px; /* Fixed width */
+  height: 50px; /* Fixed height */
+  border-radius: 8px; /* Rounded corners for the icon background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.3em; /* Size of the initials */
+  color: white; /* Text color for initials */
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+
+
+/* Container for the section title and collapse button */
+.section-header {
+  display: flex; /* Use flexbox to align title and button */
+  align-items: center; /* Vertically center items */
+  margin-bottom: 20px; /* Space below the header */
+  border-bottom: 2px solid #eee; /* Separator below the header */
+  padding-bottom: 10px; /* Padding below the separator */
+  cursor: pointer; /* Add cursor pointer to the header to indicate it's clickable (optional, but good UX) */
+}
+
+/* Style for the section title (h2) within the header */
+.events-section .section-header h2 {
+  margin: 0; /* Remove default margin */
+  font-size: 1.2em; /* Adjust title size */
+  color: #333;
+  border-bottom: none; /* Remove border if added to section-header */
+  padding-bottom: 0; /* Remove padding if added to section-header */
+  flex-grow: 1; /* Allow title to take up available space */
+}
+
+/* Styles for the collapse button */
+.collapse-button {
+  background: none; /* Remove background */
+  border: none; /* Remove border */
+  cursor: pointer; /* Show hand cursor */
+  font-size: 1em; /* Adjust icon size */
+  color: #555; /* Icon color */
+  padding: 0; /* Remove default padding */
+  /* Adjust margin since it's now on the left */
+  margin-left: 0; /* Remove left margin */
+  margin-right: 10px; /* Add right margin for space between button and title */
+  transition: transform 0.2s ease; /* Smooth rotation transition */
+}
+
+/* Optional: Rotate the button icon when expanded */
+.collapse-button[aria-expanded="true"] {
+transform: rotate(180deg);
+}
+
+/* You might want to make the whole section-header clickable for toggling */
+/* .section-header { cursor: pointer; } */
+
+
+/* Styles for the grid container */
+.event-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjust min width */
+gap: 20px; /* Space between grid items */
+padding: 0;
+margin: 0;
+list-style: none;
+/* Optional: Add a transition for grid content appearance */
+/* opacity: 1; */
+/* transition: opacity 0.3s ease; */
+}
+
+/* Add styles for when the grid is hidden (optional for animation) */
+/* .event-grid.hidden {
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+} */
+
+
+/* Reuse existing styles for EventCard and other elements */
+/* Ensure all previous .event-card, .event-card-link, .event-card-icon, etc. styles are included */
+/* Also reuse .page-container, .loading-message, .error-message, .no-events-message, .button-primary styles */
+
+/* Add these styles to your src/app/globals.css */
+
+/* Styles for the event search bar container (outer container holding label and input group) */
+.event-search-bar {
+    margin-bottom: 20px; /* Space below the search bar */
+    /* The form-label style is reused */
+}
+
+/* Styles for the container wrapping the icon and the input field */
+.search-input-container {
+    display: flex; /* Use flexbox to align icon and input horizontally */
+    align-items: center; /* Vertically center the icon and input */
+    /* Add the border and background to this container */
+    border: 1px solid #ccc; /* Example border color */
+    border-radius: 4px; /* Match the input's intended border-radius */
+    overflow: hidden; /* Ensures content stays within rounded corners */
+    background-color: #fff; /* White background */
+    width: 100%; /* Ensure the container takes the full width */
+    box-sizing: border-box; /* Include padding and border in the element's total width */
+    /* Optional: Transition for border/shadow on focus */
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* Styles for the search icon element */
+.search-icon {
+    padding: 0 10px; /* Add horizontal padding around the icon */
+    color: #888; /* Example icon color (grey) */
+    font-size: 1.1em; /* Adjust icon size as needed */
+    flex-shrink: 0; /* Prevent the icon from shrinking */
+}
+
+/* Modify the form-input style when it's inside the search-input-container */
+.search-input-container .form-input {
+    /* Remove border and background as they are on the container */
+    border: none;
+    background: none;
+
+    padding: 10px 10px 10px 0; /* Adjust padding: top, right, bottom, LEFT (set left to 0 or small value) */
+    /* The space for the icon on the left comes from the icon's margin or the container's flex layout */
+
+    outline: none; /* Remove the default blue/black outline on focus */
+    flex-grow: 1; /* Allow the input field to take up the remaining space */
+    width: auto; /* Override width: 100% from generic .form-input */
+    box-sizing: border-box; /* Ensure padding is included */
+}
+
+/* Add focus style to the container when the input inside is focused */
+.search-input-container:focus-within {
+    border-color: #007bff; /* Highlight border color on focus - **match your theme color** */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Optional subtle focus shadow */
+}
+
+
+/* Optional: Make the section header clickable to toggle collapse */
+.section-header {
+   /* ... existing styles ... */
+   cursor: pointer; /* Add cursor pointer to the entire header to indicate clickability */
+}
+
+/* If making the whole header clickable, remove the onClick from the button in JSX */
+/* and add onClick={() => toggleSectionExpansion('sectionName')} to the section-header div */
+
+
+/* Reuse existing styles */
+/* Ensure all previous styles for .page-container, .events-section, .event-grid, .event-card, etc. are included */
+/* Also reuse .loading-message, .error-message, .no-events-message, .button-primary, .form-label, .form-input (original) styles */
+/* Add these styles to your src/app/globals.css */
+
+/* --- Styles for the sidebar structure and items --- */
+
+.narrow-sidebar {
+  width: 70px; /* Adjust as needed */
+  height:100%; /* Full height */
+  flex-shrink: 0;
+  background-color: #eeebdf; /* Dark background */
+  color: #737171; /* Default text color */
+  padding-top: 20px;
+  overflow-y: auto;
+}
+
+.sidebar-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav-item {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+/* --- Style for the navigation link (the flex container) --- */
+.sidebar-nav-link {
+  display: flex;
+  flex-direction: column; /* --- Makes icon and text stack vertically --- */
+  align-items: center; /* Centers children horizontally in a column */
+  justify-content: center; /* Centers children vertically */
+  padding: 10px 5px; /* Adjust padding inside the clickable area */
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  text-align: center; /* Centers the text within the span */
+  height: 60px; /* Give items a consistent height */
+  box-sizing: border-box; /* Include padding in height/width */
+}
+
+/* --- Style for the icon element --- */
+.sidebar-nav-icon {
+  font-size: 1.5em; /* Adjust icon size */
+  /* --- Spacing below the icon --- */
+  margin-bottom: 5px; /* Space between icon and text */
+  margin-right: 0; /* Ensure no horizontal margin */
+
+  width: auto; /* Let icon width be determined by content */
+  /* width: 30px; */ /* Optional: Fixed width if needed for alignment */
+  flex-shrink: 0;
+  text-align: center;
+  color: #fff; /* Example: Make icons white */
+}
+
+/* --- Style for the text label element --- */
+.sidebar-nav-text {
+  /* --- Display and sizing --- */
+  display: block; /* Make it a block element in the flex column */
+  width: 100%; /* Try taking full width of parent flex item */
+  flex-grow: 1; /* Allow text to grow if needed (less relevant in column) */
+  flex-shrink: 0; /* Prevent text from shrinking */
+
+  /* --- Text appearance and overflow --- */
+  font-size: 0.7em; /* Smaller font size */
+  text-align: center; /* Center the text content */
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Show ellipsis */
+
+  /* --- Ensure Visibility --- */
+  visibility: visible !important; /* Ensure visibility */
+  opacity: 1 !important; /* Ensure opacity */
+  height: auto !important; /* Ensure height is not 0 */
+
+  /* --- Remove margins/padding that might cause issues --- */
+  padding: 0;
+  margin: 0;
+
+  /* --- Temporary Debugging Styles (Uncomment if needed) --- */
+  /* background-color: red; */ /* Should see a red box behind text */
+  /* border: 1px solid blue; */ /* Should see a blue border around text */
+  /* color: yellow !important; */ /* Force bright color */
+}
+
+/* --- Rest of the sidebar CSS (hover, active state, etc.) --- */
+
+.sidebar-nav-item:hover .sidebar-nav-link {
+  background-color: #b8bbac;
+  color: #fff;
+}
+
+.sidebar-nav-item.active .sidebar-nav-link {
+  background-color: #b3b3a1;
+  color: #fff;
+  &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background-color: #007bff; /* Active indicator color */
+      border-top-right-radius: 2px;
+      border-bottom-right-radius: 2px;
+  }
+}
+
+/* Add these styles to your src/app/globals.css */
+
+.event-content-panel-wrapper { /* 匹配你在 layout.tsx 中添加的自定义类名 */
+  display: flex; /* Should be flex */
+  align-items: stretch; /* Should be stretch */
+  flex-grow: 1; /* Should be 1 */
+  flex-shrink: 1; /* Should be 1 */
+  flex-direction: row; /* <-- 内部子元素(活动侧边栏和 main)横向排列 */
+
+  /* --- 设置背景色 --- */
+  background-color: #f3f3ed; /* --- 设置浅色背景，匹配 bg-gray-100 --- */
+
+  /* --- 添加圆角 --- */
+  border-radius: 8px; /* --- 添加圆角值，例如 8px --- */
+
+  /* --- 确保内容在圆角内被裁剪 --- */
+  overflow: hidden; /* --- 添加 overflow: hidden --- */
+
+  /* 添加阴影使其更像一个独立的面板 (可选) */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+
+  /* 添加一些外边距使其与窄侧边栏和顶部/底部有间隔 (可选) */
+  /* margin: 10px; */
+  /* 根据你的布局调整 margin */
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-right: 10px; /* 与右侧边缘的间距 */
+  margin-left: 0; /* 与窄侧边栏是直接挨着的，没有左边距 */
+}
+
+
+/* --- Styles for the Event-Specific Submenu Sidebar --- */
+.event-submenu-sidebar { /* This class is on the <aside> in EventSubmenuSidebar.tsx */
+  width: 180px; /* Set the width for this sidebar (adjust as needed) */
+  flex-shrink: 0; /* Prevent it from shrinking */
+  background-color: transparent; /* Background color */
+  color: #000000; /* Default text color */
+  height: 100%; /* Fills parent height */
+  display: flex; /* Use flex column for header and nav list */
+  flex-direction: column;
+  /* Add shadow or border */
+
+}
+
+/* Style for the header within the event submenu sidebar */
+.event-submenu-sidebar .event-submenu-header {
+  padding: 15px; /* Adjust padding */
+  border-bottom: 1px solid #4a4850; /* Separator */
+}
+
+.event-submenu-sidebar .event-submenu-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+  color: #fff; /* Title color */
+}
+
+/* Style for the "Back to all Events" link */
+.event-submenu-sidebar .back-to-events-link {
+  display: block;
+  margin-bottom: 10px;
+  color: #000000; /* Link color */
+  text-decoration: none;
+  font-size: 0.9em;
+  transition: color 0.2s ease;
+}
+
+.event-submenu-sidebar .back-to-events-link:hover {
+  color: #fff; /* Hover color */
+  text-decoration: underline;
+}
+
+
+/* Style for the navigation list within the event submenu */
+.event-submenu-sidebar nav {
+ flex-grow: 1; /* Allow the nav to take remaining height */
+ overflow-y: auto; /* Allow submenu items to scroll */
+}
+
+.event-submenu-sidebar .event-submenu-nav-list { /* ul in EventSubmenuSidebar.tsx */
+  list-style: none;
+  padding: 10px 0; /* Add padding inside the list */
+  margin: 0;
+}
+
+.event-submenu-sidebar .event-submenu-nav-item { /* li in EventSubmenuSidebar.tsx */
+  margin-bottom: 2px; /* Space between items */
+}
+
+/* Style for the submenu links */
+.event-submenu-sidebar .event-submenu-nav-link { /* a in EventSubmenuSidebar.tsx */
+  display: flex;
+  align-items: center;
+  padding: 8px 15px; /* Adjust padding */
+  text-decoration: none;
+  color: inherit; /* Inherit from .event-submenu-sidebar */
+  font-size: 0.9em; /* Adjust font size */
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border-radius: 0; /* No border-radius needed usually */
+}
+
+.event-submenu-sidebar .event-submenu-nav-link:hover {
+  background-color: #656466; /* Hover background */
+  color: #fff; /* Hover color */
+}
+
+.event-submenu-sidebar .event-submenu-nav-item.active .event-submenu-nav-link {
+  background-color: #656466; /* Active background */
+  color: #fff; /* Active color */
+  font-weight: bold;
+  /* Optional: Add a left bar for active submenu item */
+   border-left: 3px solid #fcea47; /* **Match your theme color** */
+   padding-left: 12px; /* Adjust padding to account for border */
+}
+
+/* 这个是 layout.tsx 中包裹活动侧边栏和主内容区的新 div */
+
+
+
+/* --- Update Main Content Area Styles for the 3-column layout --- */
+/* The main-content should now be to the right of *two* sidebars */
+.main-content {
+  flex-grow: 1; /* Allows it to take remaining horizontal space */
+  overflow-y: auto; /* Allows page content to scroll */
+  padding: 20px; /* Padding around your page content */
+  background-color: transparent;
+  /* No need for specific margin-left if layout.tsx handles the flex correctly */
+}
+
+/* Style for the main page title above  main content */
+.page-title {
+  font-size: 1.8em; /* Adjust size as needed */
+  color: #333; /* Title color */
+}
+
