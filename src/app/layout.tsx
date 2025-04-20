@@ -5,6 +5,7 @@ import './globals.css'; // Make sure your global styles are imported here
 import Topbar from '@/components/Topbar';
 import Sidebar from '@/components/Sidebar'; // Make sure this is your modified Sidebar.tsx
 import Breadcrumbs from '@/components/Breadcrumbs'; // Ensure Breadcrumbs is imported
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata = {
   title: 'FTMK Event Hub', // Your app title
@@ -19,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+      <AuthProvider>
         {/* Main container for the entire app layout - uses flex column to stack Topbar above content */}
         {/* Apply min-h-screen here */}
         <div className="flex flex-col min-h-screen">
@@ -53,7 +55,7 @@ export default function RootLayout({
             </main>
           </div>
         </div>
-
+        </AuthProvider>
       </body>
     </html>
   );

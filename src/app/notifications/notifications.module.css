@@ -1,0 +1,108 @@
+/* src/app/notifications/styles/notificationsPage.module.css */
+
+/* --- Styles specific to the Notifications Page --- */
+
+/* Container for the notification management actions (Mark All, Clear All) */
+/* Corresponds to the div with className={styles["notification-actions"]} */
+.notification-actions {
+    display: flex; /* Use flexbox for layout */
+    gap: 10px; /* Space between buttons */
+    align-items: center; /* Vertically align buttons */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    margin-top: 15px; /* Space below heading */
+}
+
+/* Optional: Styles for filter/sort controls */
+/* .filter-sort-controls {
+    margin-left: auto; // Push to the right
+    display: flex;
+    gap: 10px;
+    align-items: center;
+} */
+
+
+/* Container for the list of notifications */
+/* Corresponds to the div with className={styles["notification-list"]} */
+.notification-list {
+    display: flex;
+    flex-direction: column; /* Stack notification items vertically */
+    gap: 1px; /* Small gap to make border separation cleaner */
+    margin-top: 15px; /* Space above the list */
+    border: 1px solid #eee; /* Optional: Add a border around the whole list */
+    border-radius: 4px;
+    overflow: hidden; /* Hide border on rounded corners */
+}
+
+/* Styles for each individual notification item */
+/* Corresponds to the div with className={styles["notification-item"]} */
+.notification-item {
+    display: flex;
+    align-items: center; /* Vertically align content and actions */
+    padding: 15px;
+    background-color: #fff; /* Default background */
+    border-bottom: 1px solid #eee; /* Separator line */
+    justify-content: space-between; /* Put content on left, actions on right */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 15px; /* Space between content and actions when wrapped */
+}
+
+/* Style for unread notifications */
+.notification-item.unread {
+    background-color: #eef5ff; /* Light blue background for unread */
+    border-left: 4px solid #007bff; /* Highlight border on the left */
+    padding-left: 11px; /* Adjust padding because of the border */
+}
+
+/* Optional: Unread indicator dot */
+/* .unread-indicator {
+    width: 8px;
+    height: 8px;
+    background-color: #007bff;
+    border-radius: 50%;
+    margin-right: 10px;
+    flex-shrink: 0;
+} */
+
+
+/* Container for the main notification message and timestamp */
+/* Corresponds to the div with className={styles["notification-content"]} */
+.notification-content {
+    flex-grow: 1; /* Allow content to take up available space */
+    margin-right: 10px; /* Space before actions */
+}
+
+/* Style for the notification message text */
+.notification-message {
+    margin: 0 0 5px 0; /* Space below message */
+    font-size: 1em;
+    color: #333;
+    word-break: break-word; /* Break long words */
+}
+
+/* Style for the notification timestamp */
+.notification-timestamp {
+    margin: 0;
+    font-size: 0.8em;
+    color: #777;
+}
+
+/* Container for notification action buttons (Mark, Delete, View) */
+/* Corresponds to the div with className={styles["notification-item-actions"]} */
+.notification-item-actions {
+    display: flex;
+    gap: 5px; /* Space between buttons */
+    align-items: center; /* Vertically align buttons */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Optional: Style for smaller buttons if you have a .button-small global class */
+/* .button-small {
+    padding: 5px 10px;
+    font-size: 0.9em;
+} */
+
+
+/* Note: Reusable styles that apply broadly (like .page-content-wrapper, .page-title,
+   .form-container, .button-primary, .button-secondary, .loading-message,
+   .error-message, .no-events-message, .success-message, .info-message)
+   should remain in your globals.css file. */

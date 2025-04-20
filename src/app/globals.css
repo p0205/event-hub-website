@@ -821,7 +821,7 @@ list-style: none;
   /* width: 30px; */ /* Optional: Fixed width if needed for alignment */
   flex-shrink: 0;
   text-align: center;
-  color: #fff; /* Example: Make icons white */
+  color: #555454; /* Example: Make icons white */
 }
 
 /* --- Style for the text label element --- */

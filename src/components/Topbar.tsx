@@ -14,14 +14,15 @@ export default function Topbar() {
       {/* Right - Notification & Profile */}
       <div className="flex items-center gap-4">
         {/* Notification Icon */}
+        <Link href="/notifications">
         <button className="relative">
           <Bell className="text-black" size={22} />
           {/* Example notification dot */}
           <span className="absolute top-0 right-0 h-2 w-2 bg-red-600 rounded-full"></span>
         </button>
-
+        </Link>
         {/* Profile Image - Link to Profile Settings */}
-        <Link href="/profile-settings">
+        <Link href="/settings">
           <img
             src="/profile.png"
             alt="Profile"
