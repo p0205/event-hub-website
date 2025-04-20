@@ -1,0 +1,160 @@
+/* src/app/events/[id]/team/styles/teamPage.module.css */
+
+/* --- Styles specific to the Team Page --- */
+
+
+/* Styles for the "Add Team Member" form area */
+/* Corresponds to the div with className={styles["add-team-member-form"]} */
+.add-team-member-form {
+    /* Add padding or margin if needed */
+    /* padding: 15px; */
+}
+
+/* Styles for the search results list container */
+/* Corresponds to the div with className={styles["search-results"]} */
+.search-results {
+     margin-top: 20px; /* Space above the results */
+     border: 1px solid #eee; /* Add a border */
+     border-radius: 4px;
+     padding: 10px;
+     max-height: 200px; /* Set max height with scroll if many results */
+     overflow-y: auto;
+}
+
+.search-results h4 {
+     margin-top: 0; /* Remove default top margin */
+     margin-bottom: 10px; /* Space below heading */
+     padding-bottom: 5px;
+     border-bottom: 1px solid #eee; /* Separator */
+}
+
+.search-results ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Styles for each individual search result item */
+/* Corresponds to the li with className={styles["search-result-item"]} */
+.search-result-item {
+    display: flex;
+    align-items: center; /* Vertically align items */
+    gap: 10px; /* Space between items */
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0; /* Light separator between results */
+}
+
+.search-result-item:last-child {
+    border-bottom: none; /* Remove border from the last item */
+}
+
+
+/* Styles for the selected user area after selecting from search results */
+/* Corresponds to the div with className={styles["selected-user-area"]} */
+.selected-user-area {
+    margin-top: 20px; /* Space above this section */
+    border: 1px solid #ddd; /* Add a border */
+    border-radius: 4px;
+    padding: 15px;
+    background-color: #f9f9f9; /* Light background */
+}
+
+.selected-user-area h4 {
+     margin-top: 0; /* Remove default top margin */
+     margin-bottom: 10px; /* Space below heading */
+     padding-bottom: 5px;
+     border-bottom: 1px solid #ddd; /* Separator */
+}
+
+/* Styles for the row containing selected user details and role dropdown */
+/* Corresponds to the div with className={styles["selected-user-details"]} */
+.selected-user-details {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between profile image, user info, and role dropdown */
+    margin-bottom: 15px; /* Space below user details row */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+
+/* Styles for the team members list container */
+/* Corresponds to the div with className={styles["team-members-list-container"]} */
+.team-members-list-container {
+    margin-top: 15px; /* Space above the list */
+    /* Add border/background if needed */
+    /* border: 1px solid #ddd; */
+    /* border-radius: 4px; */
+    /* padding: 10px; */
+}
+
+.team-members-list-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Styles for each individual team member item in the list */
+/* Corresponds to the li with className={styles["team-member-item"]} */
+.team-member-item {
+    display: flex;
+    align-items: center; /* Vertically align items */
+    gap: 10px; /* Space between items */
+    padding: 12px 0; /* Vertical padding */
+    border-bottom: 1px solid #eee; /* Separator between members */
+    justify-content: space-between; /* Distribute space */
+    flex-wrap: wrap; /* Allow wrapping */
+}
+
+.team-member-item:last-child {
+    border-bottom: none; /* Remove border from the last item */
+}
+
+/* Styles for the user profile image (reused for search results and team list) */
+/* Corresponds to the img with className={styles["profile-image"]} */
+.profile-image {
+    border-radius: 50%; /* Make it round */
+    object-fit: cover; /* Crop if necessary to fit the circle */
+    /* Ensure width/height are set in JSX or here */
+    /* width: 40px; */
+    /* height: 40px; */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+
+/* Styles for the user name and email text block */
+/* Corresponds to the div with className={styles["user-info"]} (reused) */
+.user-info {
+    display: flex;
+    flex-direction: column; /* Stack name above email */
+    flex-grow: 1; /* Allow it to take up available space */
+    margin-right: 10px; /* Space before role/button */
+}
+
+/* Style for the user name text */
+/* Corresponds to the div with className={styles["user-name"]} (reused) */
+.user-name {
+    font-weight: bold;
+    font-size: 1em;
+    color: #333;
+}
+
+/* Style for the user email text */
+/* Corresponds to the div with className={styles["user-email"]} (reused) */
+.user-email {
+    font-size: 0.9em;
+    color: #777;
+}
+
+/* Style for the assigned team member role text */
+/* Corresponds to the span with className={styles["team-member-role"]} */
+.team-member-role {
+     font-weight: bold;
+     color: #007bff; /* Example color */
+     margin-right: 10px; /* Space before delete button */
+     flex-shrink: 0; /* Prevent shrinking */
+}
+
+
+/* Note: Reusable styles that apply broadly (like .page-content-wrapper, .page-title,
+   .form-container, .form-group, .button-primary, .button-secondary, .loading-message,
+   .error-message, .no-events-message) should remain in your globals.css file. */

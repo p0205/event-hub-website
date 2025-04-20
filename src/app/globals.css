@@ -1011,3 +1011,61 @@ list-style: none;
   color: #333; /* Title color */
 }
 
+
+/* src/app/globals.css */
+
+/* ... (your existing global styles like page-content-wrapper, form-container, buttons, etc.) ... */
+
+/* --- Global Progress Bar Styles --- */
+
+/* Container for the entire progress bar */
+.progressBarContainer {
+  width: 100%; /* Or a fixed width if needed for specific instances */
+  background-color: #e0e0e0; /* Background color of the empty part */
+  border-radius: 4px; /* Rounded corners */
+  overflow: hidden; /* Hide anything outside the rounded corners */
+  position: relative; /* Needed to position the label absolutely over the bar */
+  height: 20px; /* Height of the progress bar */
+  margin-top: 5px; /* Add some space above the bar if it follows text */
+  margin-bottom: 5px; /* Add some space below the bar */
+}
+
+/* The filled portion of the progress bar */
+.progressBarFill {
+  height: 100%;
+  border-radius: 4px; /* Rounded corners */
+  transition: width 0.5s ease-in-out; /* Smooth transition when percentage changes */
+}
+
+/* Color classes based on percentage levels */
+/* These classes will be applied *alongside* .progressBarFill */
+.progressGreen {
+  background-color: #4CAF50; /* Green */
+}
+
+.progressOrange {
+  background-color: #FF9800; /* Orange */
+}
+
+.progressRed {
+  background-color: #F44336; /* Red */
+}
+
+/* Style for the percentage label displayed inside the bar */
+.progressBarLabel {
+  position: absolute; /* Position over the bar */
+  top: 50%; /* Center vertically */
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Adjust position to truly center */
+  color: #fff; /* White text color for visibility on colored bar */
+  font-size: 0.8em; /* Smaller font size */
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Add shadow for readability on varying colors */
+  z-index: 1; /* Ensure the label is above the filled bar */
+   /* Optional: Add some padding or min-width if labels vary greatly in length */
+   /* padding: 0 4px; */
+   /* min-width: 30px; */
+   /* text-align: center; */
+}
+
+/* ... (rest of your existing global styles) ... */
