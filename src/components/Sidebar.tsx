@@ -54,7 +54,6 @@ const navItems = [
   { name: 'Home', href: '/', icon: '🏠' }, // Use appropriate icons
   { name: 'Events', href: '/events', icon: '📅' },
   { name: 'Reports', href: '/reports', icon: '📊' },
-  { name: 'Account', href: '/account', icon: '👤' }, // Example path
   { name: 'Settings', href: '/settings', icon: '⚙️' }, // Example path
 ];
 

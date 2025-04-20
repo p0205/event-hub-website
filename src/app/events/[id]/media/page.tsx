@@ -76,7 +76,6 @@ export default function EventMediaPage() {
             setError(null);
             try {
                 // Simulate data loading delay (optional)
-                await new Promise(resolve => setTimeout(resolve, 500));
 
                 // Use mock data directly for the initial media list
                 const data: MediaFile[] = mockMediaFiles;

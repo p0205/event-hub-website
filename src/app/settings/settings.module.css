@@ -1,0 +1,70 @@
+/* src/app/settings/styles/settingsPage.module.css */ /* <-- Updated file name */
+
+/* --- Styles specific to the Settings Page --- */ /* <-- Updated comment */
+
+/* Styles for the main profile information section layout */
+/* Corresponds to the div with className={styles["profile-section"]} */
+.profile-section {
+    display: flex; /* Use flexbox to arrange profile picture and details side-by-side */
+    gap: 30px; /* Space between the profile picture area and the form */
+    padding: 20px 0; /* Add some vertical padding within the container */
+    flex-wrap: wrap; /* Allow items to wrap onto a new line on smaller screens */
+}
+
+/* Styles for the Profile Picture area container */
+/* Corresponds to the div with className={styles["profile-picture-area"]} */
+.profile-picture-area {
+    display: flex;
+    flex-direction: column; /* Stack the image and potentially an upload button vertically */
+    align-items: center; /* Center the image and button horizontally within this column */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Styles for the Profile Image */
+/* Corresponds to the img with className={styles["profile-image"]} */
+.profile-image {
+    border-radius: 50%; /* Make the image round */
+    object-fit: cover; /* Ensure the image covers the area without stretching */
+    border: 3px solid #eee; /* Optional: Add a light border around the image */
+    /* The width and height should ideally be set directly on the <img> tag in JSX */
+    /* Example: width: 100px; height: 100px; */
+}
+
+/* Styles for the Profile Details display section (Read-only) */
+/* Corresponds to the div with className={styles["profile-details-display"]} */
+.profile-details-display {
+     flex-grow: 1; /* Allow this section to take up the remaining horizontal space */
+     display: flex;
+     flex-direction: column; /* Stack the detail groups vertically */
+     gap: 15px; /* Space between each detail group (using form-group styling) */
+     max-width: 400px; /* Optional: Limit the maximum width for readability */
+     width: 100%; /* Ensure it takes full width available when wrapping */
+
+     /* Add styles for the <p> tags within .form-group for display if needed */
+     /* .profile-details-display .form-group p {
+         margin: 0; // Remove default paragraph margin
+         padding: 8px 12px; // Match input padding maybe
+         border: 1px solid #ccc; // Add a border like inputs
+         border-radius: 4px;
+         background-color: #eee; // Light grey background
+         min-height: 38px; // Match input height maybe
+         display: flex; // Use flex for vertical alignment if needed
+         align-items: center;
+     } */
+}
+
+/* Styles for the Change Password form layout */
+/* Corresponds to the div with className={styles["change-password-form"]} */
+.change-password-form {
+    display: flex;
+    flex-direction: column; /* Stack form groups vertically */
+    gap: 15px; /* Space between form groups */
+    padding: 20px 0; /* Vertical padding */
+    max-width: 400px; /* Optional: Limit max width */
+    width: 100%;
+}
+
+
+/* Note: Reusable styles that apply broadly (like .page-content-wrapper, .page-title,
+   .form-container, .form-group, .button-primary, .button-secondary, .loading-message,
+   .error-message, .success-message, .info-message) should remain in your globals.css file. */
