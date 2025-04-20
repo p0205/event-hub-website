@@ -459,33 +459,32 @@ export default function EventAttendancePage() {
                         // Message if the list is empty after filtering/fetching
                         <p className="no-events-message">No participants found for this session.</p>
                     ) : (
-                        <div className={styles["attendance-list-container"]}> {/* Use CSS Module for table container layout */}
-                             <table className={styles["attendance-table"]}> {/* Use CSS Module for table styles */}
+                        <div className={styles["attendance-list-container"]}>
+                             <table className={styles["attendance-table"]}>
                                 <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th>Email</th>
-                                        <th>Faculty</th> {/* Added Faculty column */}
-                                        <th>Course</th> {/* Added Course column */}
-                                        <th>Year</th> {/* Added Year column */}
-                                        <th>Attended</th> {/* Indicates Yes/No */}
-                                        <th>Attendance Time</th> {/* When they attended */}
-                                        <th>Method</th> {/* How they attended (QR/Manual) */}
-                                        <th>Actions</th> {/* For manual marking */}
+                                        <th>Faculty</th>
+                                        <th>Course</th>
+                                        <th>Year</th>
+                                        <th>Attended</th>
+                                        <th>Attendance Time</th>
+                                        <th>Method</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {participantAttendanceList.map(participant => (
-                                        //{/* Apply a class for attended rows for visual distinction */}
                                         <tr key={participant.id} className={participant.attended ? styles["attended-row"] : ''}>
                                             <td>{participant.name}</td>
                                             <td>{participant.email}</td>
-                                            <td>{participant.faculty}</td> {/* Display Faculty */}
-                                            <td>{participant.course}</td> {/* Display Course */}
-                                            <td>{participant.year}</td> {/* Display Year */}
+                                            <td>{participant.faculty}</td>
+                                            <td>{participant.course}</td>
+                                            <td>{participant.year}</td>
                                             <td>{participant.attended ? 'Yes' : 'No'}</td>
-                                            <td>{participant.attended ? participant.attendanceTime ? new Date(participant.attendanceTime).toLocaleString() : 'N/A' : '-'}</td> {/* Format time, handle undefined */}
-                                             <td>{participant.attended ? participant.attendanceMethod || 'N/A' : '-'}</td> {/* Display method, handle undefined */}
+                                            <td>{participant.attended ? participant.attendanceTime ? new Date(participant.attendanceTime).toLocaleString() : 'N/A' : '-'}</td>
+                                             <td>{participant.attended ? participant.attendanceMethod || 'N/A' : '-'}</td>
                                             <td>
                                                 {/* Manual Attendance Marking Button */}
                                                 {/* Text changes based on current attendance status */}

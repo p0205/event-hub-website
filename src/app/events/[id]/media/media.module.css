@@ -1,0 +1,135 @@
+/* src/app/events/[id]/media/styles/mediaPage.module.css */
+
+/* --- Styles specific to the Media Page --- */
+
+
+/* Styles for the Upload Media section layout */
+/* Corresponds to the div with className={styles["upload-section"]} */
+.upload-section {
+    /* Add padding or margin if needed */
+    padding: 15px; /* Add some padding */
+    border: 1px solid #eee; /* Add a border */
+    border-radius: 4px;
+    background-color: #f9f9f9; /* Light background */
+    margin-bottom: 20px; /* Space below the upload section */
+
+    display: flex;
+    flex-direction: column; /* Stack upload controls vertically */
+    gap: 15px; /* Space between form groups/button */
+}
+
+/* Styles for the Media Gallery container */
+/* Corresponds to the div with className={styles["media-gallery"]} */
+.media-gallery {
+    margin-top: 15px; /* Space above the gallery */
+    display: grid; /* Use CSS Grid for a responsive gallery layout */
+    /* Adjust grid columns as needed based on screen size */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive columns */
+    gap: 20px; /* Space between grid items */
+}
+
+/* Styles for each individual Media Item in the gallery */
+/* Corresponds to the div with className={styles["media-item"]} */
+.media-item {
+    border: 1px solid #ddd; /* Add a border */
+    border-radius: 4px;
+    overflow: hidden; /* Hide anything outside rounded corners */
+    display: flex;
+    flex-direction: column; /* Stack image, details, actions */
+    background-color: #fff; /* White background */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+    transition: transform 0.2s ease; /* Optional hover effect */
+}
+
+/* Optional hover effect for media items */
+/* .media-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+} */
+
+
+/* Styles for the media image itself */
+/* Corresponds to the img with className={styles["media-image"]} */
+.media-image {
+    width: 100%; /* Make image fill the item width */
+    height: 150px; /* Fixed height or use aspect-ratio */
+    object-fit: cover; /* Crop the image to fit the fixed height */
+    display: block; /* Remove extra space below image */
+    /* Optional: Add a border bottom */
+    /* border-bottom: 1px solid #eee; */
+}
+
+/* Placeholder style for non-image files */
+.file-icon {
+    width: 100%;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
+    color: #777;
+    font-size: 0.9em;
+}
+
+
+/* Container for media details (filename, category, uploader, caption) */
+/* Corresponds to the div with className={styles["media-details"]} */
+.media-details {
+    padding: 10px;
+    flex-grow: 1; /* Allow details section to take up space */
+}
+
+/* Style for file name */
+.file-name {
+    font-weight: bold;
+    font-size: 1em;
+    margin: 0 0 5px 0; /* Space below file name */
+    word-break: break-all; /* Break long file names */
+}
+
+/* Style for file category */
+.file-category {
+     font-size: 0.9em;
+     color: #555;
+     margin: 0 0 5px 0;
+}
+
+/* Style for upload info (uploaded by, date) */
+.upload-info {
+    font-size: 0.8em;
+    color: #777;
+    margin: 0 0 5px 0;
+}
+
+/* Style for file caption */
+.file-caption {
+    font-size: 0.9em;
+    color: #333;
+    margin: 0;
+}
+
+
+/* Container for media actions (buttons) */
+/* Corresponds to the div with className={styles["media-actions"]} */
+.media-actions {
+    padding: 10px;
+    border-top: 1px solid #eee; /* Separator */
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    /* align-items: center; Optional */
+    gap: 5px; /* Space between buttons */
+}
+
+
+/* Optional styles for gallery controls (filter/sort area) */
+/* .gallery-controls {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+} */
+
+
+/* Note: Reusable styles that apply broadly (like .page-content-wrapper, .page-title,
+   .form-container, .form-group, .button-primary, .button-secondary, .loading-message,
+   .error-message, .no-events-message) should remain in your globals.css file. */

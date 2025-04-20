@@ -423,17 +423,16 @@ export default function EventBudgetPage() {
                                          <tbody>
                                              {category.expenses.map(expense => (
                                                  <tr key={expense.id}>
-                                                     <td>{new Date(expense.date).toLocaleDateString()}</td> {/* Format date */}
+                                                     <td>{new Date(expense.date).toLocaleDateString()}</td>
                                                      <td>{expense.description}</td>
                                                      <td>${expense.amount.toFixed(2)}</td>
-                                                     {/* Display Receipt link/icon if implemented */}
                                                       <td>
                                                          {expense.receiptUrl ? (
                                                              <a href={expense.receiptUrl} target="_blank" rel="noopener noreferrer">View</a>
                                                          ) : (
                                                              '-'
                                                          )}
-                                                      </td> {/* Display Receipt link */}
+                                                      </td>
                                                      <td>
                                                          <button
                                                              className="button-secondary" // Reuse button style
@@ -441,10 +440,6 @@ export default function EventBudgetPage() {
                                                          >
                                                              Delete
                                                          </button>
-                                                         {/* Add Upload Receipt button if implemented for existing expenses (optional, might be overkill) */}
-                                                         {/* {!expense.receiptUrl && (
-                                                             <button className="button-secondary" style={{ marginLeft: '5px' }}>Upload Receipt</button>
-                                                         )} */}
                                                      </td>
                                                  </tr>
                                              ))}

@@ -7,14 +7,13 @@ import React from 'react';
 
 // Define the submenu items for an individual event
 const eventManagementItems = [
-    { name: 'Overview', hrefSegment: 'overview' }, // Segment for the URL
+    { name: 'Overview', hrefSegment: '' }, // Segment for the URL
     { name: 'Participants', hrefSegment: 'participants' },
     { name: 'Attendance', hrefSegment: 'attendance' },
     { name: 'Budget', hrefSegment: 'budget' },
     { name: 'Reports', hrefSegment: 'reports' },
     { name: 'Team', hrefSegment: 'team' },
     { name: 'Media', hrefSegment: 'media' },
-    { name: 'Settings', hrefSegment: 'settings' },
 ];
 
 export default function EventSubmenuSidebar() {
@@ -32,8 +31,8 @@ export default function EventSubmenuSidebar() {
         // Check if the current pathname exactly matches the item path
         // or starts with it for nested routes within a submenu section (less common)
         // For 'overview', it should also be active on the base /events/[id] path
-         if (hrefSegment === 'overview') {
-             return pathname === eventBasePath || pathname.startsWith(`${eventBasePath}/overview`);
+         if (hrefSegment === '') {
+             return pathname === eventBasePath ;
          }
         return pathname.startsWith(itemPath);
     };

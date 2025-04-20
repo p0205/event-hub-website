@@ -97,7 +97,6 @@ export default function EventTeamPage() {
             setError(null);
             try {
                 // Simulate data loading delay (optional)
-                await new Promise(resolve => setTimeout(resolve, 500));
 
                 // Use mock data directly for the initial team list
                 const data: EventTeamMember[] = mockEventTeam;
