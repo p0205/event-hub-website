@@ -1,8 +1,9 @@
 // src/app/events/create/page.tsx
 'use client'; // Mark this component as a Client Component
 
-import { createEventService } from '@/services/eventService';
+import  eventService  from '@/services/eventService';
 import { CreateEventData, EventBudget } from '@/types/event';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
@@ -37,6 +38,7 @@ const mockBudgetCategories: BudgetCategory[] = [
 
 // --- The Component ---
 export default function CreateEventPage() {
+    const router = useRouter(); // Initialize router for navigation
     // const router = useRouter(); // Initialize router if needed for navigation
     const [formData, setFormData] = useState<CreateEventData>({
         name: '',
@@ -49,44 +51,46 @@ export default function CreateEventPage() {
         eventBudgets: [],
     });
 
-     // --- FIX: Add initial session and budget item on the client side after mount ---
-     useEffect(() => {
-      // Check if eventVenues is empty (meaning this is the initial client render before adding)
-      // Add the first session
-      setFormData(prev => {
-           // Only add if the array is currently empty
-          if (prev.eventVenues.length === 0) {
-               const initialVenues = [{
-                   id: uuidv4(), // Generate UUID here, ensuring it runs only client-side
-                   sessionName: '',
-                   date: '',           // Include the date field
-                   startTimeOnly: '',
-                   endTimeOnly: '',
-                   venueId: '',
-                   startDateTime: '', // These will be calculated on submit
-                   endDateTime: '',   // These will be calculated on submit
-               }];
+    const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    // --- FIX: Add initial session and budget item on the client side after mount ---
+    useEffect(() => {
+        // Check if eventVenues is empty (meaning this is the initial client render before adding)
+        // Add the first session
+        setFormData(prev => {
+            // Only add if the array is currently empty
+            if (prev.eventVenues.length === 0) {
+                const initialVenues = [{
+                    id: uuidv4(), // Generate UUID here, ensuring it runs only client-side
+                    sessionName: '',
+                    date: '',           // Include the date field
+                    startTimeOnly: '',
+                    endTimeOnly: '',
+                    venueId: '',
+                    startDateTime: '', // These will be calculated on submit
+                    endDateTime: '',   // These will be calculated on submit
+                }];
 
-               // Add the first budget item if needed initially (optional)
-               // If you want an initial budget row, uncomment this and add similar logic
-               // const initialBudgets = [{
-               //     id: uuidv4(), // Generate UUID here on client
-               //     amountAllocated: '',
-               //     amountSpent: 0,
-               //     budgetCategoryId: undefined,
-               //     categoryName: '',
-               // }];
+                // Add the first budget item if needed initially (optional)
+                // If you want an initial budget row, uncomment this and add similar logic
+                // const initialBudgets = [{
+                //     id: uuidv4(), // Generate UUID here on client
+                //     amountAllocated: '',
+                //     amountSpent: 0,
+                //     budgetCategoryId: undefined,
+                //     categoryName: '',
+                // }];
 
-               return {
-                   ...prev,
-                   eventVenues: initialVenues,
-                   // eventBudgets: initialBudgets, // Uncomment if adding initial budget row
-               };
-          }
-          return prev; // If not empty, do nothing (e.g., after a state reset)
-      });
+                return {
+                    ...prev,
+                    eventVenues: initialVenues,
+                    // eventBudgets: initialBudgets, // Uncomment if adding initial budget row
+                };
+            }
+            return prev; // If not empty, do nothing (e.g., after a state reset)
+        });
 
-  }, []); 
+    }, []);
 
     const [recommendedVenues, setRecommendedVenues] = useState<Venue[]>([]);
     const [approvalFile, setApprovalFile] = useState<File | null>(null);
@@ -101,6 +105,24 @@ export default function CreateEventPage() {
             setRecommendedVenues([]);
         }
     }, [formData.participantsNo]);
+
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (submitSuccess) {
+            setShowSuccessMessage(true); // Show the overlay when submitSuccess is set
+            // Set a timer to hide the overlay after 5 seconds (adjust as needed)
+            timer = setTimeout(() => {
+                setShowSuccessMessage(false);
+                setSubmitSuccess(null); // Optionally clear the message after hiding
+            }, 3000); //3 seconds
+        }
+
+        // Cleanup function: clear the timer if the component unmounts or submitSuccess changes before the timer fires
+        return () => clearTimeout(timer);
+    }, [submitSuccess]); // Re-run this effect whenever submitSuccess changes
+
+
 
     // --- Event Handlers ---
 
@@ -162,7 +184,7 @@ export default function CreateEventPage() {
     // --- Budget Handlers ---
 
     const handleBudgetChange = (budgetId: string, field: keyof EventBudget | 'categoryName', value: string) => {
-         setFormData(prev => ({
+        setFormData(prev => ({
             ...prev,
             eventBudgets: prev.eventBudgets.map(item => {
                 if (item.id === budgetId) {
@@ -211,14 +233,14 @@ export default function CreateEventPage() {
         }));
     };
 
-     const handleRemoveBudget = (budgetId: string) => {
+    const handleRemoveBudget = (budgetId: string) => {
         setFormData(prev => ({
             ...prev,
             eventBudgets: prev.eventBudgets.filter(budget => budget.id !== budgetId),
         }));
     };
 
-     // --- File Handler ---
+    // --- File Handler ---
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -242,7 +264,7 @@ export default function CreateEventPage() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
-      console.log("Enter handle submit");
+        console.log("Enter handle submit");
         e.preventDefault();
         setIsLoading(true);
         setFormError(null);
@@ -267,8 +289,8 @@ export default function CreateEventPage() {
                 if (!overallStartTime || startDateTime < overallStartTime) {
                     overallStartTime = startDateTime;
                 }
-                 const effectiveEndTime = endDateTime || startDateTime; // Use start time if end time is missing for comparison
-                 if (!overallEndTime || effectiveEndTime > overallEndTime) {
+                const effectiveEndTime = endDateTime || startDateTime; // Use start time if end time is missing for comparison
+                if (!overallEndTime || effectiveEndTime > overallEndTime) {
                     overallEndTime = effectiveEndTime;
                 }
 
@@ -287,8 +309,8 @@ export default function CreateEventPage() {
                     throw new Error(`Please select a category and enter an allocated amount for Budget item ${index + 1}.`);
                 }
                 if (Number(budget.amountAllocated) < 0) {
-                     throw new Error(`Allocated amount cannot be negative for Budget item ${index + 1}.`);
-                 }
+                    throw new Error(`Allocated amount cannot be negative for Budget item ${index + 1}.`);
+                }
                 return {
                     amountAllocated: Number(budget.amountAllocated),
                     amountSpent: budget.amountSpent,
@@ -331,13 +353,20 @@ export default function CreateEventPage() {
                 apiFormData.append('supportingDocument', approvalFile);
                 console.log('Appending file:', approvalFile.name);
             } else {
-                 console.log('No supporting document file selected.');
+                console.log('No supporting document file selected.');
             }
 
             console.log('Calling api.....');
             // Example API call structure:
-            const result = await createEventService(apiFormData);
-            console.log('API Response:', result);
+            const createdEvent = await eventService.createEventService(apiFormData);
+            console.log('API Response:', createdEvent);
+
+            // const newEventName = createdEvent.name; // <-- Accesses properties of the response object
+            const newEventId = createdEvent.id; // <-- Accesses properties of the response object
+           
+            setSubmitSuccess("Event submitted for approval successfully!"); // <-- Updates state based on success
+            console.log('/events/pending/${newEventId}, ',newEventId);
+            router.push(`/events/pending/${newEventId}`); // <-- Redirects based on success data
 
             // // Mock Success:
             // await new Promise(resolve => setTimeout(resolve, 1500));
@@ -357,7 +386,7 @@ export default function CreateEventPage() {
         console.log('Form cancelled');
         // Optionally add confirmation
         // Reset form state:
-         setFormData({
+        setFormData({
             name: '', description: '', organizerId: 1, startDateTime: '', endDateTime: '',
             participantsNo: '',
             eventVenues: [{ id: uuidv4(), sessionName: '', date: '', startTimeOnly: '', endTimeOnly: '', venueId: '', startDateTime: '', endDateTime: '' }],
@@ -422,7 +451,7 @@ export default function CreateEventPage() {
                                 className="form-input"
                                 placeholder="e.g., 150"
                             />
-                             {/* Display Recommended Venues */}
+                            {/* Display Recommended Venues */}
                             {recommendedVenues.length > 0 && formData.participantsNo !== '' && (
                                 <div className="recommended-venues"> {/* Use existing class */}
                                     <p className="form-label">Recommended Venues (Capacity {'>='} {formData.participantsNo}):</p>
@@ -442,19 +471,19 @@ export default function CreateEventPage() {
                             )}
                         </div>
 
-                      
+
                     </div>
 
 
-                     {/* --- Budget Section --- */}
+                    {/* --- Budget Section --- */}
                     <div className="form-section">
-                         <h2>Budget Allocation</h2>
-                         {formData.eventBudgets.map((item, index) => (
+                        <h2>Budget Allocation</h2>
+                        {formData.eventBudgets.map((item, index) => (
                             // Using flex utilities for layout might be better if using Tailwind
                             // Otherwise, define .budget-item-controls
                             <div key={item.id} className="budget-item-controls">
                                 <div className="form-group-item"> {/* Assuming .form-group-item handles flex growth */}
-                                     <label className="form-label form-label-small">Category:</label> {/* Add form-label-small */}
+                                    <label className="form-label form-label-small">Category:</label> {/* Add form-label-small */}
                                     <select
                                         name="categoryName"
                                         value={item.categoryName}
@@ -464,14 +493,14 @@ export default function CreateEventPage() {
                                     >
                                         <option value="">Select Category</option>
                                         {mockBudgetCategories.map((cat) => (
-                                        <option key={cat.id} value={cat.name}>
-                                            {cat.name}
-                                        </option>
+                                            <option key={cat.id} value={cat.name}>
+                                                {cat.name}
+                                            </option>
                                         ))}
                                     </select>
                                 </div>
                                 <div className="form-group-item"> {/* Assuming .form-group-item handles flex growth */}
-                                     <label className="form-label form-label-small">Allocated (MYR):</label> {/* Add form-label-small */}
+                                    <label className="form-label form-label-small">Allocated (MYR):</label> {/* Add form-label-small */}
                                     <input
                                         type="number"
                                         name="amountAllocated"
@@ -484,7 +513,7 @@ export default function CreateEventPage() {
                                         required
                                     />
                                 </div>
-                                 <button
+                                <button
                                     type="button"
                                     onClick={() => handleRemoveBudget(item.id)}
                                     className="button-remove" // Use specific remove class
@@ -494,7 +523,7 @@ export default function CreateEventPage() {
                                 </button>
                             </div>
                         ))}
-                         <button
+                        <button
                             type="button"
                             onClick={addBudgetRow}
                             className="button-secondary" // Use secondary style for Add button
@@ -506,11 +535,11 @@ export default function CreateEventPage() {
 
 
                     {/* --- File Upload Section --- */}
-                     <div className="form-section">
-                         <h2>Supporting Document</h2>
+                    <div className="form-section">
+                        <h2>Supporting Document</h2>
                         <div className="form-group">
                             <label htmlFor="approvalFile" className="form-label">Upload Approval File (PDF only):</label>
-                             <input
+                            <input
                                 type="file"
                                 id="approvalFile"
                                 name="supportingDocument" // Name should match the key in FormData
@@ -518,15 +547,15 @@ export default function CreateEventPage() {
                                 onChange={handleFileChange}
                                 className="form-input"
                                 disabled={isLoading}
-                             />
+                            />
                             {approvalFile && (
-                            <p className="file-info">Selected: {approvalFile.name}</p> 
+                                <p className="file-info">Selected: {approvalFile.name}</p>
                             )}
                         </div>
                     </div>
 
 
-                     {/* --- Sessions Section (Venue & Time) --- */}
+                    {/* --- Sessions Section (Venue & Time) --- */}
                     <div className="form-section">
                         <h2>Event Sessions (Venue & Time Slots)</h2>
 
@@ -652,6 +681,20 @@ export default function CreateEventPage() {
                         </button>
                     </div>
                 </form>
+
+
+                {showSuccessMessage && submitSuccess && (
+                    <div className="success-overlay">
+                        {/* The green arrow element */}
+                        <div className="success-overlay-arrow"></div>
+                        {/* The success message content */}
+                        <div className="success-overlay-content">
+                            <span className="success-overlay-message">{submitSuccess}</span>
+                            {/* Optional close button */}
+                            {/* <button className="success-overlay-close" onClick={handleCloseSuccessOverlay}>&times;</button> */}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

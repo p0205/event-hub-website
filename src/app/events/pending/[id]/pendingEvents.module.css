@@ -1,0 +1,26 @@
+/* Styles for the budget list */
+.budget-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Styles for each budget item */
+  .budget-item {
+    background-color: #f9f9f9; /* Light background */
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px; /* Space between items */
+    font-size: 0.95em;
+    color: #333;
+  }
+  
+  .budget-item p {
+      margin-bottom: 5px;
+      line-height: 1.4;
+  }
+  
+  .budget-item p:last-child {
+      margin-bottom: 0; /* Remove bottom margin for the last paragraph */
+  }

@@ -32,7 +32,7 @@ export default function EventsLandingPage() {
     setSearchTerm(e.target.value);
   };
 
-   // --- Filtering Logic ---
+  // --- Filtering Logic ---
   // Filter each event list based on the search term
   const filteredActiveEvents = activeEvents.filter(event =>
     event.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -49,7 +49,7 @@ export default function EventsLandingPage() {
 
   // Function to toggle the expansion state of a section
   const toggleSectionExpansion = (section: 'active' | 'pending' | 'completed') => {
-    
+
     switch (section) {
       case 'active':
         setIsActiveExpanded(!isActiveExpanded);
@@ -79,24 +79,24 @@ export default function EventsLandingPage() {
 
         // --- Simulate fetching data ---
         const mockFetch = async (status: string) => {
-             // Simulate different mock data based on status
-             const mockData: EventSummary[] = [];
-             if (status === 'active') {
-                 mockData.push({ id: 'event-active-1', title: 'Project Kickoff', status: 'active' });
-                 mockData.push({ id: 'event-active-2', title: 'Client Workshop', status: 'active' });
-                 mockData.push({ id: 'event-active-3', title: 'Team Building', status: 'active' }); // Add a few more for testing scroll
-                 mockData.push({ id: 'event-active-4', title: 'Product Demo', status: 'active' });
-             } else if (status === 'pending_approval') {
-                 mockData.push({ id: 'event-pending-1', title: 'Quarterly Review Submission', status: 'pending_approval' });
-                  mockData.push({ id: 'event-pending-2', title: 'Annual Planning Request', status: 'pending_approval' });
-             } else if (status === 'completed') {
-                 mockData.push({ id: 'event-completed-1', title: 'Annual Conference 2024', status: 'completed' });
-                 mockData.push({ id: 'event-completed-2', title: 'Team Building Retreat', status: 'completed' });
-                 mockData.push({ id: 'event-completed-3', title: 'Holiday Party', status: 'completed' });
-             }
-             // Simulate API delay
-            //  await new Promise(resolve => setTimeout(resolve, 500)); // Increased delay slightly
-             return mockData;
+          // Simulate different mock data based on status
+          const mockData: EventSummary[] = [];
+          if (status === 'active') {
+            mockData.push({ id: 'event-active-1', title: 'Project Kickoff', status: 'active' });
+            mockData.push({ id: 'event-active-2', title: 'Client Workshop', status: 'active' });
+            mockData.push({ id: 'event-active-3', title: 'Team Building', status: 'active' }); // Add a few more for testing scroll
+            mockData.push({ id: 'event-active-4', title: 'Product Demo', status: 'active' });
+          } else if (status === 'pending_approval') {
+            mockData.push({ id: 'event-pending-1', title: 'Quarterly Review Submission', status: 'pending_approval' });
+            mockData.push({ id: 'event-pending-2', title: 'Annual Planning Request', status: 'pending_approval' });
+          } else if (status === 'completed') {
+            mockData.push({ id: 'event-completed-1', title: 'Annual Conference 2024', status: 'completed' });
+            mockData.push({ id: 'event-completed-2', title: 'Team Building Retreat', status: 'completed' });
+            mockData.push({ id: 'event-completed-3', title: 'Holiday Party', status: 'completed' });
+          }
+          // Simulate API delay
+          //  await new Promise(resolve => setTimeout(resolve, 500)); // Increased delay slightly
+          return mockData;
         };
 
         const activeData = await mockFetch('active');
@@ -160,120 +160,120 @@ export default function EventsLandingPage() {
       <h1>Events</h1>
 
 
-       {/* Search Bar */}
-       <div className="event-search-bar" style={{ marginBottom: '30px' }}>
-          <label htmlFor="event-search" className="form-label"></label> {/* Reuse label style */}
+      {/* Search Bar */}
+      <div className="event-search-bar" style={{ marginBottom: '30px' }}>
+        <label htmlFor="event-search" className="form-label"></label> {/* Reuse label style */}
 
-          {/* --- New Wrapper for Icon and Input --- */}
-          <div className="search-input-container">
-               <span className="search-icon"> {/* Icon Element */}
-                   🔍 {/* Search icon character - you can use an SVG or icon font here */}
-               </span>
-               <input
-                   type="text"
-                   id="event-search"
-                   className="form-input" // Reuse form input style for basic input styles
-                   value={searchTerm}
-                   onChange={handleSearchInputChange}
-                   placeholder="Search Event"
-               />
-          </div>
-           {/* --- End New Wrapper --- */}
+        {/* --- New Wrapper for Icon and Input --- */}
+        <div className="search-input-container">
+          <span className="search-icon"> {/* Icon Element */}
+            🔍 {/* Search icon character - you can use an SVG or icon font here */}
+          </span>
+          <input
+            type="text"
+            id="event-search"
+            className="form-input" // Reuse form input style for basic input styles
+            value={searchTerm}
+            onChange={handleSearchInputChange}
+            placeholder="Search Event"
+          />
+        </div>
+        {/* --- End New Wrapper --- */}
       </div>
 
 
 
       {/* Link to Create New Event - can be placed here or in the sidebar */}
-       <div className="create-event-link" style={{marginBottom: '30px'}}>
-           <Link href="/create-event" className="button-primary"> {/* Reuse button primary style */}
-               + Create New Event
-           </Link>
-       </div>
+      <div className="create-event-link" style={{ marginBottom: '30px' }}>
+        <Link href="/events/create" className="button-primary"> {/* Reuse button primary style */}
+          + Create New Event
+        </Link>
+      </div>
 
 
       {/* Active Events Section */}
       <div className="events-section">
         <div className="section-header"> {/* Container for title and button */}
-             {/* Collapse Button - Now placed BEFORE the h2 */}
-            <button
-                className="collapse-button"
-                onClick={() => toggleSectionExpansion('active')}
-                aria-expanded={isActiveExpanded} // Accessibility attribute
-            >
-                {/* Use a simple character for the arrow/caret */}
-                {/* Rotate the character based on state */}
-                {isActiveExpanded ? '▼' : '►'}
-            </button>
-            {/* Section Title */}
-            <h2>Active Events</h2>
+          {/* Collapse Button - Now placed BEFORE the h2 */}
+          <button
+            className="collapse-button"
+            onClick={() => toggleSectionExpansion('active')}
+            aria-expanded={isActiveExpanded} // Accessibility attribute
+          >
+            {/* Use a simple character for the arrow/caret */}
+            {/* Rotate the character based on state */}
+            {isActiveExpanded ? '▼' : '►'}
+          </button>
+          {/* Section Title */}
+          <h2>Active Events</h2>
         </div>
         {/* Conditionally render the grid based on state */}
         {isActiveExpanded && (
-            activeEvents.length === 0 ? (
-              <p className="no-events-message">No active events found.</p>
-            ) : (
-              <div className="event-grid"> {/* CSS Grid container */}
-                {activeEvents.map(event => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
-            )
+          activeEvents.length === 0 ? (
+            <p className="no-events-message">No active events found.</p>
+          ) : (
+            <div className="event-grid"> {/* CSS Grid container */}
+              {activeEvents.map(event => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          )
         )}
       </div>
 
       {/* Pending Events Section */}
       <div className="events-section">
         <div className="section-header"> {/* Container for title and button */}
-             {/* Collapse Button */}
-            <button
-                className="collapse-button"
-                onClick={() => toggleSectionExpansion('pending')}
-                 aria-expanded={isPendingExpanded} // Accessibility attribute
-            >
-                 {isPendingExpanded ? '▼' : '►'}
-            </button>
-             {/* Section Title */}
-            <h2>Pending Approval</h2>
+          {/* Collapse Button */}
+          <button
+            className="collapse-button"
+            onClick={() => toggleSectionExpansion('pending')}
+            aria-expanded={isPendingExpanded} // Accessibility attribute
+          >
+            {isPendingExpanded ? '▼' : '►'}
+          </button>
+          {/* Section Title */}
+          <h2>Pending Approval</h2>
         </div>
-         {/* Conditionally render the grid based on state */}
+        {/* Conditionally render the grid based on state */}
         {isPendingExpanded && (
-            pendingEvents.length === 0 ? (
-              <p className="no-events-message">No events pending approval.</p>
-            ) : (
-              <div className="event-grid">
-                {pendingEvents.map(event => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
-            )
+          pendingEvents.length === 0 ? (
+            <p className="no-events-message">No events pending approval.</p>
+          ) : (
+            <div className="event-grid">
+              {pendingEvents.map(event => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          )
         )}
       </div>
 
       {/* Completed Events Section */}
       <div className="events-section">
         <div className="section-header"> {/* Container for title and button */}
-            {/* Collapse Button */}
-            <button
-                className="collapse-button"
-                onClick={() => toggleSectionExpansion('completed')}
-                 aria-expanded={isCompletedExpanded} // Accessibility attribute
-            >
-                {isCompletedExpanded ? '▼' : '►'}
-            </button>
-            {/* Section Title */}
-            <h2>Completed Events</h2>
+          {/* Collapse Button */}
+          <button
+            className="collapse-button"
+            onClick={() => toggleSectionExpansion('completed')}
+            aria-expanded={isCompletedExpanded} // Accessibility attribute
+          >
+            {isCompletedExpanded ? '▼' : '►'}
+          </button>
+          {/* Section Title */}
+          <h2>Completed Events</h2>
         </div>
-         {/* Conditionally render the grid based on state */}
+        {/* Conditionally render the grid based on state */}
         {isCompletedExpanded && (
-            completedEvents.length === 0 ? (
-              <p className="no-events-message">No completed events found.</p>
-            ) : (
-              <div className="event-grid">
-                {completedEvents.map(event => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
-            )
+          completedEvents.length === 0 ? (
+            <p className="no-events-message">No completed events found.</p>
+          ) : (
+            <div className="event-grid">
+              {completedEvents.map(event => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          )
         )}
       </div>
 

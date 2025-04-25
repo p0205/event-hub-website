@@ -1069,3 +1069,56 @@ list-style: none;
 }
 
 /* ... (rest of your existing global styles) ... */
+
+
+.success-overlay {
+  position: fixed; /* Position relative to the viewport */
+  bottom: 20px; /* Distance from the bottom */
+  left: 50%; /* Start from the horizontal center */
+  transform: translateX(-50%); /* Shift left by half its width to truly center */
+  z-index: 1000; /* Ensure it's above other content */
+  display: flex; /* Use flexbox for arrow and content */
+  align-items: center; /* Vertically align arrow and content */
+  pointer-events: none; /* Allow clicks to pass through the overlay itself */
+  /* Add transition for smooth appearance/disappearance if desired */
+  /* opacity: 1; */
+  /* transition: opacity 0.3s ease-in-out; */
+}
+
+/* Optional: Style for when the overlay is hidden */
+/* .success-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+} */
+
+
+/* Style for the green arrow */
+.success-overlay-arrow {
+  width: 0;
+  height: 0;
+  border-top: 15px solid transparent; /* Top border makes the top edge of the arrow */
+  border-bottom: 15px solid transparent; /* Bottom border makes the bottom edge of the arrow */
+  border-right: 15px solid #28a745; /* Right border creates the arrow tip (green) */
+  /* Adjust border widths for arrow size */
+  margin-right: 10px; /* Space between arrow and message block */
+  flex-shrink: 0; /* Prevent arrow from shrinking */
+}
+
+/* Style for the message content block */
+.success-overlay-content {
+  background-color: #28a745; /* Green background color (match success message) */
+  color: white; /* White text color */
+  padding: 12px 20px; /* Padding inside the message block */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  display: flex; /* Use flexbox for message and potential close button */
+  align-items: center;
+  gap: 15px; /* Space between message text and close button */
+  pointer-events: auto; /* Allow clicks on the content block (e.g., close button) */
+}
+
+/* Style for the message text */
+.success-overlay-message {
+  font-weight: bold;
+  font-size: 1em;
+}
