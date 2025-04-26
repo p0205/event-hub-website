@@ -1,7 +1,7 @@
 // --- eventService.ts ---
 import { HttpStatusCode } from 'axios';
 import api from './api'; // Import the central API client
-import { Event } from '@/types/event';
+import { Event, EventList } from '@/types/event';
 
 /**
  * Represents the expected successful response structure from the create event API.
@@ -73,13 +73,13 @@ const eventService = {
     // by the component or code that calls getEventById (e.g., in a try...catch block).
   },
 
-    /**
-   * Fetches a specific event by its ID.
-   * Corresponds to backend: GET /events/{id}
-   * @param id The ID of the event to fetch. (Backend uses Integer, so frontend passes number)
-   * @returns A Promise resolving to a string event name.
-   * @throws An error if the event is not found (e.g., 404) or another API error occurs.
-   */
+  /**
+ * Fetches a specific event by its ID.
+ * Corresponds to backend: GET /events/{id}
+ * @param id The ID of the event to fetch. (Backend uses Integer, so frontend passes number)
+ * @returns A Promise resolving to a string event name.
+ * @throws An error if the event is not found (e.g., 404) or another API error occurs.
+ */
   getEventNameById: async (id: number): Promise<string> => {
     console.log("API Call: GET /events/", id, "/name");
     // Makes a GET request to the backend endpoint /events/:id
@@ -151,6 +151,20 @@ const eventService = {
       }
       throw error; // Re-throw the original (potentially detailed) error
     }
+  },
+
+  fetchEvents: async (organizerId:number): Promise<EventList> => {
+    console.log("API Call: GET /events/byOrganizer");
+    // Makes a GET request to the backend endpoint /events
+    const response = await api.get<EventList>(`/events/byOrganizer`, {
+      params: { organizerId }
+    });
+
+    if (response.status !== HttpStatusCode.Ok) {
+      throw new Error('Failed to fetch events list');
+    }
+    // Axios puts the actual data payload from the backend response body into the .data property.
+    return response.data;
   }
 
   // ... (rest of the eventService object) ...

@@ -118,7 +118,8 @@ export default function ActiveEventDetailsPage() {
   const [isGeneratingQr, setIsGeneratingQr] = useState(false);
 
   // Assume current user ID is available (e.g., from auth context)
-  const currentUserId = 'current-user-id'; // TODO: Replace with actual logged-in user ID
+  // const currentUserId = 'current-user-id'; // TODO: Replace with actual logged-in user ID
+  const currentUserId = '1'; // TODO: Replace with actual logged-in user ID
 
 
   // Fetch event details when the component mounts or eventId changes

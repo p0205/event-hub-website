@@ -156,7 +156,24 @@ export interface Venue {
     id: string;
     name: string;
     location: string; // e.g., building, room number
-    capacity?: number;
+    capacity: number;
     // Add other venue properties
 }
 
+export interface BudgetCategory {
+    id: number;
+    name: string;
+}
+
+export interface SimpleEvent {
+    id: number;
+    name: string;
+    startDateTime: string;
+    status: EventStatus;
+}
+
+export interface EventList{
+    pendingEvents: SimpleEvent[];
+    activeEvents: SimpleEvent[];
+    completedEvents: SimpleEvent[];
+}

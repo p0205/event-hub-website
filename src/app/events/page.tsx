@@ -4,20 +4,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link'; // Import Link for navigation
 import EventCard from '@/components/organizers/events/EventCard'; // Import the reusable card component
-
-// Define the interface for the event data needed on this page
-interface EventSummary {
-  id: string;
-  title: string;
-  status: 'active' | 'pending_approval' | 'completed' | string; // Include other statuses if needed
-  // Add other minimal fields needed for the card display if any
-  // Example: nextSessionDate?: string;
-}
+import { EventStatus, SimpleEvent } from '@/types/event';
+import { eventService } from '@/services';
 
 export default function EventsLandingPage() {
-  const [activeEvents, setActiveEvents] = useState<EventSummary[]>([]);
-  const [pendingEvents, setPendingEvents] = useState<EventSummary[]>([]);
-  const [completedEvents, setCompletedEvents] = useState<EventSummary[]>([]);
+  const [activeEvents, setActiveEvents] = useState<SimpleEvent[]>([]);
+  const [pendingEvents, setPendingEvents] = useState<SimpleEvent[]>([]);
+  const [completedEvents, setCompletedEvents] = useState<SimpleEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,29 +28,29 @@ export default function EventsLandingPage() {
   // --- Filtering Logic ---
   // Filter each event list based on the search term
   const filteredActiveEvents = activeEvents.filter(event =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase())
+    event.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredPendingEvents = pendingEvents.filter(event =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase())
+    event.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredCompletedEvents = completedEvents.filter(event =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase())
+    event.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
   // --- End Filtering Logic ---
 
   // Function to toggle the expansion state of a section
-  const toggleSectionExpansion = (section: 'active' | 'pending' | 'completed') => {
+  const toggleSectionExpansion = (section: EventStatus.ACTIVE | EventStatus.PENDING | EventStatus.COMPLETED) => {
 
     switch (section) {
-      case 'active':
+      case EventStatus.ACTIVE:
         setIsActiveExpanded(!isActiveExpanded);
         break;
-      case 'pending':
+      case EventStatus.PENDING:
         setIsPendingExpanded(!isPendingExpanded);
         break;
-      case 'completed':
+      case EventStatus.COMPLETED:
         setIsCompletedExpanded(!isCompletedExpanded);
         break;
       default:
@@ -72,58 +65,10 @@ export default function EventsLandingPage() {
       setLoading(true);
       setError(null);
       try {
-        // TODO: Replace with your actual API calls to fetch events by status
-        // This example assumes separate endpoints for each status.
-        // You might have a single endpoint that takes a status parameter: /api/events?status=active
-        // Or a single endpoint that returns all categorized events.
-
-        // --- Simulate fetching data ---
-        const mockFetch = async (status: string) => {
-          // Simulate different mock data based on status
-          const mockData: EventSummary[] = [];
-          if (status === 'active') {
-            mockData.push({ id: 'event-active-1', title: 'Project Kickoff', status: 'active' });
-            mockData.push({ id: 'event-active-2', title: 'Client Workshop', status: 'active' });
-            mockData.push({ id: 'event-active-3', title: 'Team Building', status: 'active' }); // Add a few more for testing scroll
-            mockData.push({ id: 'event-active-4', title: 'Product Demo', status: 'active' });
-          } else if (status === 'pending_approval') {
-            mockData.push({ id: 'event-pending-1', title: 'Quarterly Review Submission', status: 'pending_approval' });
-            mockData.push({ id: 'event-pending-2', title: 'Annual Planning Request', status: 'pending_approval' });
-          } else if (status === 'completed') {
-            mockData.push({ id: 'event-completed-1', title: 'Annual Conference 2024', status: 'completed' });
-            mockData.push({ id: 'event-completed-2', title: 'Team Building Retreat', status: 'completed' });
-            mockData.push({ id: 'event-completed-3', title: 'Holiday Party', status: 'completed' });
-          }
-          // Simulate API delay
-          //  await new Promise(resolve => setTimeout(resolve, 500)); // Increased delay slightly
-          return mockData;
-        };
-
-        const activeData = await mockFetch('active');
-        const pendingData = await mockFetch('pending_approval');
-        const completedData = await mockFetch('completed');
-        // --- End Simulate fetching data ---
-
-
-        // Actual API calls examples:
-        // const [activeRes, pendingRes, completedRes] = await Promise.all([
-        //     fetch('/api/my-events?status=active', { /* auth headers */ }),
-        //     fetch('/api/my-events?status=pending_approval', { /* auth headers */ }),
-        //     fetch('/api/my-events?status=completed', { /* auth headers */ }),
-        // ]);
-
-        // if (!activeRes.ok || !pendingRes.ok || !completedRes.ok) {
-        //     throw new Error('Failed to fetch one or more event lists');
-        // }
-
-        // const activeData = await activeRes.json();
-        // const pendingData = await pendingRes.json();
-        // const completedData = await completedRes.json();
-
-
-        setActiveEvents(activeData);
-        setPendingEvents(pendingData);
-        setCompletedEvents(completedData);
+        const eventList = await eventService.fetchEvents(1); // Pass the organizerId if needed
+        setActiveEvents(eventList.activeEvents);
+        setPendingEvents(eventList.pendingEvents);
+        setCompletedEvents(eventList.completedEvents);
 
       } catch (e: any) {
         console.error("Failed to fetch events:", e);
@@ -197,7 +142,7 @@ export default function EventsLandingPage() {
           {/* Collapse Button - Now placed BEFORE the h2 */}
           <button
             className="collapse-button"
-            onClick={() => toggleSectionExpansion('active')}
+            onClick={() => toggleSectionExpansion(EventStatus.ACTIVE)}
             aria-expanded={isActiveExpanded} // Accessibility attribute
           >
             {/* Use a simple character for the arrow/caret */}
@@ -227,7 +172,7 @@ export default function EventsLandingPage() {
           {/* Collapse Button */}
           <button
             className="collapse-button"
-            onClick={() => toggleSectionExpansion('pending')}
+            onClick={() => toggleSectionExpansion(EventStatus.PENDING)}
             aria-expanded={isPendingExpanded} // Accessibility attribute
           >
             {isPendingExpanded ? '▼' : '►'}
@@ -255,7 +200,7 @@ export default function EventsLandingPage() {
           {/* Collapse Button */}
           <button
             className="collapse-button"
-            onClick={() => toggleSectionExpansion('completed')}
+            onClick={() => toggleSectionExpansion(EventStatus.COMPLETED)}
             aria-expanded={isCompletedExpanded} // Accessibility attribute
           >
             {isCompletedExpanded ? '▼' : '►'}

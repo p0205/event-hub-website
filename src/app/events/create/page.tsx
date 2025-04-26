@@ -2,40 +2,20 @@
 'use client'; // Mark this component as a Client Component
 
 import eventService from '@/services/eventService';
-import { CreateEventData, EventBudget } from '@/types/event';
+import { BudgetCategory, CreateEventData, EventBudget, Venue } from '@/types/event';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import { FaTrash } from 'react-icons/fa';
+import venueService from '@/services/venueService';
+import budgetService from '@/services/budgetService';
 // import { useRouter } from 'next/navigation'; // Import if using router for navigation
 
 
 
-// --- Mock Data (Replace with API calls) ---
-interface Venue {
-    id: number;
-    name: string;
-    capacity: number;
-}
 
-interface BudgetCategory {
-    id: number;
-    name: string;
-}
 
-const mockVenues: Venue[] = [
-    { id: 1, name: 'Makmal Eksekutif', capacity: 41 },
-    { id: 2, name: 'Makmal Fiber Optikdsdsdsd', capacity: 30 },
-    { id: 3, name: 'MKP1', capacity: 36 },
-    { id: 4, name: 'MKP2', capacity: 36 },
-    { id: 5, name: 'MKP3', capacity: 37 },
-];
-
-const mockBudgetCategories: BudgetCategory[] = [
-    { id: 1, name: 'Transportation' },
-    { id: 2, name: 'Catering' },
-];
 
 // --- The Component ---
 export default function CreateEventPage() {
@@ -51,6 +31,86 @@ export default function CreateEventPage() {
         eventVenues: [],
         eventBudgets: [],
     });
+
+    const [venues, setVenues] = useState<Venue[]>([]);
+    const [venuesLoading, setVenuesLoading] = useState(true);
+    // State variable to hold any error message if fetching fails
+    const [venuesError, setVenuesError] = useState<string | null>(null);
+    const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
+    const [budgetCategoriesLoading, setBudgetCategoriesLoading] = useState(true);
+    // State variable to hold any error message if fetching fails
+    const [budgetCategoriesError, setBudgetCategoriesError] = useState<string | null>(null);
+
+
+    useEffect(() => {
+        console.log("Fetching venues...");
+        // Define the asynchronous function that will perform the fetch
+        const fetchVenues = async () => {
+            console.log("Inside fetchVenues");
+            // Set loading state to true before starting the fetch
+            setVenuesLoading(true);
+            // Clear any previous error messages
+            setVenuesError(null);
+            try {
+                console.log("Calling venueService.fetchVenues()");
+                // Call the service function to get venues from the backend API.
+                // 'await' pauses execution until the Promise resolves with the fetched data.
+                const fetchedVenues = await venueService.fetchVenues(); // Assumes eventService.getVenues() exists and works
+                // Update the 'venues' state with the data received from the API
+
+                console.log("Fetched venues:", fetchedVenues);
+                setVenues(fetchedVenues);
+            } catch (err: any) {
+                // If an error occurs during the fetch, log it and set the error state
+                console.error("Failed to fetch venues:", err);
+                setVenuesError(`Failed to load venues: ${err.message || 'Unknown error'}`);
+                // Optionally clear venues state on error if you don't want to show partial data
+                // setVenues([]);
+            } finally {
+                // This block runs regardless of success or failure
+                // Set loading state to false once the fetch is complete
+                setVenuesLoading(false);
+            }
+        };
+
+        const fetchBudgetCategories = async () => {
+            console.log("Inside fetchBudgetCategories");
+            // Set loading state to true before starting the fetch
+            setBudgetCategoriesLoading(true);
+            // Clear any previous error messages
+            setBudgetCategoriesError(null);
+            try {
+                console.log("Calling budgetCategoryService.fetchVenues()");
+                // Call the service function to get venues from the backend API.
+                // 'await' pauses execution until the Promise resolves with the fetched data.
+                const fetchBudgetCategories = await budgetService.fetchBudgetCategories(); // Assumes eventService.getVenues() exists and works
+                // Update the 'venues' state with the data received from the API
+
+                setBudgetCategories(fetchBudgetCategories);
+            } catch (err: any) {
+                // If an error occurs during the fetch, log it and set the error state
+                console.error("Failed to fetch budget categories:", err);
+                setBudgetCategoriesError(`Failed to load budget categories: ${err.message || 'Unknown error'}`);
+                // Optionally clear venues state on error if you don't want to show partial data
+                // setVenues([]);
+            } finally {
+                // This block runs regardless of success or failure
+                // Set loading state to false once the fetch is complete
+                setBudgetCategoriesLoading(false);
+            }
+        };
+
+
+
+
+        // Call the fetch function immediately when the effect runs (on mount)
+        fetchVenues();
+        fetchBudgetCategories();
+
+    }, []); // Empty dependency array []. This ensures the effect runs only once after the initial render.
+
+
+
 
     const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -90,7 +150,6 @@ export default function CreateEventPage() {
             }
             return prev; // If not empty, do nothing (e.g., after a state reset)
         });
-
     }, []);
 
     const [recommendedVenues, setRecommendedVenues] = useState<Venue[]>([]);
@@ -100,7 +159,7 @@ export default function CreateEventPage() {
 
     useEffect(() => {
         if (typeof formData.participantsNo === 'number' && formData.participantsNo > 0) {
-            const filtered = mockVenues.filter(venue => venue.capacity >= (formData.participantsNo as number));
+            const filtered = venues.filter(venue => venue.capacity >= (formData.participantsNo as number));
             setRecommendedVenues(filtered);
         } else {
             setRecommendedVenues([]);
@@ -196,7 +255,7 @@ export default function CreateEventPage() {
                     if (field === 'amountAllocated') {
                         processedValue = value === '' ? '' : parseFloat(value) || 0;
                     } else if (field === 'categoryName') {
-                        const selectedCategory = mockBudgetCategories.find(cat => cat.name === value);
+                        const selectedCategory = budgetCategories.find(cat => cat.name === value);
                         categoryId = selectedCategory?.id;
                         categoryName = value; // Store the name in state
                         processedValue = categoryName; // The value itself is the category name for this specific field update
@@ -590,65 +649,89 @@ export default function CreateEventPage() {
                     </div>
 
 
+
                     {/* --- Budget Section --- */}
                     <div className="form-section">
-                        <h2>Budget Allocation</h2>
+                        <h2>Budget</h2>
+                        {/* Map over budget items to render each row */}
                         {formData.eventBudgets.map((item, index) => (
-                            // Using flex utilities for layout might be better if using Tailwind
-                            // Otherwise, define .budget-item-controls
+                            // This div wraps the category select, amount input, and remove button
+                            // The CSS for .budget-item-controls makes these children display as a flex row
                             <div key={item.id} className="budget-item-controls">
-                                <div className="form-group-item"> {/* Assuming .form-group-item handles flex growth */}
-                                    <label className="form-label form-label-small">Category:</label> {/* Add form-label-small */}
+                                {/* Category Select */}
+                                {/* form-group-item helps manage flex growth within the row */}
+                                <div className="form-group-item">
+                                    {/* Use form-label-small for smaller labels if desired */}
+                                    <label htmlFor={`budget-category-${item.id}`} className="form-label form-label-small">Category:</label>
                                     <select
-                                        name="categoryName"
-                                        value={item.categoryName}
-                                        onChange={(e) => handleBudgetChange(item.id, "categoryName", e.target.value)}
+                                        id={`budget-category-${item.id}`}
+                                        name="categoryName" // Use categoryName to match handler
+                                        value={item.categoryName} // Use categoryName from state
+                                        onChange={(e) => handleBudgetChange(item.id, "categoryName", e.target.value)} // Pass categoryName
                                         className="form-input"
-                                        required
+                                        required // Make category selection required
+                                        disabled={isLoading}
                                     >
                                         <option value="">Select Category</option>
-                                        {mockBudgetCategories.map((cat) => (
+                                        {/* Map over your budget categories (mockBudgetCategories or fetched) */}
+                                        {budgetCategories.map((cat) => (
+                                            // Use category name as the value for the select option
                                             <option key={cat.id} value={cat.name}>
                                                 {cat.name}
                                             </option>
                                         ))}
                                     </select>
                                 </div>
-                                <div className="form-group-item"> {/* Assuming .form-group-item handles flex growth */}
-                                    <label className="form-label form-label-small">Allocated (MYR):</label> {/* Add form-label-small */}
+
+                                {/* Amount Input */}
+                                {/* form-group-item helps manage flex growth within the row */}
+                                <div className="form-group-item">
+                                    {/* Use form-label-small for smaller labels if desired */}
+                                    <label htmlFor={`budget-amount-${item.id}`} className="form-label form-label-small">Allocated (MYR):</label>
                                     <input
                                         type="number"
-                                        name="amountAllocated"
-                                        value={item.amountAllocated}
-                                        onChange={(e) => handleBudgetChange(item.id, "amountAllocated", e.target.value)}
+                                        id={`budget-amount-${item.id}`}
+                                        name="amountAllocated" // Use amountAllocated to match handler
+                                        value={item.amountAllocated} // Use amountAllocated from state (string)
+                                        onChange={(e) => handleBudgetChange(item.id, "amountAllocated", e.target.value)} // Pass amount string
                                         placeholder="e.g., 5000"
                                         className="form-input"
                                         min="0"
                                         step="0.01"
-                                        required
+                                        required // Make amount required
+                                        disabled={isLoading}
                                     />
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveBudget(item.id)}
-                                    className="delete-button" // Use specific remove class
-                                    disabled={isLoading}
-                                >
-                                    <FaTrash /> Delete
-                                </button>
+
+                                {/* Remove Budget Item Button */}
+                                {/* Only show remove button if there's more than one budget item */}
+                                {formData.eventBudgets.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveBudget(item.id)}
+                                        className="button-remove-small" // Use the small remove button class
+                                        disabled={isLoading}
+                                        // Align button baseline with inputs using margin-top or margin-bottom
+                                        style={{ flexShrink: 0, marginBottom: '5px' }} // Add margin-bottom to align with input baseline
+                                    >
+                                        {/* Use React-icons FaTrash */}
+                                        <FaTrash />
+                                    </button>
+                                )}
                             </div>
                         ))}
+
+                        {/* Add Budget Row Button */}
                         <button
                             type="button"
                             onClick={addBudgetRow}
                             className="button-secondary" // Use secondary style for Add button
+                            style={{ marginTop: '10px' }} // Add space above the button
                             disabled={isLoading}
                         >
                             + Add Budget Item
                         </button>
                     </div>
-
-
                     {/* --- File Upload Section --- */}
                     <div className="form-section">
                         <h2>Supporting Document</h2>
@@ -778,7 +861,7 @@ export default function CreateEventPage() {
                                                     style={{ flexGrow: 1 }} // Allow select to take available space
                                                 >
                                                     <option value="">Select a Venue</option>
-                                                    {mockVenues.map((venue: Venue) => ( // Use fetched venues
+                                                    {venues.map((venue: Venue) => ( // Use fetched venues
                                                         // Use venue.id (number) converted to string for the option value
                                                         <option key={venue.id} value={String(venue.id)}>
                                                             {venue.name} (Capacity: {venue.capacity})
@@ -807,7 +890,7 @@ export default function CreateEventPage() {
                                         onClick={() => handleAddVenueToSession(session.id)} // Use specific handler
                                         className="button-secondary"
                                         style={{ marginTop: '5px' }} // Add space above the button
-                                        disabled={isLoading || mockVenues.length === 0} // Disable if no venues to add
+                                        disabled={isLoading || venues.length === 0} // Disable if no venues to add
                                     >
                                         + Add Venue for this Session
                                     </button>

@@ -1,4 +1,5 @@
 // src/components/EventCard.tsx
+import { EventStatus, SimpleEvent } from '@/types/event';
 import Link from 'next/link';
 import React from 'react';
 
@@ -12,9 +13,9 @@ interface EventCardProps {
   // Example: nextSessionDate?: string;
 }
 
-export default function EventCard({ event }: { event: EventCardProps }) {
+export default function EventCard({ event }: { event: SimpleEvent }) {
   // Determine a simple visual representation (like initials) based on the title
-  const initials = event.title.split(' ')
+  const initials = event.name.split(' ')
     .map(word => word.charAt(0))
     .join('')
     .substring(0, 2) // Take up to 2 initials
@@ -23,9 +24,9 @@ export default function EventCard({ event }: { event: EventCardProps }) {
   // Determine a color based on status (example)
   const statusColor = () => {
     switch (event.status) {
-      case 'active': return 'bg-green-500'; // Example Tailwind classes or use CSS variables
-      case 'pending_approval': return 'bg-yellow-500';
-      case 'completed': return 'bg-gray-500';
+      case EventStatus.ACTIVE : return 'bg-green-500'; // Example Tailwind classes or use CSS variables
+      case EventStatus.PENDING: return 'bg-yellow-500';
+      case EventStatus.COMPLETED: return 'bg-gray-500';
       default: return 'bg-blue-500';
     }
   };
@@ -40,7 +41,7 @@ export default function EventCard({ event }: { event: EventCardProps }) {
             <span>{initials}</span>
           </div>
           <div className="event-card-content"> {/* Event Title and other info */}
-            <h3 className="event-card-title">{event.title}</h3>
+            <h3 className="event-card-title">{event.name}</h3>
             {/* Add other basic info here if needed */}
             {/* <p className="event-card-status">Status: {event.status}</p> */}
             {/* Example: <p className="event-card-date">{event.nextSessionDate}</p> */}

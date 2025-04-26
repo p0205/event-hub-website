@@ -374,11 +374,6 @@ body {
   transition: transform 0.2s ease-in-out; /* Smooth transition for hover effect */
 }
 
-/* Style for the individual event item (reusing form-container style) */
-.event-item {
-  /* Inherits form-container styles (background, shadow, border-radius, padding) */
-  /* Add any specific styles for list items here */
-}
 
 /* Hover effect for the clickable event item */
 .event-item-link:hover .event-item {
@@ -577,10 +572,6 @@ body {
   margin-top: 15px;
   padding-top: 15px;
   border-top: 1px solid #eee;
-}
-
-.qr-code-display {
-  /* Styles for the area displaying the QR code image */
 }
 
 /* Media Upload Section Styles */
@@ -787,7 +778,7 @@ list-style: none;
 /* --- Styles for the sidebar structure and items --- */
 
 .narrow-sidebar {
-  width: 70px; /* Adjust as needed */
+  width: 80px; /* Adjust as needed */
   height:100%; /* Full height */
   flex-shrink: 0;
   background-color: #eeebdf; /* Dark background */
@@ -1133,4 +1124,26 @@ list-style: none;
 .success-overlay-message {
   font-weight: bold;
   font-size: 1em;
+}
+
+/* Style for grouping budget category, amount, and remove button */
+.budget-item-controls {
+  display: flex; /* Arrange children (select, input, button) in a row */
+  align-items: flex-end; /* Align items to the bottom (useful for aligning inputs/selects with button) */
+  gap: 15px; /* Add space between items */
+  margin-bottom: 15px; /* Add space below each budget item row */
+  flex-wrap: wrap; /* Allow items to wrap to the next line on smaller screens */
+}
+
+/* Ensure form-group-item inside budget controls takes available space */
+.budget-item-controls .form-group-item {
+  flex-grow: 1; /* Allow select and input containers to grow */
+  min-width: 150px; /* Give them a minimum width before wrapping */
+}
+
+/* Optional: Adjust label margin if using form-label-small */
+.form-label-small {
+  font-size: 0.85em; /* Example smaller font size for labels */
+  margin-bottom: 4px; /* Adjust margin below smaller labels */
+  display: block; /* Ensure label is on its own line above input/select */
 }

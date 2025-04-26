@@ -3,7 +3,6 @@ import '../../globals.css'; // Import global styles
 import Topbar from '@/components/Topbar'; // Import Topbar
 import Sidebar from '@/components/Sidebar'; // Import Main Narrow Sidebar
 import EventSubmenuSidebar from '@/components/organizers/events/EventSideBar'; // Import the new Event Submenu Sidebar
-import Breadcrumbs from '@/components/Breadcrumbs'; // Import Breadcrumbs
 
 // Layout for individual event pages (/events/[id] and its sub-routes)
 export default function EventDetailLayout({
