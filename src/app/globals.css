@@ -204,6 +204,17 @@ body {
   background-color: #e2e6ea; /* Slightly darker shade on hover */
 }
 
+.delete-button {
+  color: #ef4444; /* Tailwind red-500 */
+  transition: color 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.delete-button:hover {
+  color: #b91c1c; /* Tailwind red-700 */
+}
 
 /* Styles for each session group */
 .session-group {
@@ -344,6 +355,7 @@ body {
      border: 1px solid #f5c6cb;
      color: #721c24;
 }
+
 
 
 /* Ensure the list of events uses flex/grid or just default block display */

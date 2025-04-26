@@ -1,12 +1,13 @@
 // src/app/events/create/page.tsx
 'use client'; // Mark this component as a Client Component
 
-import  eventService  from '@/services/eventService';
+import eventService from '@/services/eventService';
 import { CreateEventData, EventBudget } from '@/types/event';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
+import { FaTrash } from 'react-icons/fa';
 // import { useRouter } from 'next/navigation'; // Import if using router for navigation
 
 
@@ -25,7 +26,7 @@ interface BudgetCategory {
 
 const mockVenues: Venue[] = [
     { id: 1, name: 'Makmal Eksekutif', capacity: 41 },
-    { id: 2, name: 'Makmal Fiber Optik', capacity: 30 },
+    { id: 2, name: 'Makmal Fiber Optikdsdsdsd', capacity: 30 },
     { id: 3, name: 'MKP1', capacity: 36 },
     { id: 4, name: 'MKP2', capacity: 36 },
     { id: 5, name: 'MKP3', capacity: 37 },
@@ -66,7 +67,7 @@ export default function CreateEventPage() {
                     date: '',           // Include the date field
                     startTimeOnly: '',
                     endTimeOnly: '',
-                    venueId: '',
+                    venueIds: [],
                     startDateTime: '', // These will be calculated on submit
                     endDateTime: '',   // These will be calculated on submit
                 }];
@@ -162,7 +163,7 @@ export default function CreateEventPage() {
                     date: '',
                     startTimeOnly: '',
                     endTimeOnly: '',
-                    venueId: '',
+                    venueIds: [],
                     startDateTime: '',
                     endDateTime: '',
                 },
@@ -260,6 +261,59 @@ export default function CreateEventPage() {
         }
     };
 
+
+    // Handler for changing a specific venue select within a session's venueIds array
+    const handleVenueSelectChange = (sessionId: string, venueIndex: number, value: string) => {
+        setFormData({
+            ...formData,
+            eventVenues: formData.eventVenues.map(session => {
+                if (session.id === sessionId) {
+                    const updatedVenueIds = [...session.venueIds];
+                    updatedVenueIds[venueIndex] = value; // Update the specific venue ID at the given index
+                    return { ...session, venueIds: updatedVenueIds };
+                }
+                return session;
+            }),
+        });
+        setFormError(null);
+    };
+
+    // Handler to add a new empty venue select to a session's venueIds array
+    const handleAddVenueToSession = (sessionId: string) => {
+        setFormData({
+            ...formData,
+            eventVenues: formData.eventVenues.map(session => {
+                if (session.id === sessionId) {
+                    // Add an empty string to the venueIds array
+                    return { ...session, venueIds: [...session.venueIds, ''] };
+                }
+                return session;
+            }),
+        });
+        setFormError(null);
+    };
+
+    // Handler to remove a specific venue select from a session's venueIds array by index
+    const handleRemoveVenueFromSession = (sessionId: string, venueIndex: number) => {
+        setFormData({
+            ...formData,
+            eventVenues: formData.eventVenues.map(session => {
+                if (session.id === sessionId) {
+                    // Filter out the venue ID at the given index
+                    const updatedVenueIds = session.venueIds.filter((_, index) => index !== venueIndex);
+                    // Ensure there's always at least one venue select left if you don't want zero
+                    if (updatedVenueIds.length === 0) {
+                        return { ...session, venueIds: [''] }; // Add one empty select back
+                    }
+                    return { ...session, venueIds: updatedVenueIds };
+                }
+                return session;
+            }),
+        });
+        setFormError(null);
+    };
+
+
     // --- Form Submission ---
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -274,49 +328,110 @@ export default function CreateEventPage() {
             let overallStartTime = '';
             let overallEndTime = '';
 
-            const processedSessions = formData.eventVenues.map((session, index) => {
-                if (!session.date || !session.startTimeOnly || !session.venueId || !session.sessionName) {
-                    throw new Error(`Please fill in all details for Session ${index + 1} (Name, Date, Start Time, Venue).`);
+            const processedEventVenues: {
+                sessionName: string;
+                startDateTime: string;
+                endDateTime?: string;
+                venueId: number; // Backend expects number ID
+            }[] = [];
+
+            // const processedSessions = formData.eventVenues.map((session, index) => {
+            //     if (!session.date || !session.startTimeOnly || !session.venueId || !session.sessionName) {
+            //         throw new Error(`Please fill in all details for Session ${index + 1} (Name, Date, Start Time, Venue).`);
+            //     }
+
+            //     const startDateTime = `${session.date}T${session.startTimeOnly}`;
+            //     const endDateTime = session.endTimeOnly ? `${session.date}T${session.endTimeOnly}` : undefined;
+
+            //     if (endDateTime && startDateTime >= endDateTime) {
+            //         throw new Error(`End time must be after start time for Session ${index + 1}.`);
+            //     }
+
+            //     if (!overallStartTime || startDateTime < overallStartTime) {
+            //         overallStartTime = startDateTime;
+            //     }
+            //     const effectiveEndTime = endDateTime || startDateTime; // Use start time if end time is missing for comparison
+            //     if (!overallEndTime || effectiveEndTime > overallEndTime) {
+            //         overallEndTime = effectiveEndTime;
+            //     }
+
+
+            //     return {
+            //         // id: session.id, // Usually don't send UI id to backend
+            //         sessionName: session.sessionName,
+            //         startDateTime: startDateTime, // Send combined datetime
+            //         endDateTime: endDateTime,     // Send combined datetime
+            //         venueId: session.venueId,
+            //     };
+            // });
+            for (const session of formData.eventVenues) { // Assuming formData.eventVenues holds the logical sessions from the form state
+                // --- Basic Validation for the logical session ---
+                // Ensure session name, date, and start time are filled
+                if (!session.sessionName || !session.date || !session.startTimeOnly) {
+                    throw new Error(`Please fill in Session Name, Date, and Start Time for all sessions.`);
                 }
 
-                const startDateTime = `${session.date}T${session.startTimeOnly}`;
-                const endDateTime = session.endTimeOnly ? `${session.date}T${session.endTimeOnly}` : undefined;
+                // Ensure at least one venue is selected for this session
+                // Assuming session.venueIds is an array of strings from the form state
+                // if (!session.venueIds || !Array.isArray(session.venueIds) || session.venueIds.length === 0) {
+                //     throw new Error(`Please select at least one Venue for Session "${session.sessionName}".`);
+                // }
 
-                if (endDateTime && startDateTime >= endDateTime) {
-                    throw new Error(`End time must be after start time for Session ${index + 1}.`);
+                // --- Combine Date and Time for the logical session ---
+                const sessionStartDateTime = `${session.date}T${session.startTimeOnly}`;
+                const sessionEndDateTime = session.endTimeOnly ? `${session.date}T${session.endTimeOnly}` : undefined;
+
+                // Validate time range for the logical session
+                if (sessionEndDateTime && sessionStartDateTime >= sessionEndDateTime) {
+                    throw new Error(`End time must be after start time for Session "${session.sessionName}".`);
                 }
 
-                if (!overallStartTime || startDateTime < overallStartTime) {
-                    overallStartTime = startDateTime;
+                // --- Update Overall Event Time Range (Optional, if needed for main event object) ---
+                // This logic calculates the earliest start and latest end time across all sessions.
+                if (!overallStartTime || sessionStartDateTime < overallStartTime) {
+                    overallStartTime = sessionStartDateTime;
                 }
-                const effectiveEndTime = endDateTime || startDateTime; // Use start time if end time is missing for comparison
-                if (!overallEndTime || effectiveEndTime > overallEndTime) {
-                    overallEndTime = effectiveEndTime;
+                const effectiveSessionEndTime = sessionEndDateTime || sessionStartDateTime; // Use start time if end time is missing for comparison
+                if (!overallEndTime || effectiveSessionEndTime > overallEndTime) {
+                    overallEndTime = effectiveSessionEndTime;
                 }
 
 
-                return {
-                    // id: session.id, // Usually don't send UI id to backend
-                    sessionName: session.sessionName,
-                    startDateTime: startDateTime, // Send combined datetime
-                    endDateTime: endDateTime,     // Send combined datetime
-                    venueId: session.venueId,
-                };
-            });
+                // --- Generate Backend EventVenue Objects for EACH selected venue ---
+                for (const venueIdString of session.venueIds) {
+                    const venueIdNumber = parseInt(venueIdString, 10);
 
-            const processedBudgets = formData.eventBudgets.map((budget, index) => {
-                if (!budget.budgetCategoryId || budget.amountAllocated === '') {
-                    throw new Error(`Please select a category and enter an allocated amount for Budget item ${index + 1}.`);
+                    // Validate venue ID conversion
+                    if (isNaN(venueIdNumber)) {
+                        throw new Error(`Invalid Venue selected for Session "${session.sessionName}".`);
+                    }
+
+                    // Create a new EventVenue object for this specific venue link
+                    processedEventVenues.push({
+                        sessionName: session.sessionName, // Use the logical session's name
+                        startDateTime: sessionStartDateTime, // Use the logical session's start time
+                        endDateTime: sessionEndDateTime,     // Use the logical session's end time
+                        venueId: venueIdNumber, // Use the numeric ID of the current venue
+                    });
                 }
-                if (Number(budget.amountAllocated) < 0) {
-                    throw new Error(`Allocated amount cannot be negative for Budget item ${index + 1}.`);
-                }
-                return {
-                    amountAllocated: Number(budget.amountAllocated),
-                    amountSpent: budget.amountSpent,
-                    budgetCategoryId: budget.budgetCategoryId,
-                }
-            });
+            }
+
+            const processedBudgets = formData.eventBudgets
+                .filter(budget => budget.budgetCategoryId) // Only process budgets with a selected category
+                .map((budget, index) => {
+                    if (budget.amountAllocated === '') {
+                        throw new Error(`Please enter an allocated amount for Budget item ${index + 1}.`);
+                    }
+                    if (Number(budget.amountAllocated) < 0) {
+                        throw new Error(`Allocated amount cannot be negative for Budget item ${index + 1}.`);
+                    }
+                    return {
+                        amountAllocated: Number(budget.amountAllocated),
+                        amountSpent: budget.amountSpent,
+                        budgetCategoryId: budget.budgetCategoryId,
+                    };
+                });
+
 
             if (!formData.name) {
                 throw new Error("Event Title is required.");
@@ -326,14 +441,14 @@ export default function CreateEventPage() {
             }
 
             // Construct the final payload for the API
-            const finalData: Omit<CreateEventData, 'supportingDocument' | 'eventBudgets' | 'eventVenues'> & { eventBudgets: typeof processedBudgets; eventVenues: typeof processedSessions } = {
+            const finalData: Omit<CreateEventData, 'supportingDocument' | 'eventBudgets' | 'eventVenues'> & { eventBudgets: typeof processedBudgets; eventVenues: typeof processedEventVenues } = {
                 name: formData.name,
                 description: formData.description,
                 organizerId: formData.organizerId,
                 startDateTime: overallStartTime,
                 endDateTime: overallEndTime,
                 participantsNo: Number(formData.participantsNo),
-                eventVenues: processedSessions,
+                eventVenues: processedEventVenues,
                 eventBudgets: processedBudgets,
             };
 
@@ -363,9 +478,9 @@ export default function CreateEventPage() {
 
             // const newEventName = createdEvent.name; // <-- Accesses properties of the response object
             const newEventId = createdEvent.id; // <-- Accesses properties of the response object
-           
+
             setSubmitSuccess("Event submitted for approval successfully!"); // <-- Updates state based on success
-            console.log('/events/pending/${newEventId}, ',newEventId);
+            console.log('/events/pending/${newEventId}, ', newEventId);
             router.push(`/events/pending/${newEventId}`); // <-- Redirects based on success data
 
             // // Mock Success:
@@ -389,7 +504,7 @@ export default function CreateEventPage() {
         setFormData({
             name: '', description: '', organizerId: 1, startDateTime: '', endDateTime: '',
             participantsNo: '',
-            eventVenues: [{ id: uuidv4(), sessionName: '', date: '', startTimeOnly: '', endTimeOnly: '', venueId: '', startDateTime: '', endDateTime: '' }],
+            eventVenues: [{ id: uuidv4(), sessionName: '', date: '', startTimeOnly: '', endTimeOnly: '', venueIds: [], startDateTime: '', endDateTime: '' }],
             eventBudgets: [],
         });
         setApprovalFile(null);
@@ -516,10 +631,10 @@ export default function CreateEventPage() {
                                 <button
                                     type="button"
                                     onClick={() => handleRemoveBudget(item.id)}
-                                    className="button-remove" // Use specific remove class
+                                    className="delete-button" // Use specific remove class
                                     disabled={isLoading}
                                 >
-                                    Remove
+                                    <FaTrash /> Delete
                                 </button>
                             </div>
                         ))}
@@ -557,22 +672,37 @@ export default function CreateEventPage() {
 
                     {/* --- Sessions Section (Venue & Time) --- */}
                     <div className="form-section">
-                        <h2>Event Sessions (Venue & Time Slots)</h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '1rem' }}>
+                            <h2>Event Sessions</h2> {/* Updated section title */}
+                            {/* Button to Add More Session Blocks */}
+                            <button
+                                type="button"
+                                onClick={handleAddSession}
+                                className="button-secondary" // Use secondary style
+                                disabled={isLoading} // Use isSubmitting state
+                            >
+                                + Add Session
+                            </button>
+                        </div>
+
 
                         {formData.eventVenues.map((session, index) => (
                             <div key={session.id} className="session-group"> {/* Use session-group class */}
                                 <div className="session-header"> {/* Define session-header for layout */}
-                                    <h3>Session {index + 1}</h3>
-                                    {formData.eventVenues.length > 1 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveSession(session.id)}
-                                            className="button-remove-small" // Use specific small remove class
-                                            disabled={isLoading}
-                                        >
-                                            Remove Session
-                                        </button>
-                                    )}
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3>Session {index + 1}</h3>
+                                        {formData.eventVenues.length > 1 && (
+                                            <button
+                                                className="delete-button"
+                                                type="button"
+                                                onClick={() => handleRemoveSession(session.id)}
+                                                // className="button-remove-small" // Use specific small remove class
+                                                disabled={isLoading}
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="form-group">
@@ -628,42 +758,75 @@ export default function CreateEventPage() {
                                     </div>
                                 </div> {/* End Inline Group */}
 
-                                <div className="form-group">
-                                    <label htmlFor={`venue-${session.id}`} className="form-label">Venue:</label>
-                                    <select
-                                        id={`venue-${session.id}`}
-                                        name="venueId"
-                                        value={session.venueId}
-                                        onChange={(e) => handleSessionInputChange(session.id, e)}
-                                        required
-                                        className="form-input"
+
+                                {/* Venue Selection(s) */}
+                                <div className="form-group"> {/* Wrap venue selects in a form-group */}
+                                    <label className="form-label">Venues:</label> {/* Label for the venue section */}
+
+                                    {/* Map over the venueIds array to render multiple selects */}
+                                    {(session.venueIds).map((venueId, venueIndex) => (
+                                        <div key={venueIndex} className="form-group-item form-group-inline" style={{ marginBottom: '10px' }}> {/* Use inline for select and remove button */}
+                                            <div className="flex items-center justify-between gap-4 mb-2">
+                                                <select
+                                                    id={`venue-${session.id}-${venueIndex}`} // Unique ID for each select
+                                                    name={`venue-${session.id}-${venueIndex}`} // Unique name
+                                                    value={venueId} // The selected venue ID for this specific select
+                                                    onChange={(e) => handleVenueSelectChange(session.id, venueIndex, e.target.value)} // Use specific handler
+                                                    required
+                                                    className="form-input"
+                                                    // disabled={isSubmitting || venuesLoading || venuesError || venues.length === 0}
+                                                    style={{ flexGrow: 1 }} // Allow select to take available space
+                                                >
+                                                    <option value="">Select a Venue</option>
+                                                    {mockVenues.map((venue: Venue) => ( // Use fetched venues
+                                                        // Use venue.id (number) converted to string for the option value
+                                                        <option key={venue.id} value={String(venue.id)}>
+                                                            {venue.name} (Capacity: {venue.capacity})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {/* Remove button for this specific venue select */}
+                                                {session.venueIds.length > 1 && ( // Only show remove if there's more than one venue select
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveVenueFromSession(session.id, venueIndex)} // Use specific handler
+                                                        className="delete-button" // Use a secondary button style
+                                                        disabled={isLoading}
+                                                        style={{ flexShrink: 0 }} // Prevent button from shrinking
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {/* Add Venue Button (below the list of venue selects) */}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleAddVenueToSession(session.id)} // Use specific handler
+                                        className="button-secondary"
+                                        style={{ marginTop: '5px' }} // Add space above the button
+                                        disabled={isLoading || mockVenues.length === 0} // Disable if no venues to add
                                     >
-                                        <option value="">Select a Venue</option>
-                                        {mockVenues.map(venue => (
-                                            <option key={venue.id} value={venue.id}>
-                                                {venue.name} (Capacity: {venue.capacity})
-                                            </option>
-                                        ))}
-                                    </select>
+                                        + Add Venue for this Session
+                                    </button>
+
+                                    {/* {venuesLoading && <p className="loading-message" style={{ marginTop: '5px' }}>Loading venues...</p>}
+                                    {venuesError && <p className="error-message" style={{ marginTop: '5px' }}>{venuesError}</p>}
+                                    {!venuesLoading && !venuesError && venues.length === 0 && (
+                                        <p className="info-message" style={{ marginTop: '5px' }}>No venues available to add.</p>
+                                    )} */}
                                 </div>
-                            </div> // End session-group
-                        ))}
-
-                        {/* Button to Add More Sessions */}
-                        <button
-                            type="button"
-                            onClick={handleAddSession}
-                            className="button-secondary" // Use secondary style
-                            disabled={isLoading}
-                        >
-                            + Add Another Session
-                        </button>
-
-                    </div> {/* End Sessions Section */}
 
 
+                            </div>
+
+                        )
+                        )}
+                    </div>
                     {/* --- Action Buttons --- */}
-                    <div className="form-actions">
+                    < div className="form-actions" >
                         <button
                             type="button"
                             onClick={handleCancel}
