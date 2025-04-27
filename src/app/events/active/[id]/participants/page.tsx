@@ -130,7 +130,7 @@ export default function EventParticipantsPage() {
             setSaveError(null);
             try {
                 // Call your service to get participants already saved for this event
-                const savedParticipants = await eventService.getParticipantsByEventId(eventId as string);
+                const savedParticipants = await eventService.getParticipantsByEventId(Number(eventId));
                 setParticipants(savedParticipants); // Set the main participants state
 
             } catch (err: any) {
@@ -253,7 +253,8 @@ export default function EventParticipantsPage() {
         try {
             // Call the API to save the *current* list state
             // This endpoint receives the full list from the frontend state
-            const success = await eventService.saveParticipants((eventId), participants);
+            console.log("Saving participants:", participants);
+            const success = await eventService.saveParticipants(Number(eventId), participants);
 
             // --- SUCCESS ---
             if (success) {

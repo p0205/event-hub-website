@@ -154,7 +154,7 @@ const eventService = {
     }
   },
 
-  fetchEvents: async (organizerId:number): Promise<EventList> => {
+  fetchEvents: async (organizerId: number): Promise<EventList> => {
     console.log("API Call: GET /events/byOrganizer");
     // Makes a GET request to the backend endpoint /events
     const response = await api.get<EventList>(`/events/byOrganizer`, {
@@ -168,7 +168,7 @@ const eventService = {
     return response.data;
   },
 
-  getEventsByStatus: async (organizerId:number, status: string): Promise<SimpleEvent[]> => {
+  getEventsByStatus: async (organizerId: number, status: string): Promise<SimpleEvent[]> => {
     console.log("API Call: GET /events/byOrganizerAndStatus");
     // Makes a GET request to the backend endpoint /events
     const response = await api.get<SimpleEvent[]>(`/events/byOrganizerAndStatus`, {
@@ -201,76 +201,33 @@ const eventService = {
     return response.data;
   },
 
-  async getParticipantsByEventId(eventId: string): Promise<Participant[]> {
-    console.log(`[Mock Service] Fetching participants for event ${eventId}...`);
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+  getParticipantsByEventId: async (eventId: number): Promise<Participant[]> => {
+    const response = await api.get<Participant[]>(`/events/${eventId}/participants`, {
+      params: { eventId }
+    });
 
-    // Simulate fetching from the mock database
-    const participants = mockDatabase[eventId] || [];
-
-    console.log(`[Mock Service] Found ${participants.length} participants for event ${eventId}.`);
-    return participants; // Return the list of participants
-},
-
-
-async saveParticipants(eventId: string, participants: Participant[]): Promise<{ success: boolean }> {
-  console.log(`[Mock Service] Saving ${participants.length} participants for event ${eventId}...`);
-  console.log("[Mock Service] Data received for saving:", participants);
-
-  // Simulate processing the list:
-  // 1. Identify new participants (those with string IDs) and assign numeric IDs.
-  // 2. Keep existing participants (those with numeric IDs).
-  // 3. (Real backend) Figure out which participants were deleted (were in original list, not in this one).
-  //    For this mock, we'll just simulate updating the mock database with the provided list.
-
-  const savedList: Participant[] = participants.map(p => {
-      if (typeof p.id === 'string') {
-          // Simulate assigning a new numeric ID for a new participant
-          return { ...p, id: nextMockId++ };
-      }
-      // Keep existing participants as they are
-      return p;
-  });
-
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-
-  // Simulate a chance of save failure
-  const success = Math.random() > 0.1; // 90% chance of success
-
-  if (success) {
-      // --- Simulate updating the mock database ---
-      // In a real backend, you'd interact with your actual database here
-      mockDatabase[eventId] = savedList; // Replace the list for this event
-
-      console.log("[Mock Service] Simulated save successful!");
-      console.log("[Mock Service] Mock database state updated for event", eventId, ":", mockDatabase[eventId]);
-
-      return { success: true }; // Indicate success
-  } else {
-      console.error("[Mock Service] Simulated save failed!");
-      // In a real app, the backend would return a more specific error
-      throw new Error("Mock save operation failed on the backend."); // Throw error on failure
-  }
-},
-  // ... (rest of the eventService object) ...
-};
+    if (response.status !== HttpStatusCode.Ok) {
+      throw new Error('Failed to fetch participants list');
+    }
+    // Axios puts the actual data payload from the backend response body into the .data property.
+    return response.data;
+  },
 
 
-const mockDatabase: { [eventId: string]: Participant[] } = {
-  // Initial mock data for event '123'
-  '123': [
-      { id: 1, name: "Phoebe Kiew Jing Yao", email: "b032210164@student.utem.edu.my", phoneNo: "012-344-2222", gender: "F", faculty: "FTMK", course: "BITS", year: "3", role: "Organizer" },
-      { id: 4, name: "Yvonne Ngu Rui Ging", email: "b032210249@student.utem.edu.my", phoneNo: "012-334-2022", gender: "F", faculty: "FTMK", course: "BITS", year: "3", role: "Student" },
-      { id: 7, name: "Existing User A", email: "existing.a@example.com", phoneNo: null, gender: "M", faculty: "Eng", course: "CS", year: "2", role: "Student" },
-  ],
-  // Add mock data for other event IDs if needed
-  '456': [
-       { id: 10, name: "Event 456 User", email: "user456@example.com", phoneNo: "555", gender: "M", faculty: "Sci", course: "Physics", year: "1", role: "Attendee" },
-  ]
-};
-let nextMockId = 100; // Start IDs higher than initial mock data
+  saveParticipants: async (eventId: number, participantList: Participant[]): Promise<Participant[]> => {
+    console.log("API Call: POST /events/{id}/participants");
+
+    const response = await api.post<Participant[]>(`/events/${eventId}/participants`, participantList,{
+      params: { eventId }
+    });
+
+    if (response.status !== HttpStatusCode.Created) {
+      throw new Error('Failed to save participants list');
+    }
+    return response.data;// Indicate success
+    // ... (rest of the eventService object) ...
+  },
 
 
+}
 export default eventService; 
