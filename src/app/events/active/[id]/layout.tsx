@@ -1,7 +1,5 @@
-// src/app/events/[id]/layout.tsx
-import '../../globals.css'; // Import global styles
-import Topbar from '@/components/Topbar'; // Import Topbar
-import Sidebar from '@/components/Sidebar'; // Import Main Narrow Sidebar
+// src/app/events/active/[id]/layout.tsx
+
 import EventSubmenuSidebar from '@/components/organizers/events/EventSideBar'; // Import the new Event Submenu Sidebar
 
 // Layout for individual event pages (/events/[id] and its sub-routes)

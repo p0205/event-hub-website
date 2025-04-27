@@ -1,7 +1,7 @@
 // --- eventService.ts ---
 import { HttpStatusCode } from 'axios';
 import api from './api'; // Import the central API client
-import { Event, EventList } from '@/types/event';
+import { Event, EventList, SimpleEvent } from '@/types/event';
 
 /**
  * Represents the expected successful response structure from the create event API.
@@ -158,6 +158,20 @@ const eventService = {
     // Makes a GET request to the backend endpoint /events
     const response = await api.get<EventList>(`/events/byOrganizer`, {
       params: { organizerId }
+    });
+
+    if (response.status !== HttpStatusCode.Ok) {
+      throw new Error('Failed to fetch events list');
+    }
+    // Axios puts the actual data payload from the backend response body into the .data property.
+    return response.data;
+  },
+
+  getEventsByStatus: async (organizerId:number, status: string): Promise<SimpleEvent[]> => {
+    console.log("API Call: GET /events/byOrganizerAndStatus");
+    // Makes a GET request to the backend endpoint /events
+    const response = await api.get<SimpleEvent[]>(`/events/byOrganizerAndStatus`, {
+      params: { organizerId, status }
     });
 
     if (response.status !== HttpStatusCode.Ok) {

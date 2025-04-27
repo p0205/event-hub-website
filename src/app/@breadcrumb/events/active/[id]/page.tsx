@@ -20,9 +20,10 @@ export default async function BreadcrumbSlot({ params }: { params: Promise<{ id:
 
     // Handle case where ID is missing or not a valid number
     if (!eventIdString || isNaN(parseInt(eventIdString, 10))) {
-        // If the ID is missing or not a number, it's a malformed request, render Next.js's 404 page
-        notFound();
+         // If the ID is missing or not a number, it's a malformed request, render Next.js's 404 page
+         notFound();
     }
+  
 
     const eventId = parseInt(eventIdString, 10);
 
@@ -40,9 +41,9 @@ export default async function BreadcrumbSlot({ params }: { params: Promise<{ id:
         console.error(`Failed to fetch event name for breadcrumb ${eventId}:`, err);
         // If fetching fails (e.g., 404, 500), display an error message or fallback text
         // If it's a 404, calling notFound() is generally better than just showing text.
-        if (err.response?.status === 404) {
-            notFound(); // Render Next.js 404 page if the API returned 404
-        }
+         if (err.response?.status === 404) {
+              notFound(); // Render Next.js 404 page if the API returned 404
+         }
         eventName = 'Error Loading Event Name'; // Fallback text for other errors
     }
 
@@ -50,7 +51,7 @@ export default async function BreadcrumbSlot({ params }: { params: Promise<{ id:
     return (
         <BreadcrumbList>
             {" "}
-
+      
 
             <BreadcrumbItem>
                 <BreadcrumbLink href="/events">Events</BreadcrumbLink>
@@ -59,8 +60,8 @@ export default async function BreadcrumbSlot({ params }: { params: Promise<{ id:
             <BreadcrumbSeparator />
 
             <BreadcrumbItem>
-                <BreadcrumbLink href="/pending">Pending</BreadcrumbLink>
-            </BreadcrumbItem>
+				<BreadcrumbLink href="/active">Active</BreadcrumbLink>
+			</BreadcrumbItem>
 
             <BreadcrumbSeparator />
 

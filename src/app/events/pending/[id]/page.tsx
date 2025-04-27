@@ -8,91 +8,12 @@ import eventService from '@/services/eventService';
 // Import the updated types from the correct path
 // Make sure this path is correct and the file src/types/event.ts exists and is saved
 import { Event, EventStatus, SupportingDocument, EventVenue, EventBudget, Venue } from '@/types/event'; // <-- Ensure correct import
-
-// Assuming you have a budget types file for BudgetFormData, you might need BudgetCategory type too
-// import { BudgetFormData } from '@/types/budget'; // Not needed directly here
-// import { BudgetCategory } from '@/types/budget'; // Might need this if displaying category names
+import venueService from '@/services/venueService';
+import { formatDate, formatDateTime, groupSessions } from '@/helpers/eventHelpers';
 
 
-// Helper function to format date and time
-const formatDateTime = (dateTimeString: string | null | undefined): string => {
-    if (!dateTimeString) return 'N/A';
-    try {
-        const date = new Date(dateTimeString);
-        // Check if the date is valid
-        if (isNaN(date.getTime())) {
-            return 'Invalid Date';
-        }
-        // Format as 'YYYY-MM-DD HH:mm' or similar readable format
-        // Adjust locale and options as needed
-        return date.toLocaleString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true, // Use 12-hour format with AM/PM
-        });
-    } catch (error) {
-        console.error("Error formatting date:", dateTimeString, error);
-        return 'Error Formatting Date';
-    }
-};
-
-// Helper function to format date only
-const formatDate = (dateString: string | null | undefined): string => {
-    if (!dateString) return 'N/A';
-     try {
-        const date = new Date(dateString);
-         if (isNaN(date.getTime())) {
-            return 'Invalid Date';
-        }
-        return date.toLocaleDateString(undefined, {
-             year: 'numeric',
-             month: 'short',
-             day: 'numeric',
-        });
-     } catch (error) {
-         console.error("Error formatting date:", dateString, error);
-         return 'Error Formatting Date';
-     }
-};
 
 
-// Mock data for Budget Categories (replace with API call if needed)
-// In a real app, you might fetch this list from a backend endpoint like GET /budget-categories
-const mockBudgetCategories = [
-    { id: 1, name: "Catering" },
-    { id: 2, name: "Venue Rental" },
-    { id: 3, name: "Equipment" },
-    { id: 4, name: "Decoration" },
-    { id: 5, name: "Transportation" },
-    { id: 6, name: "Others" }
-];
-
-// Helper to get budget category name by ID (using mock data)
-const getBudgetCategoryName = (categoryId: number): string => {
-    const category = mockBudgetCategories.find(cat => cat.id === categoryId);
-    return category ? category.name : `Category ${categoryId}`;
-};
-
-// Mock data for Venues (replace with API call if needed)
-// In a real app, you might fetch this list from a backend endpoint like GET /venues
-const mockVenues: Venue[] = [ // Use Venue type from types/event.ts
-    { id: '1', name: 'Grand Hall', capacity: 500, location: 'Building A' }, // Use string ID to match frontend form type (need conversion if using number IDs from backend)
-    { id: '2', name: 'Conference Room 1', capacity: 50, location: 'Building B' },
-    { id: '3', name: 'Auditorium', capacity: 200, location: 'Building C' },
-    { id: '4', name: 'Meeting Room 3', capacity: 25, location: 'Building D' },
-    { id: '5', name: 'Ballroom', capacity: 1000, location: 'Building E' },
-];
-
-// Helper to get venue name by ID (using mock data)
-// Note: EventVenue has venueId as number, mockVenues has id as string. Need to convert.
-const getVenueName = (venueId: number): string => {
-    // Convert number ID from EventVenue to string ID for mockVenues lookup
-    const venue = mockVenues.find(v => parseInt(v.id, 10) === venueId);
-    return venue ? venue.name : `Venue ${venueId}`;
-};
 
 
 // The page component is an async function in Server Components
@@ -105,10 +26,10 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
     if (!eventIdString || isNaN(parseInt(eventIdString, 10))) {
         // If the ID is missing or not a number, it's a malformed request, render Next.js's 404 page
         notFound();
-   }
+    }
 
-   // Convert the ID string to a number (as backend expects Integer/number)
-   const eventId = parseInt(eventIdString, 10);
+    // Convert the ID string to a number (as backend expects Integer/number)
+    const eventId = parseInt(eventIdString, 10);
 
 
     // Handle case where the ID in the URL is not a valid number
@@ -119,7 +40,7 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
 
     // Declare variables to hold the fetched event data and any potential error
     // >>> Ensure the 'Event' type here is the one imported from '@/types/event' <<<
-    let event: Event | null = null as Event|null;
+    let event: Event | null = null as Event | null;
     let error: string | null = null;
 
     try {
@@ -149,8 +70,8 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
         // Handle the error based on the response.
         // If the error has a response and the status is 404, it means the event was not found.
         if (err.response?.status === 404) {
-             // Render Next.js's 404 page for Not Found errors
-             notFound();
+            // Render Next.js's 404 page for Not Found errors
+            notFound();
         }
         // For other types of errors (network issues, 500 errors, etc.), set an error message to display on the page.
         error = `Failed to load event details: ${err.message || 'An unknown error occurred.'}`;
@@ -161,18 +82,18 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
     // If there was an error during fetching, or if the fetched event data is null/undefined,
     // display an error message page.
     if (error || !event) {
-         return (
-              <div className="page-container"> {/* Use global page container style */}
-                  <h1>Event Details</h1>
-                  {error ? (
-                      <p className="error-message">{error}</p> // Display the specific error message
-                  ) : (
-                      <p className="error-message">Could not load event details.</p> // Generic message if event is null without a specific error
-                  )}
-                   {/* Optional: Add a link back to the events list or dashboard */}
-                   {/* <Link href="/events">Back to Events List</Link> */}
-              </div>
-         );
+        return (
+            <div className="page-container"> {/* Use global page container style */}
+                <h1>Event Details</h1>
+                {error ? (
+                    <p className="error-message">{error}</p> // Display the specific error message
+                ) : (
+                    <p className="error-message">Could not load event details.</p> // Generic message if event is null without a specific error
+                )}
+                {/* Optional: Add a link back to the events list or dashboard */}
+                {/* <Link href="/events">Back to Events List</Link> */}
+            </div>
+        );
     }
 
 
@@ -189,161 +110,161 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
                 <h2>Status</h2>
                 <p>
                     <strong>Current Status:</strong>
-                     {/* Display the event status using the EventStatus enum */}
-                     {/* Apply basic color styling based on the status */}
+                    {/* Display the event status using the EventStatus enum */}
+                    {/* Apply basic color styling based on the status */}
                     <span style={{ fontWeight: 'bold', color: event.status === EventStatus.PENDING ? 'orange' : event.status === EventStatus.ACTIVE ? 'green' : 'grey', marginLeft: '10px' }}>
-                         {event.status}
+                        {event.status}
                     </span>
                 </p>
-                 {/* Optional: Add messages or actions based on status */}
-                 {event.status === EventStatus.PENDING && (
-                      <p className="info-message" style={{ marginTop: '10px' }}>This event is pending approval. Details cannot be changed until approved.</p>
-                 )}
-                 {/* Add messages for other statuses (e.g., Active, Completed) if needed */}
+                {/* Optional: Add messages or actions based on status */}
+                {event.status === EventStatus.PENDING && (
+                    <p className="info-message" style={{ marginTop: '10px' }}>This event is pending approval. Details cannot be changed until approved.</p>
+                )}
+                {/* Add messages for other statuses (e.g., Active, Completed) if needed */}
             </div>
 
 
             {/* Basic Event Information */}
             {/* Reuse global form-container style for a card-like section */}
             <div className="form-container" style={{ marginBottom: '20px' }}>
-                 <h2>Basic Information</h2>
-                 {/* Reuse global form-group style for layout */}
-                 <div className="form-group">
-                     <label className="form-label">Event Name:</label>
-                     <p>{event.name}</p>
-                 </div>
-                  <div className="form-group">
-                     <label className="form-label">Description:</label>
-                     {/* Display description or a placeholder if it's null or empty */}
-                     <p>{event.description || 'No description provided.'}</p>
-                 </div>
-                  <div className="form-group">
-                     <label className="form-label">Organizer ID:</label>
-                     {/* Display the organizer's ID. In a real application, you'd likely fetch and display the organizer's name. */}
-                     <p>{event.organizerId}</p>
-                 </div>
-                 {/* Use global form-group-inline for side-by-side elements */}
-                 <div className="form-group form-group-inline">
-                      <div className="form-group-item">
-                         <label className="form-label">Start Date & Time:</label>
-                         {/* Use the imported formatDateTime helper function */}
-                         <p>{formatDateTime(event.startDateTime)}</p>
-                      </div>
-                       <div className="form-group-item">
-                         <label className="form-label">End Date & Time:</label>
-                         {/* Use the imported formatDateTime helper function */}
-                         <p>{formatDateTime(event.endDateTime)}</p>
-                      </div>
-                 </div>
-                  <div className="form-group">
-                     <label className="form-label">Expected Participants:</label>
-                     {/* Display the number of participants from the backend response */}
-                     <p>{event.participantsNo}</p>
-                 </div>
-                 {/* Add other basic details from the Event type if needed (e.g., visibility, capacity) */}
+                <h2>Basic Information</h2>
+                {/* Reuse global form-group style for layout */}
+                <div className="form-group">
+                    <label className="form-label">Event Name:</label>
+                    <p>{event.name}</p>
+                </div>
+                <div className="form-group">
+                    <label className="form-label">Description:</label>
+                    {/* Display description or a placeholder if it's null or empty */}
+                    <p>{event.description || 'No description provided.'}</p>
+                </div>
+                <div className="form-group">
+                    <label className="form-label">Organizer ID:</label>
+                    {/* Display the organizer's ID. In a real application, you'd likely fetch and display the organizer's name. */}
+                    <p>{event.organizerId}</p>
+                </div>
+                {/* Use global form-group-inline for side-by-side elements */}
+                <div className="form-group form-group-inline">
+                    <div className="form-group-item">
+                        <label className="form-label">Start Date & Time:</label>
+                        {/* Use the imported formatDateTime helper function */}
+                        <p>{formatDateTime(event.startDateTime)}</p>
+                    </div>
+                    <div className="form-group-item">
+                        <label className="form-label">End Date & Time:</label>
+                        {/* Use the imported formatDateTime helper function */}
+                        <p>{formatDateTime(event.endDateTime)}</p>
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label className="form-label">Expected Participants:</label>
+                    {/* Display the number of participants from the backend response */}
+                    <p>{event.participantsNo}</p>
+                </div>
+                {/* Add other basic details from the Event type if needed (e.g., visibility, capacity) */}
             </div>
 
 
-             {/* Supporting Document Section */}
-             {/* Conditionally render this section only if a supporting document exists in the event data */}
-             {event.supportingDocument && (
-                  <div className="form-container" style={{ marginBottom: '20px' }}>
-                       <h2>Supporting Document</h2>
-                        <div className="form-group">
-                            <label className="form-label">Filename:</label>
-                            <p>{event.supportingDocument.filename}</p>
-                        </div>
-                         <div className="form-group">
-                            <label className="form-label">File Type:</label>
-                            <p>{event.supportingDocument.fileType}</p>
-                        </div>
-                         <div className="form-group">
-                            <label className="form-label">Uploaded At:</label>
-                            {/* Use the imported formatDateTime helper function */}
-                            <p>{formatDateTime(event.supportingDocument.uploadedAt)}</p>
-                        </div>
-                         {/* Provide a link to view/download the document */}
-                         <div className="form-group">
-                             {/* Create a data URL using the base64 encoded 'data' and 'fileType' */}
-                             {/* This allows the browser to render/download the file directly */}
-                             <a
-                                 href={`data:${event.supportingDocument.fileType};base64,${event.supportingDocument.data}`}
-                                 download={event.supportingDocument.filename} // Suggest the original filename when downloading
-                                 target="_blank" // Open the document in a new browser tab
-                                 rel="noopener noreferrer" // Security best practice when using target="_blank"
-                                 className="button-secondary" // Apply a button style for better appearance
-                             >
-                                 View / Download Document
-                             </a>
-                         </div>
-                  </div>
-             )}
+            {/* Supporting Document Section */}
+            {/* Conditionally render this section only if a supporting document exists in the event data */}
+            {event.supportingDocument && (
+                <div className="form-container" style={{ marginBottom: '20px' }}>
+                    <h2>Supporting Document</h2>
+                    <div className="form-group">
+                        <label className="form-label">Filename:</label>
+                        <p>{event.supportingDocument.filename}</p>
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">File Type:</label>
+                        <p>{event.supportingDocument.fileType}</p>
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Uploaded At:</label>
+                        {/* Use the imported formatDateTime helper function */}
+                        <p>{formatDateTime(event.supportingDocument.uploadedAt)}</p>
+                    </div>
+                    {/* Provide a link to view/download the document */}
+                    <div className="form-group">
+                        {/* Create a data URL using the base64 encoded 'data' and 'fileType' */}
+                        {/* This allows the browser to render/download the file directly */}
+                        <a
+                            href={`data:${event.supportingDocument.fileType};base64,${event.supportingDocument.data}`}
+                            download={event.supportingDocument.filename} // Suggest the original filename when downloading
+                            target="_blank" // Open the document in a new browser tab
+                            rel="noopener noreferrer" // Security best practice when using target="_blank"
+                            className="button-secondary" // Apply a button style for better appearance
+                        >
+                            View / Download Document
+                        </a>
+                    </div>
+                </div>
+            )}
 
 
-            {/* Sessions (Event Venues) Section */}
-             {/* Conditionally render this section if there are event venues (sessions) */}
-             {event.eventVenues && event.eventVenues.length > 0 && (
-                  <div className="form-container" style={{ marginBottom: '20px' }}>
-                       <h2>Sessions</h2>
-                       {/* Use global sessions-list style for the unordered list */}
-                       <ul className="sessions-list">
-                           {/* Map over the eventVenues array to display each session */}
-                           {event.eventVenues.map((session, index) => (
-                                // Use a unique key for each list item. If backend provided a session ID, use that.
-                                // Since sample didn't show ID, using index as a fallback key.
-                                <li key={index} className="session-item"> {/* Use global session-item style for each list item */}
-                                    {/* Display session name or a default if not available */}
-                                    <h3>{session.sessionName || `Session ${index + 1}`}</h3>
-                                     {/* Use imported helper functions to format date and time */}
-                                     <p><strong>Date:</strong> {formatDate(session.startDateTime)}</p>
-                                     <p><strong>Time:</strong> {formatDateTime(session.startDateTime)} - {formatDateTime(session.endDateTime)}</p>
-                                     {/* Use the imported getVenueName helper function to display venue name based on ID */}
-                                     <p><strong>Venue:</strong> {getVenueName(Number(session.venueId))}</p>
-                                </li>
-                           ))}
-                       </ul>
-                  </div>
-             )}
+            {/* Sessions */}
+            {event.eventVenues && event.eventVenues.length > 0 && (
+                <div className="section-card form-container">
+                    <h2>Sessions</h2>
+                    <ul className="sessions-list">
+                        {(await groupSessions(event.eventVenues)).map((session, index) => (
+                            <li key={index} className="session-item">
+                                {session.sessionName && <h3>{session.sessionName}</h3>}
+                                <p><strong>Date:</strong> {formatDate(session.startDateTime)}</p>
+                                <p><strong>Time:</strong> {formatDateTime(session.startDateTime)} - {formatDateTime(session.endDateTime)}</p>
+                                <p><strong>Venues:</strong></p>
+                                <ul style={{ paddingLeft: '20px' }}>
+                                    {session.venues.map((venue: Venue, idx: number) => (
+                                        <li key={idx}>
+                                            {venue.name} (Capacity: {venue.capacity})
+                                        </li>
+                                    ))}
+                                </ul>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
 
 
             {/* Budget Section */}
-             {/* Conditionally render this section if there are event budgets */}
-             {event.eventBudgets && event.eventBudgets.length > 0 && (
-                  <div className="form-container" style={{ marginBottom: '20px' }}>
-                       <h2>Budget Allocation</h2>
-                       {/* Use global budget-list style for the unordered list */}
-                       <ul className="budget-list">
-                           {/* Map over the eventBudgets array to display each budget item */}
-                           {event.eventBudgets.map((budget, index) => (
-                                // Use a unique key for each list item. If backend provided a budget item ID, use that.
-                                // Since sample didn't show ID, using index as a fallback key.
-                                <li key={index} className="budget-item"> {/* Use global budget-item style for each list item */}
-                                    <p>
-                                        {/* Use the imported getBudgetCategoryName helper function to display category name based on ID */}
-                                        <strong>Category:</strong> {getBudgetCategoryName(Number(budget.budgetCategoryId))}
-                                    </p>
-                                     <p>
-                                        {/* Display allocated amount, formatted to 2 decimal places */}
-                                        <strong>Allocated:</strong> RM {typeof budget.amountAllocated === 'number' ? budget.amountAllocated.toFixed(2) : '0.00'}
-                                    </p>
-                                     <p>
-                                        {/* Display spent amount, formatted to 2 decimal places */}
-                                        <strong>Spent:</strong> RM {budget.amountSpent.toFixed(2)}
-                                    </p>
-                                     {/* Optional: Add a progress bar component here if you want */}
-                                      {/* <ProgressBar spent={budget.amountSpent} allocated={budget.amountAllocated} /> */}
-                                </li>
-                           ))}
-                       </ul>
-                  </div>
-             )}
+            {/* Conditionally render this section if there are event budgets */}
+            {event.eventBudgets && event.eventBudgets.length > 0 && (
+                <div className="form-container" style={{ marginBottom: '20px' }}>
+                    <h2>Budget Allocation</h2>
+                    {/* Use global budget-list style for the unordered list */}
+                    <ul className="budget-list">
+                        {/* Map over the eventBudgets array to display each budget item */}
+                        {event.eventBudgets.map((budget, index) => (
+                            // Use a unique key for each list item. If backend provided a budget item ID, use that.
+                            // Since sample didn't show ID, using index as a fallback key.
+                            <li key={index} className="budget-item"> {/* Use global budget-item style for each list item */}
+                                <p>
+                                    {/* Use the imported getBudgetCategoryName helper function to display category name based on ID */}
+                                    <strong>Category:</strong> {(Number(budget.budgetCategoryId))}
+                                </p>
+                                <p>
+                                    {/* Display allocated amount, formatted to 2 decimal places */}
+                                    <strong>Allocated:</strong> RM {typeof budget.amountAllocated === 'number' ? budget.amountAllocated.toFixed(2) : '0.00'}
+                                </p>
+                                <p>
+                                    {/* Display spent amount, formatted to 2 decimal places */}
+                                    <strong>Spent:</strong> RM {budget.amountSpent.toFixed(2)}
+                                </p>
+                                {/* Optional: Add a progress bar component here if you want */}
+                                {/* <ProgressBar spent={budget.amountSpent} allocated={budget.amountAllocated} /> */}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
 
             {/* Optional: Actions based on status and user role (e.g., Edit, Cancel, Approve) */}
             {/* This would typically require fetching the current user's role (e.g., from AuthContext) */}
             {/* Since this is a Server Component, getting client-side user context is different. */}
             {/* You might pass user role as a prop from a layout or fetch it differently. */}
-             {/* <div className="form-actions">
+            {/* <div className="form-actions">
                  {event.status === EventStatus.PENDING && (
                       // Example buttons for Organizer/Admin when event is pending
                       <>

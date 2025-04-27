@@ -20,13 +20,15 @@ export interface Event {
     organizerId?: number; // Backend uses Integer
     startDateTime?: string; // ISO string like "YYYY-MM-DDTHH:mm:ss"
     endDateTime?: string | null; // End time can be null
-    status?: EventStatus; // Use the enum
+    status: EventStatus; // Use the enum
     qrCodePath?: string | null; // Path to QR code, can be null
     supportingDocument?: SupportingDocument | null; // Optional supporting document
     participantsNo?: number; // Number of participants
     eventVenues?: EventVenue[]; // Array of session/venue details (backend calls them EventVenue)
     eventBudgets: EventBudget[]; // Array of budget details (backend calls them EventBudget)
-    // Note: The backend response doesn't include nested User or full Venue objects directly in the main Event structure here.
+    team?: TeamMember[];     // Added team members
+    posters?: string[]; // Array of poster image URLs (example)
+
 }
 
 
@@ -55,7 +57,7 @@ export interface CreateEventData {
     startDateTime: string; // ISO format, e.g., "2025-05-21T09:00"
     endDateTime: string;
     participantsNo: number | '';
-    eventVenues: EventVenue[];
+    eventVenues: EventVenues[];
     eventBudgets: EventBudget[];
     supportingDocument?: File;
 }
@@ -68,12 +70,24 @@ export interface EventBudget {
     categoryName?: string; // Store category name used in select
 }
 
+export interface EventVenues {
+    id: string; // Unique ID for managing the session in the UI
+    sessionName: string; // Name for the specific session/part of the event
+    startDateTime: string; // Combined Date + Time for this session's start
+    endDateTime?: string; // Combined Date + Time for this session's end
+    venueIds: string[] // allow multiple venues for a session
+    date?: string; // Separate date field for form input control
+    startTimeOnly?: string; // Separate start time field for form input control
+    endTimeOnly?: string; // Separate end time field for form input control
+}
+
+
 export interface EventVenue {
     id: string; // Unique ID for managing the session in the UI
     sessionName: string; // Name for the specific session/part of the event
     startDateTime: string; // Combined Date + Time for this session's start
     endDateTime?: string; // Combined Date + Time for this session's end
-    venueIds: string[]; // ID of the selected venue for this session
+    venueId: number | undefined; // ID of the selected venue for this session
     date?: string; // Separate date field for form input control
     startTimeOnly?: string; // Separate start time field for form input control
     endTimeOnly?: string; // Separate end time field for form input control
@@ -94,19 +108,19 @@ export interface UpdateEventData extends Partial<CreateEventData> {
 /**
  * Interface for a Session within an Event.
  */
-export interface Session {
-    id: string; // Unique ID for managing the session in the UI (not backend ID)
-    eventId: string; // Link back to the event
-    name: string;
-    date: string; // Session date (can be different from event date)
-    startTime: string; // Session start time
-    endTime?: string; // Optional session end time
-    venueId: string; // Link to session venue
-    // Add other session properties
-    description?: string;
-    speaker?: string;
-    qrCodeUrl?: string; // URL for the attendance QR code (if backend generates)
-}
+// export interface Session {
+//     id: string; // Unique ID for managing the session in the UI (not backend ID)
+//     eventId: string; // Link back to the event
+//     name: string;
+//     date: string; // Session date (can be different from event date)
+//     startTime: string; // Session start time
+//     endTime?: string; // Optional session end time
+//     venueId: string; // Link to session venue
+//     // Add other session properties
+//     description?: string;
+//     speaker?: string;
+//     qrCodeUrl?: string; // URL for the attendance QR code (if backend generates)
+// }
 
 /**
  * Interface for data needed to create a new Session.
@@ -170,10 +184,18 @@ export interface SimpleEvent {
     name: string;
     startDateTime: string;
     status: EventStatus;
+    createdAt: string;
 }
 
-export interface EventList{
+export interface EventList {
     pendingEvents: SimpleEvent[];
     activeEvents: SimpleEvent[];
     completedEvents: SimpleEvent[];
+}
+
+export interface TeamMember {
+    id: string; // User ID
+    name: string;
+    email: string;
+    role: string; // Role assigned in this event's team
 }

@@ -22,7 +22,7 @@ export default function EventSubmenuSidebar() {
     const pathname = usePathname(); // Get the current path
 
     // Determine the base path for this event (e.g., /events/event-active-1)
-    const eventBasePath = `/events/${eventId}`;
+    const eventBasePath = `/events/active/${eventId}`;
 
     // Function to determine if a submenu link is active
     const isSubmenuLinkActive = (hrefSegment: string) => {
