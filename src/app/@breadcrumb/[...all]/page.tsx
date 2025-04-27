@@ -19,6 +19,7 @@ import type { ReactElement } from "react";
 // (You might already have this in your global Breadcrumbs component or a utils file)
 const formatSegment = (segment: string) => {
     console.log("HI, do you see me? This is from all page.tsx ")
+    console.log("segment: ", segment);
     if (!segment) return 'Home'; // Handle the root segment (empty string)
     // Replace hyphens with spaces and capitalize the first letter of each word
     const words = segment.replace(/-/g, ' ').split(' ');

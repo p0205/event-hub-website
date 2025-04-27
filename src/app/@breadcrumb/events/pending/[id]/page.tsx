@@ -59,7 +59,7 @@ export default async function BreadcrumbSlot({ params }: { params: Promise<{ id:
             <BreadcrumbSeparator />
 
             <BreadcrumbItem>
-                <BreadcrumbLink href="/pending">Pending</BreadcrumbLink>
+                <BreadcrumbLink href="/events/pending">Pending</BreadcrumbLink>
             </BreadcrumbItem>
 
             <BreadcrumbSeparator />

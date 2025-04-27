@@ -27,9 +27,9 @@ import { useEffect, useState } from 'react';
 
 // The page component is defined as an async function.
 // In Server Components, you can perform asynchronous operations like data fetching directly here.
-export default function PendingEventsPage() {
+export default function CompletedEventsPage() {
 
-    const [pendingEvents, setPendingEvents] = useState<SimpleEvent[]>([]);
+    const [completedEvents, setCompletedEvents] = useState<SimpleEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
@@ -38,18 +38,18 @@ export default function PendingEventsPage() {
     // Effect 1: Fetch main event details
     useEffect(() => {
       // Only fetch if eventId is a valid number
-      const fetchPendingEvents = async () => {
+      const fetchCompletedEvents = async () => {
         setLoading(true);
         setError(null);
-        setPendingEvents([]); // Reset event data on new fetch
+        setCompletedEvents([]); // Reset event data on new fetch
   
         try {
-          const pendingEvents = await eventService.getEventsByStatus(currentUserId,EventStatus.PENDING);
-          if (!pendingEvents) {
+          const completedEvents = await eventService.getEventsByStatus(currentUserId,EventStatus.COMPLETED);
+          if (!completedEvents) {
             throw new Error('Failed to fetch active events');
           }
-          console.log('Fetched Event:', pendingEvents); // Debug log
-          setPendingEvents(pendingEvents);
+          console.log('Fetched Event:', completedEvents); // Debug log
+          setCompletedEvents(completedEvents);
         } catch (e: any) {
           console.error("Failed to fetch active events:", e);
           setError(e.message || "Failed to fetch active events. Please try again.");
@@ -57,7 +57,7 @@ export default function PendingEventsPage() {
           setLoading(false);
         }
       };
-      fetchPendingEvents();
+      fetchCompletedEvents();
     }, []); 
   
     // --- Conditional Rendering based on Fetch Result ---
@@ -66,18 +66,18 @@ export default function PendingEventsPage() {
     if (error) {
          return (
               <div className="page-container"> {/* Use global page container style */}
-                  <h1>Pending Events</h1>
+                  <h1>Completed Events</h1>
                   <p className="error-message">{error}</p> {/* Display the specific error message */}
               </div>
          );
     }
 
     // If no active events were found after fetching, display a message.
-    if (pendingEvents.length === 0) {
+    if (completedEvents.length === 0) {
          return (
               <div className="page-container"> {/* Use global page container style */}
-                  <h1>Pending Events</h1>
-                  <p className="info-message">No pending events found at this time.</p> {/* Use info-message class */}
+                  <h1>Completed Events</h1>
+                  <p className="info-message">No completed events found at this time.</p> {/* Use info-message class */}
               </div>
          );
     }
@@ -88,17 +88,17 @@ export default function PendingEventsPage() {
     // If data is successfully fetched and there are events, render the list.
     return (
         <div className="page-container"> {/* Use global page container style */}
-            <h1>Pending Events</h1>
+            <h1>Completed Events</h1>
 
             {/* List container */}
             <ul className="event-list"> {/* Add a class for styling the list */}
                 {/* Map over the activeEvents array to display each event */}
-                {pendingEvents.map((event) => (
+                {completedEvents.map((event) => (
                     // Use the event ID as the unique key for each list item
                     <li key={event.id} className="event-list-item"> {/* Add a class for styling each list item */}
                         {/* Use Link component for navigation to the event details page */}
                         {/* The href uses the dynamic route segment /events/active/[id] */}
-                        <Link href={`/events/pending/${event.id}`} className="event-list-link"> {/* Add a class for the link area */}
+                        <Link href={`/events/completed/${event.id}`} className="event-list-link"> {/* Add a class for the link area */}
                             {/* Content within the link */}
                             <div className="event-list-details"> {/* Container for event details */}
                                 <h2 className="event-list-title">{event.name}</h2> {/* Event Name */}
