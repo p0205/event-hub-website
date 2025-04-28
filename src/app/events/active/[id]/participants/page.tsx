@@ -108,7 +108,6 @@ export default function EventParticipantsPage() {
     const [filterValue, setFilterValue] = useState<string | number | null>(null);
 
     // --- Confirm dialog for deleting participants --- 
-    const [showConfirm, setShowConfirm] = useState(false);
 
     // --- Component Mount State (for Hydration/Recharts) ---
     const [isMounted, setIsMounted] = useState(false);
@@ -170,6 +169,8 @@ export default function EventParticipantsPage() {
         return () => {
             document.body.style.overflow = "auto"; // Ensure scroll is re-enabled on component unmount
         };
+
+
     }, [uploadedParticipants]); // Run the effect when uploadedParticipants changes
 
     // --- Handle CSV File Import ---
@@ -210,8 +211,6 @@ export default function EventParticipantsPage() {
             // with the newly imported list for review.
             setUploadedParticipants(importedList);
 
-            // Update import status messages
-            setImportSuccess(`Successfully imported ${importedList.length} participants.`);
 
         } catch (importErr: any) {
             console.error("Import Error:", importErr);
@@ -224,41 +223,108 @@ export default function EventParticipantsPage() {
         }
     };
 
-    // --- Handle Adding a Participant Manually (from Modal) ---
-    const handleAddParticipant = (newParticipantData: Omit<Participant, 'id'>) => {
-        // Generate a unique temporary string ID for the new participant in the frontend state
-        const tempId = uuidv4();
-        const newParticipant: Participant = {
-            ...newParticipantData,
-            id: tempId, // Assign the generated unique string ID
-            // Ensure nullable fields are explicitly null if empty string from form
-            phoneNo: newParticipantData.phoneNo || null,
-            gender: newParticipantData.gender || null,
-            faculty: newParticipantData.faculty || null,
-            course: newParticipantData.course || null,
-            year: newParticipantData.year || null,
-            role: newParticipantData.role || null,
-        };
-        // Add the new participant to the state array immutably
-        setParticipants([...participants, newParticipant]);
-        // Optionally reset filter/sort if adding might make current view inconsistent
-        setFilterType('all');
-        setFilterValue(null);
-        setSortKey(null);
-    };
+    // // --- Handle Adding a Participant Manually (from Modal) ---
+    // const handleAddParticipant = (newParticipantData: Omit<Participant, 'id'>) => {
+    //     // Generate a unique temporary string ID for the new participant in the frontend state
+    //     const tempId = uuidv4();
+    //     const newParticipant: Participant = {
+    //         ...newParticipantData,
+    //         id: tempId, // Assign the generated unique string ID
+    //         // Ensure nullable fields are explicitly null if empty string from form
+    //         phoneNo: newParticipantData.phoneNo || null,
+    //         gender: newParticipantData.gender || null,
+    //         faculty: newParticipantData.faculty || null,
+    //         course: newParticipantData.course || null,
+    //         year: newParticipantData.year || null,
+    //         role: newParticipantData.role || null,
+    //     };
+    //     // Add the new participant to the state array immutably
+    //     setParticipants([...participants, newParticipant]);
+    //     // Optionally reset filter/sort if adding might make current view inconsistent
+    //     setFilterType('all');
+    //     setFilterValue(null);
+    //     setSortKey(null);
+    // };
 
+    const handleAddParticipant = async (participant: Participant | null) => {
+        if (!participant) return; // 如果没选到人，就不做事
+        setIsModalOpen(false);
+        setIsSaving(true); // Start saving state
+        setSaveError(null); // Clear previous save errors
+        setImportError(null); // Clear import errors too
+
+        try {
+            const updatedParticipants = [...participants];
+
+            // Build a fast lookup set for existing participants
+            const existingEmails = new Set(participants.map(p => p.email.toLowerCase()));
+            const existingNamePhonePairs = new Set(participants.map(p => {
+                const name = p.name.trim().toLowerCase();
+                const phone = (p.phoneNo ?? '').replace(/\D/g, '');
+                return `${name}_${phone}`;
+            }));
+
+            let addedParticipants: Participant[] = [];
+            let skippedCount = 0;
+
+          
+                const emailKey = participant.email.toLowerCase();
+                const namePhoneKey = `${participant.name.trim().toLowerCase()}_${(participant.phoneNo ?? '').replace(/\D/g, '')}`;
+
+                const isDuplicate = existingEmails.has(emailKey) || existingNamePhonePairs.has(namePhoneKey);
+
+                if (!isDuplicate) {
+                    updatedParticipants.push(participant);
+                    addedParticipants.push(participant);
+                    existingEmails.add(emailKey);
+                    existingNamePhonePairs.add(namePhoneKey);
+                } else {
+                    skippedCount++;
+                }
+       
+
+            if (addedParticipants.length > 0) {
+                console.log("Saving newly added participants:", addedParticipants);
+                const success = await eventService.saveParticipants(Number(eventId), addedParticipants);
+
+                if (success) {
+                    setParticipants(updatedParticipants); // Only update if save succeeded
+                    setUploadedParticipants([]); // Clear upload buffer
+                    // Update import status messages
+
+                    toast.success(`${addedParticipants.length} new participants added.`);
+                } else {
+                    throw new Error('Save operation did not report success.');
+                }
+            } else {
+
+                toast.info('No new participants to save.');
+            }
+
+            if (skippedCount > 0) {
+                toast.warning(`${skippedCount} participants skipped (already exist).`);
+            }
+
+            // Refresh current page data (optional)
+            router.refresh();
+
+        } catch (saveErr: any) {
+            console.error("Save Error:", saveErr);
+            setSaveError(`Failed to save changes: ${saveErr.message || 'Unknown error during save'}`);
+        } finally {
+            setIsSaving(false); // End saving state
+        }
+
+
+      };
+      
 
     // --- Handle Deleting a Participant by ID ---
     const handleDeleteParticipant = (id: number | string) => {
 
-   
-     
         try {
-            
-            
             eventService.deleteParticipants(Number(eventId), Number(id));
             setParticipants(participants.filter(p => p.id !== id));
-            setShowConfirm(false);
         } catch (deleteErr) {
             console.error("DeleteError:", deleteErr);
         }
@@ -322,16 +388,19 @@ export default function EventParticipantsPage() {
                 if (success) {
                     setParticipants(updatedParticipants); // Only update if save succeeded
                     setUploadedParticipants([]); // Clear upload buffer
-                    toast.success(`✅ ${addedParticipants.length} new participants added.`);
+                    // Update import status messages
+
+                    toast.success(`${addedParticipants.length} new participants added.`);
                 } else {
                     throw new Error('Save operation did not report success.');
                 }
             } else {
-                toast.info('ℹ️ No new participants to save.');
+
+                toast.info('No new participants to save.');
             }
 
             if (skippedCount > 0) {
-                toast.warning(`⚠️ ${skippedCount} participants skipped (already exist).`);
+                toast.warning(`${skippedCount} participants skipped (already exist).`);
             }
 
             // Refresh current page data (optional)
@@ -486,7 +555,6 @@ export default function EventParticipantsPage() {
     const courseChartData = demographics ? Object.entries(demographics.byCourse).map(([name, count]) => ({ name, count })) : [];
     const yearChartData = demographics ? Object.entries(demographics.byYear).map(([name, count]) => ({ name: `Year ${name}`, count })) : []; // Format year name for chart
     const genderChartData = demographics ? Object.entries(demographics.byGender).map(([name, count]) => ({ name, count })) : [];
-    const roleChartData = demographics ? Object.entries(demographics.byRole).map(([name, count]) => ({ name, count })) : [];
 
 
     // --- Render Loading/Error State for Initial Page Load ---
@@ -736,14 +804,12 @@ export default function EventParticipantsPage() {
                                     {/* --- Gender Distribution Chart --- */}
                                     {genderChartData.length > 0 && <><h4>Gender Distribution:</h4><div style={{ width: '100%', height: 250 }}><ResponsiveContainer width="100%" height="100%"><BarChart data={genderChartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis allowDecimals={false} /><Tooltip /><Legend /><Bar dataKey="count" fill="#ff9800" name="Number of Participants" /></BarChart></ResponsiveContainer></div></>}
                                     {/* Spacing */}
-                                    {(genderChartData.length > 0 || yearChartData.length > 0 || courseChartData.length > 0 || facultyChartData.length > 0) && roleChartData.length > 0 && <div style={{ height: 20 }}></div>}
+                                    {(genderChartData.length > 0 || yearChartData.length > 0 || courseChartData.length > 0 || facultyChartData.length > 0) && <div style={{ height: 20 }}></div>}
 
-                                    {/* --- Role Distribution Chart --- */}
-                                    {roleChartData.length > 0 && <><h4>Role Distribution:</h4><div style={{ width: '100%', height: 250 }}><ResponsiveContainer width="100%" height="100%"><BarChart data={roleChartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis allowDecimals={false} /><Tooltip /><Legend /><Bar dataKey="count" fill="#9c27b0" name="Number of Participants" /></BarChart></ResponsiveContainer></div></>}
 
 
                                     {/* Placeholder if no chart data exists despite total > 0 (e.g., no faculty data) */}
-                                    {facultyChartData.length === 0 && courseChartData.length === 0 && yearChartData.length === 0 && genderChartData.length === 0 && roleChartData.length === 0 && (
+                                    {facultyChartData.length === 0 && courseChartData.length === 0 && yearChartData.length === 0 && genderChartData.length === 0 && (
                                         <p style={{ textAlign: 'center', fontStyle: 'italic', color: '#777' }}>No demographic data available for charts.</p>
                                     )}
 
@@ -769,48 +835,12 @@ export default function EventParticipantsPage() {
 
             {/* --- Add Participant Modal --- */}
             <AddParticipantModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSave={handleAddParticipant}
+                open={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
+                onConfirm={handleAddParticipant}
             />
 
         </div> // End page-content-wrapper
     );
 }
 
-// --- Mock Service Methods (Replace with your actual eventService) ---
-// Assume eventService is imported and has these async methods
-// class EventService {
-//      async getParticipantsByEventId(eventId: string): Promise<Participant[]> {
-//          console.log(`[Mock Service] Fetching initial saved participants for ${eventId}`);
-//          await new Promise(resolve => setTimeout(resolve, 800));
-//           // Return sample saved data
-//          return [
-//             { id: 1, name: "Initial User 1", email: "i1@saved.com", phoneNo: "111", gender: "F", faculty: "Sci", course: "Bio", year: "2", role: "Student" },
-//             { id: 2, name: "Initial User 2", email: "i2@saved.com", phoneNo: "222", gender: "M", faculty: "Eng", course: "EE", year: "3", role: "Organizer" },
-//          ];
-//      }
-//      async importParticipantsInfo(eventId: string, file: File): Promise<Participant[]> {
-//          console.log(`[Mock Service] Importing file "${file.name}" for ${eventId}. Simulating processing.`);
-//          await new Promise(resolve => setTimeout(resolve, 2000));
-//          // Simulate returning processed data from file
-//           const importedData: Participant[] = [
-//               { id: uuidv4(), name: "Imported User A", email: "ia@imported.com", phoneNo: "777", gender: "F", faculty: "Arts", course: "Lit", year: "1", role: "Student" },
-//               { id: uuidv4(), name: "Imported User B", email: "ib@imported.com", phoneNo: "888", gender: "M", faculty: "Eng", course: "ME", year: "4", role: "Volunteer" },
-//           ];
-//           console.log(`[Mock Service] Import done, returning ${importedData.length} participants.`);
-//          return importedData;
-//      }
-//      async saveParticipants(eventId: string, participants: Participant[]): Promise<any> {
-//          console.log(`[Mock Service] Saving ${participants.length} participants for ${eventId}.`);
-//          console.log("Data to save:", participants);
-//          await new Promise(resolve => setTimeout(resolve, 1500));
-//          // Simulate saving to database. Backend assigns final IDs for new items.
-//          const success = Math.random() > 0.1;
-//           if (!success) throw new Error("Mock save failed");
-//           console.log("[Mock Service] Save successful!");
-//           return { success: true }; // Simulate backend response
-//      }
-// }
-// // If eventService is not a default export or class instance, uncomment/adjust
-// // const eventService = new EventService();

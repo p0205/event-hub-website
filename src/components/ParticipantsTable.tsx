@@ -52,7 +52,6 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({ participants, onD
                             <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>Faculty</th>
                             <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>Course</th>
                             <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>Year</th>
-                            <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>Role</th>
                             <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'center' }}>Actions</th>
                         </tr>
                     </thead>
@@ -67,7 +66,6 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({ participants, onD
                                 <td style={{ border: '1px solid #ddd', padding: '10px' }}>{participant.faculty || '-'}</td>
                                 <td style={{ border: '1px solid #ddd', padding: '10px' }}>{participant.course || '-'}</td>
                                 <td style={{ border: '1px solid #ddd', padding: '10px' }}>{participant.year || '-'}</td>
-                                <td style={{ border: '1px solid #ddd', padding: '10px' }}>{participant.role || '-'}</td>
                                 <td style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'center' }}>
                                     <button
                                         onClick={() => handleDeleteClick(participant.id)}

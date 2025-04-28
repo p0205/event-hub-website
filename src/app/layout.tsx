@@ -5,6 +5,7 @@ import './globals.css'; // Make sure your global styles are imported here
 import Topbar from '@/components/Topbar';
 import Sidebar from '@/components/Sidebar'; // Make sure this is your modified Sidebar.tsx
 import { AuthProvider } from '@/context/AuthContext';
+import { Toaster } from 'sonner';
 
 export const metadata = {
   title: 'FTMK Event Hub', // Your app title
@@ -57,6 +58,7 @@ export default function RootLayout({
             </div>
           </div>
         </AuthProvider>
+        <Toaster richColors position="bottom-center" /> {/* You can customize props like position, theme, richColors etc. */}
       </body>
     </html>
   );

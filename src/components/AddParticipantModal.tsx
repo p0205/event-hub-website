@@ -1,139 +1,138 @@
-// src/components/AddParticipantModal.tsx
+'use client';
 
-import React, { useState } from 'react';
-import { Participant } from '@/types/user'; // Import Participant for Omit utility
+import React, { useState, useEffect } from 'react';
+import { X, Search } from 'lucide-react';
+import userService from '@/services/userService';
 
-interface AddParticipantModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    // Use Omit<Participant, 'id'> directly instead of NewParticipantFormData
-    onSave: (participant: Omit<Participant, 'id'>) => void;
+interface Participant {
+  id: number | string;
+  name: string;
+  email: string;
 }
 
-const AddParticipantModal: React.FC<AddParticipantModalProps> = ({ isOpen, onClose, onSave }) => {
-    // State uses the shape that will be passed to onSave (Participant without id)
-    const [formData, setFormData] = useState<Omit<Participant, 'id'>>({
-        name: '',
-        email: '',
-        phoneNo: '',
-        gender: '',
-        faculty: '',
-        course: '',
-        year: '',
-        role: '',
-    });
+interface AddParticipantModalProps {
+  open: boolean;
+  onCancel: () => void;
+  onConfirm: (selectedParticipant: Participant | null) => void;
+}
 
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+const fakeParticipants: Participant[] = [
+  { id: 1, name: 'Phoebe Kiew Jing Yao', email: 'b032210164@student.utem.edu.my' },
+  { id: 2, name: 'Yvonne Ngu Rui Ging', email: 'b032210249@student.utem.edu.my' },
+  { id: 3, name: 'John Doe', email: 'john@example.com' },
+];
 
-    if (!isOpen) return null;
+export default function AddParticipantModal({ open, onCancel, onConfirm }: AddParticipantModalProps) {
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState<Participant[]>([]);
+  const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-        setErrors(prev => {
-            const newErrors = { ...prev };
-            delete newErrors[name];
-            return newErrors;
-        });
-    };
+  useEffect(() => {
+    if (open) {
+      setSearchText('');
+      setSearchResults([]);
+      setSelectedParticipant(null);
+    }
+  }, [open]);
 
-    const validate = (): boolean => {
-        const newErrors: { [key: string]: string } = {};
-        if (!formData.name.trim()) newErrors.name = 'Name is required';
-        if (!formData.email.trim()) {
-            newErrors.email = 'Email is required';
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Invalid email format';
-        }
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+  // Typing delay
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchText.trim() !== '') {
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (validate()) {
-             const dataToSave: Omit<Participant, 'id'> = {
-                 ...formData,
-                 phoneNo: formData.phoneNo || null,
-                 gender: formData.gender || null,
-                 faculty: formData.faculty || null,
-                 course: formData.course || null,
-                 year: formData.year || null,
-                 role: formData.role || null,
-             };
-            onSave(dataToSave); // Call the onSave prop
-            setFormData({ // Reset form
-                name: '', email: '', phoneNo: '', gender: '',
-                faculty: '', course: '', year: '', role: ''
-            });
-            onClose();
-        }
-    };
+        const fetchData = async () => {
+            try {
+            const data = await userService.getUserByName(searchText);
+            setSearchResults(data);
+            } catch (error) {
+              console.error('Error fetching search results:', error);
+              setSearchResults([]);
+            } finally {
+            }
+          };
+    
+        fetchData();
 
-    return (
-         <div style={{ /* ... modal overlay styles ... */ }}>
-            <div style={{ /* ... modal content styles ... */ }}>
-                <h2>Add New Participant</h2>
-                <form onSubmit={handleSubmit}>
-                    {/* Form Fields (same as before) */}
-                    {/* Name (Required) */}
-                    <div style={{ marginBottom: '15px' }}>
-                        <label htmlFor="name">Name:</label>
-                        <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required />
-                        {errors.name && <span style={{ color: 'red' }}>{errors.name}</span>}
-                    </div>
-                    {/* Email (Required) */}
-                     <div style={{ marginBottom: '15px' }}>
-                        <label htmlFor="email">Email:</label>
-                        <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required />
-                        {errors.email && <span style={{ color: 'red' }}>{errors.email}</span>}
-                    </div>
-                    {/* PhoneNo */}
-                     <div style={{ marginBottom: '15px' }}>
-                        <label htmlFor="phoneNo">Phone:</label>
-                        <input type="text" id="phoneNo" name="phoneNo" value={formData.phoneNo || ''} onChange={handleChange} />
-                    </div>
-                    {/* Gender */}
-                     <div style={{ marginBottom: '15px' }}>
-                        <label htmlFor="gender">Gender:</label>
-                        <select id="gender" name="gender" value={formData.gender || ''} onChange={handleChange}>
-                            <option value="">Select Gender</option>
-                            <option value="M">Male</option>
-                            <option value="F">Female</option>
-                             <option value="Other">Other</option>
-                             <option value="Prefer not to say">Prefer not to say</option>
-                        </select>
-                    </div>
-                    {/* Faculty */}
-                    <div style={{ marginBottom: '15px' }}>
-                        <label htmlFor="faculty">Faculty:</label>
-                        <input type="text" id="faculty" name="faculty" value={formData.faculty || ''} onChange={handleChange} />
-                    </div>
-                     {/* Course */}
-                    <div style={{ marginBottom: '15px' }}>
-                        <label htmlFor="course">Course:</label>
-                        <input type="text" id="course" name="course" value={formData.course || ''} onChange={handleChange} />
-                    </div>
-                     {/* Year */}
-                    <div style={{ marginBottom: '15px' }}>
-                        <label htmlFor="year">Year:</label>
-                        <input type="text" id="year" name="year" value={formData.year || ''} onChange={handleChange} />
-                    </div>
-                     {/* Role */}
-                    <div style={{ marginBottom: '15px' }}>
-                        <label htmlFor="role">Role:</label>
-                         <input type="text" id="role" name="role" value={formData.role || ''} onChange={handleChange} />
-                    </div>
+      } 
+      else {
+        setSearchResults([]);
+      }
+    }, 500); // 500ms typing delay
 
-                    {/* Buttons */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                        <button type="button" onClick={onClose}>Cancel</button>
-                        <button type="submit">Save Participant</button>
-                    </div>
-                </form>
-            </div>
+    return () => clearTimeout(delayDebounce);
+  }, [searchText]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/30" onClick={onCancel} />
+      
+      <div className="relative bg-white rounded-xl shadow-lg w-full max-w-md p-6 animate-fade-in">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Add Participant</h3>
+          <button onClick={onCancel} aria-label="Close modal">
+            <X className="w-5 h-5 text-gray-500 hover:text-gray-700" />
+          </button>
         </div>
-    );
-};
 
-export default AddParticipantModal;
+        {/* Search Input */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Enter participant's name"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </div>
+
+        {/* Search Results */}
+        <div className="mb-4 max-h-40 overflow-y-auto">
+          {searchText.trim() !== '' && searchResults.length === 0 && (
+            <p className="text-gray-500 text-sm">No matching participants found.</p>
+          )}
+          {searchResults.map((participant) => (
+            <div
+              key={participant.id}
+              className={`flex justify-between items-center p-2 rounded-md hover:bg-gray-100 cursor-pointer ${
+                selectedParticipant?.id === participant.id ? 'bg-blue-100' : ''
+              }`}
+              onClick={() => setSelectedParticipant(participant)}
+            >
+              <div>
+                <p className="font-medium">{participant.name}</p>
+                <p className="text-sm text-gray-500">{participant.email}</p>
+              </div>
+              {selectedParticipant?.id === participant.id && (
+                <span className="text-blue-600 font-semibold text-sm">Selected</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Footer Buttons */}
+        <div className="flex justify-end space-x-3">
+          <button
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
+            className={`px-4 py-2 rounded text-white ${
+              selectedParticipant
+                ? 'bg-green-600 hover:bg-green-700'
+                : 'bg-green-300 cursor-not-allowed'
+            }`}
+            onClick={() => selectedParticipant && onConfirm(selectedParticipant)}
+            disabled={!selectedParticipant}
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
