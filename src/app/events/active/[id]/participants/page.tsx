@@ -18,9 +18,11 @@ import ParticipantsTable from '@/components/ParticipantsTable';
 import AddParticipantModal from '@/components/AddParticipantModal';
 import { Participant } from '@/types/user'; // Ensure this matches your backend model
 import { eventService } from '@/services'; // Adjust path to your service module
+import { toast } from 'sonner'; 
 
 // Import styles (ensure path is correct)
 import styles from './participantsPage.module.css';
+import { Save } from 'lucide-react';
 
 // --- Define Helper Types ---
 // These types were in your original code, keeping them here
@@ -86,6 +88,7 @@ export default function EventParticipantsPage() {
     const [initialLoadError, setInitialLoadError] = useState<string | null>(null); // Error loading initial data
 
     const [isImporting, setIsImporting] = useState(false); // File import process
+    const [uploadedParticipants, setUploadedParticipants] = useState<Participant[]>([]);
     const [importError, setImportError] = useState<string | null>(null);
     const [importSuccess, setImportSuccess] = useState<string | null>(null);
 
@@ -155,7 +158,19 @@ export default function EventParticipantsPage() {
         }
     }, [participants]); // Recalculate when participants state updates
 
-
+    useEffect(() => {
+        // Prevent body scrolling when overlay is open
+        if (uploadedParticipants.length > 0) {
+            document.body.style.overflow = "hidden"; // Disable background scroll
+        } else {
+            document.body.style.overflow = "auto"; // Re-enable scroll when overlay is closed
+        }
+    
+        return () => {
+            document.body.style.overflow = "auto"; // Ensure scroll is re-enabled on component unmount
+        };
+    }, [uploadedParticipants]); // Run the effect when uploadedParticipants changes
+    
     // --- Handle CSV File Import ---
     const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -192,7 +207,7 @@ export default function EventParticipantsPage() {
             // --- SUCCESS: Update the participant list state with the imported list ---
             // This replaces the current list (initial saved data or previous import)
             // with the newly imported list for review.
-            setParticipants(importedList);
+            setUploadedParticipants(importedList);
 
             // Update import status messages
             setImportSuccess(`Successfully imported ${importedList.length} participants.`);
@@ -241,32 +256,73 @@ export default function EventParticipantsPage() {
         setSortKey(null);
     };
 
+    // --- Delete from uploaded participants only ---
+    const handleDeleteUploaded = (id: string) => {
+        setUploadedParticipants((prev) => prev.filter((p) => p.id !== id));
+    };
 
-    // --- Handle Final "Confirm & Save" Action ---
+
+
     const handleConfirmSave = async () => {
+        if (uploadedParticipants.length === 0) return;
         if (!eventId) { setSaveError("Event ID is missing. Cannot save."); return; }
-
+    
         setIsSaving(true); // Start saving state
         setSaveError(null); // Clear previous save errors
         setImportError(null); // Clear import errors too
-
+    
         try {
-            // Call the API to save the *current* list state
-            // This endpoint receives the full list from the frontend state
-            console.log("Saving participants:", participants);
-            const success = await eventService.saveParticipants(Number(eventId), participants);
-
-            // --- SUCCESS ---
-            if (success) {
-                alert('Participants saved successfully!');
-                // Optionally navigate away or refresh the page data
-                //router.push(`/events/${eventId}`); // Example: Go back to event details page
-                router.refresh(); // Refetches data for the current route segments, getting backend-assigned IDs
+            const updatedParticipants = [...participants];
+    
+            // Build a fast lookup set for existing participants
+            const existingEmails = new Set(participants.map(p => p.email.toLowerCase()));
+            const existingNamePhonePairs = new Set(participants.map(p => {
+                const name = p.name.trim().toLowerCase();
+                const phone = (p.phoneNo ?? '').replace(/\D/g, '');
+                return `${name}_${phone}`;
+            }));
+    
+            let addedParticipants: typeof uploadedParticipants = [];
+            let skippedCount = 0;
+    
+            uploadedParticipants.forEach((newP) => {
+                const emailKey = newP.email.toLowerCase();
+                const namePhoneKey = `${newP.name.trim().toLowerCase()}_${(newP.phoneNo ?? '').replace(/\D/g, '')}`;
+    
+                const isDuplicate = existingEmails.has(emailKey) || existingNamePhonePairs.has(namePhoneKey);
+    
+                if (!isDuplicate) {
+                    updatedParticipants.push(newP);
+                    addedParticipants.push(newP);
+                    existingEmails.add(emailKey);
+                    existingNamePhonePairs.add(namePhoneKey);
+                } else {
+                    skippedCount++;
+                }
+            });
+    
+            if (addedParticipants.length > 0) {
+                console.log("Saving newly added participants:", addedParticipants);
+                const success = await eventService.saveParticipants(Number(eventId), addedParticipants);
+    
+                if (success) {
+                    setParticipants(updatedParticipants); // Only update if save succeeded
+                    setUploadedParticipants([]); // Clear upload buffer
+                    toast.success(`✅ ${addedParticipants.length} new participants added.`);
+                } else {
+                    throw new Error('Save operation did not report success.');
+                }
             } else {
-                // If service returns non-success but doesn't throw
-                throw new Error('Save operation did not report success.');
+                toast.info('ℹ️ No new participants to save.');
             }
-
+    
+            if (skippedCount > 0) {
+                toast.warning(`⚠️ ${skippedCount} participants skipped (already exist).`);
+            }
+    
+            // Refresh current page data (optional)
+            router.refresh(); 
+    
         } catch (saveErr: any) {
             console.error("Save Error:", saveErr);
             setSaveError(`Failed to save changes: ${saveErr.message || 'Unknown error during save'}`);
@@ -274,7 +330,7 @@ export default function EventParticipantsPage() {
             setIsSaving(false); // End saving state
         }
     };
-
+    
 
     // --- Filter Options (Derived from participants data) ---
     const filterOptions = useMemo(() => {
@@ -317,7 +373,7 @@ export default function EventParticipantsPage() {
             roles: ['All Roles', ...(roles as string[])],
         };
     }, [participants]);
-        // --- Handle Filter Type Change ---
+    // --- Handle Filter Type Change ---
     const handleFilterTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const newFilterType = event.target.value as FilterType;
         setFilterType(newFilterType);
@@ -489,6 +545,72 @@ export default function EventParticipantsPage() {
                 </div>
 
 
+                {/* Uploaded Participants Overlay */}
+                {uploadedParticipants.length > 0 && (
+                    <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-xl max-w-4xl w-full">
+                            <h2 className="text-xl font-bold mb-4">New Uploaded Participants</h2>
+
+                            <div className="overflow-x-auto mb-4">
+                                <table className="min-w-full bg-white rounded-lg overflow-hidden">
+                                    <thead className="bg-gray-100">
+                                        <tr>
+                                            <th className="text-left px-4 py-2">No</th>
+                                            <th className="text-left px-4 py-2">Name</th>
+                                            <th className="text-left px-4 py-2">Email</th>
+                                            <th className="text-left px-4 py-2">Phone No</th>
+                                            <th className="text-left px-4 py-2">Faculty</th>
+                                            <th className="text-left px-4 py-2">Course</th>
+                                            <th className="text-left px-4 py-2">Year</th>
+                                            <th className="text-left px-4 py-2">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {uploadedParticipants.map((p, index) => (
+                                            <tr key={p.id} className="border-t">
+                                                <td className="px-4 py-2">{index + 1}</td>
+                                                <td className="px-4 py-2">{p.name}</td>
+                                                <td className="px-4 py-2">{p.email}</td>
+                                                <td className="px-4 py-2">{p.phoneNo}</td>
+                                                <td className="px-4 py-2">{p.faculty || "-"}</td>
+                                                <td className="px-4 py-2">{p.course || "-"}</td>
+                                                <td className="px-4 py-2">{p.year || "-"}</td>
+                                                <td className="px-4 py-2">
+                                                    <button
+                                                        className="text-red-600 hover:underline"
+                                                        onClick={() => handleDeleteUploaded(String(p.id))}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Save Button */}
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                                    onClick={() => setUploadedParticipants([])}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                    onClick={handleConfirmSave}
+                                    disabled={isSaving}
+                                >
+                                    <Save className="w-5 h-5" />
+                                    {isSaving ? "Saving..." : "Save Uploaded"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+
                 {/* Filter Controls */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
                     <span>Filter by:</span>
@@ -565,28 +687,6 @@ export default function EventParticipantsPage() {
                     </div>
                 )}
 
-
-                {/* Action Buttons for the whole list */}
-                <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '15px', display: 'flex', gap: '15px', justifyContent: 'flex-end' }}>
-                    <button
-                        onClick={() => {
-                            if (window.confirm("Are you sure you want to cancel? Any unsaved changes (imports, additions, deletions) will be lost.")) {
-                                router.back(); // Go back to the previous page
-                            }
-                        }}
-                        disabled={isSaving || isImporting} // Disable while saving or importing
-                        style={{ padding: '10px 20px', cursor: isSaving || isImporting ? 'not-allowed' : 'pointer', border: '1px solid #ccc', borderRadius: '4px', background: 'none', color: '#333' }}
-                    >
-                        Cancel Changes
-                    </button>
-                    <button
-                        onClick={handleConfirmSave} // Call the save handler
-                        disabled={isSaving || isImporting || participants.length === 0} // Disable if saving, importing, or list is empty
-                        style={{ padding: '10px 20px', cursor: isSaving || isImporting || participants.length === 0 ? 'not-allowed' : 'pointer', backgroundColor: isSaving || isImporting || participants.length === 0 ? '#cccccc' : '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}
-                    >
-                        {isSaving ? 'Saving...' : 'Confirm & Save All Changes'} {/* Button text changes while saving */}
-                    </button>
-                </div>
 
             </div> {/* End Participants List & Actions Section */}
 
