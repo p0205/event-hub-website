@@ -4,7 +4,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation'; // From URL get event ID, for navigation
-import Link from 'next/link'; // If participant name is a link
 import { v4 as uuidv4 } from 'uuid'; // For temporary IDs for new participants
 
 // Import Recharts components (ensure these are installed: npm install recharts)
@@ -18,7 +17,7 @@ import ParticipantsTable from '@/components/ParticipantsTable';
 import AddParticipantModal from '@/components/AddParticipantModal';
 import { Participant } from '@/types/user'; // Ensure this matches your backend model
 import { eventService } from '@/services'; // Adjust path to your service module
-import { toast } from 'sonner'; 
+import { toast } from 'sonner';
 
 // Import styles (ensure path is correct)
 import styles from './participantsPage.module.css';
@@ -108,6 +107,8 @@ export default function EventParticipantsPage() {
     const [filterType, setFilterType] = useState<FilterType>('all');
     const [filterValue, setFilterValue] = useState<string | number | null>(null);
 
+    // --- Confirm dialog for deleting participants --- 
+    const [showConfirm, setShowConfirm] = useState(false);
 
     // --- Component Mount State (for Hydration/Recharts) ---
     const [isMounted, setIsMounted] = useState(false);
@@ -165,12 +166,12 @@ export default function EventParticipantsPage() {
         } else {
             document.body.style.overflow = "auto"; // Re-enable scroll when overlay is closed
         }
-    
+
         return () => {
             document.body.style.overflow = "auto"; // Ensure scroll is re-enabled on component unmount
         };
     }, [uploadedParticipants]); // Run the effect when uploadedParticipants changes
-    
+
     // --- Handle CSV File Import ---
     const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -246,10 +247,22 @@ export default function EventParticipantsPage() {
         setSortKey(null);
     };
 
+
     // --- Handle Deleting a Participant by ID ---
     const handleDeleteParticipant = (id: number | string) => {
+
+   
+     
+        try {
+            
+            
+            eventService.deleteParticipants(Number(eventId), Number(id));
+            setParticipants(participants.filter(p => p.id !== id));
+            setShowConfirm(false);
+        } catch (deleteErr) {
+            console.error("DeleteError:", deleteErr);
+        }
         // Use filter to create a new array excluding the participant with the given id
-        setParticipants(participants.filter(p => p.id !== id));
         // Optional: Reset filter/sort if deleting might make current view inconsistent
         setFilterType('all');
         setFilterValue(null);
@@ -258,6 +271,7 @@ export default function EventParticipantsPage() {
 
     // --- Delete from uploaded participants only ---
     const handleDeleteUploaded = (id: string) => {
+
         setUploadedParticipants((prev) => prev.filter((p) => p.id !== id));
     };
 
@@ -266,14 +280,14 @@ export default function EventParticipantsPage() {
     const handleConfirmSave = async () => {
         if (uploadedParticipants.length === 0) return;
         if (!eventId) { setSaveError("Event ID is missing. Cannot save."); return; }
-    
+
         setIsSaving(true); // Start saving state
         setSaveError(null); // Clear previous save errors
         setImportError(null); // Clear import errors too
-    
+
         try {
             const updatedParticipants = [...participants];
-    
+
             // Build a fast lookup set for existing participants
             const existingEmails = new Set(participants.map(p => p.email.toLowerCase()));
             const existingNamePhonePairs = new Set(participants.map(p => {
@@ -281,16 +295,16 @@ export default function EventParticipantsPage() {
                 const phone = (p.phoneNo ?? '').replace(/\D/g, '');
                 return `${name}_${phone}`;
             }));
-    
+
             let addedParticipants: typeof uploadedParticipants = [];
             let skippedCount = 0;
-    
+
             uploadedParticipants.forEach((newP) => {
                 const emailKey = newP.email.toLowerCase();
                 const namePhoneKey = `${newP.name.trim().toLowerCase()}_${(newP.phoneNo ?? '').replace(/\D/g, '')}`;
-    
+
                 const isDuplicate = existingEmails.has(emailKey) || existingNamePhonePairs.has(namePhoneKey);
-    
+
                 if (!isDuplicate) {
                     updatedParticipants.push(newP);
                     addedParticipants.push(newP);
@@ -300,11 +314,11 @@ export default function EventParticipantsPage() {
                     skippedCount++;
                 }
             });
-    
+
             if (addedParticipants.length > 0) {
                 console.log("Saving newly added participants:", addedParticipants);
                 const success = await eventService.saveParticipants(Number(eventId), addedParticipants);
-    
+
                 if (success) {
                     setParticipants(updatedParticipants); // Only update if save succeeded
                     setUploadedParticipants([]); // Clear upload buffer
@@ -315,14 +329,14 @@ export default function EventParticipantsPage() {
             } else {
                 toast.info('ℹ️ No new participants to save.');
             }
-    
+
             if (skippedCount > 0) {
                 toast.warning(`⚠️ ${skippedCount} participants skipped (already exist).`);
             }
-    
+
             // Refresh current page data (optional)
-            router.refresh(); 
-    
+            router.refresh();
+
         } catch (saveErr: any) {
             console.error("Save Error:", saveErr);
             setSaveError(`Failed to save changes: ${saveErr.message || 'Unknown error during save'}`);
@@ -330,7 +344,7 @@ export default function EventParticipantsPage() {
             setIsSaving(false); // End saving state
         }
     };
-    
+
 
     // --- Filter Options (Derived from participants data) ---
     const filterOptions = useMemo(() => {

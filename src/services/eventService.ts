@@ -227,6 +227,22 @@ const eventService = {
     return response.data;// Indicate success
     // ... (rest of the eventService object) ...
   },
+  /**
+   * Deletes a participant from an event.
+   * Corresponds to backend: DELETE /events/{eventId}/participants/{participantId}
+   * @param eventId The ID of the event from which to delete the participant.
+   * @param participantId The ID of the participant to delete.
+   * @returns A Promise resolving when the deletion is complete.
+   * @throws An error if the deletion fails (e.g., 404 Not Found).
+   */
+  deleteParticipants: async (eventId: number, participantId:number): Promise<void> => {
+    console.log("API Call: DELETE /events/{id}/participants/{participantId}");
+    const response = await api.delete(`/events/${eventId}/participants/${participantId}`);
+
+    if(response.status !== HttpStatusCode.NoContent) {
+      throw new Error('Failed to delete participant');
+    }
+  }
 
 
 }
