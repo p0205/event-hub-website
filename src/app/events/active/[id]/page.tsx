@@ -9,6 +9,7 @@ import eventService from '@/services/eventService';
 import { Event, EventVenue, TeamMember, Venue } from '@/types/event'; // Ensure Venue is imported
 import venueService from '@/services/venueService';
 import { formatDate, formatDateTime, groupSessions } from '@/helpers/eventHelpers'; // Assuming this path is correct
+import BudgetTable from '@/components/BudgetTable';
 
 // Define the structure for grouped sessions if not already globally defined
 interface GroupedSession {
@@ -215,31 +216,7 @@ export default function ActiveEventDetailsPage() {
       <div className="section-card form-container">
           <h2>Budget Overview</h2>
           {event.eventBudgets && event.eventBudgets.length > 0 ? (
-              event.eventBudgets.map((budgetItem) => {
-                  // Ensure amounts are numbers before calculations
-                  const amountAllocated = Number(budgetItem.amountAllocated) || 0;
-                  const amountSpent = Number(budgetItem.amountSpent) || 0;
-                  const budgetPercentage = amountAllocated > 0 ? (amountSpent / amountAllocated) * 100 : 0;
-
-                  return (
-                      <div key={budgetItem.id || budgetItem.budgetCategoryId} style={{ marginBottom: '20px' }}> {/* Use a stable key */}
-                          <h3>Category: {budgetItem.categoryName || `ID: ${budgetItem.budgetCategoryId}`}</h3>
-                          <p><strong>Allocated:</strong> RM {amountAllocated.toFixed(2)}</p>
-                          <p><strong>Spent:</strong> RM {amountSpent.toFixed(2)}</p>
-                          <div className="budget-progress-bar-container">
-                              <div
-                                  className="budget-progress-bar"
-                                  style={{ width: `${Math.min(budgetPercentage, 100)}%` }}
-                              >
-                                  <span className="progress-text">{budgetPercentage.toFixed(1)}%</span>
-                              </div>
-                          </div>
-                          {budgetPercentage > 100 && (
-                              <p style={{ color: 'red', marginTop: '5px' }}>Budget exceeded!</p>
-                          )}
-                      </div>
-                  );
-              })
+            <BudgetTable budgets={event.eventBudgets} />
           ) : (
               <p>No budget information available for this event.</p>
           )}

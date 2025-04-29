@@ -87,7 +87,7 @@ export interface EventVenue {
     sessionName: string; // Name for the specific session/part of the event
     startDateTime: string; // Combined Date + Time for this session's start
     endDateTime?: string; // Combined Date + Time for this session's end
-    venueId: number | undefined; // ID of the selected venue for this session
+    venueId: number; // ID of the selected venue for this session
     date?: string; // Separate date field for form input control
     startTimeOnly?: string; // Separate start time field for form input control
     endTimeOnly?: string; // Separate end time field for form input control
@@ -177,6 +177,12 @@ export interface Venue {
 export interface BudgetCategory {
     id: number;
     name: string;
+}
+
+export function createBudgetCategoryMap(budgetCategories: { id: number, name: string }[]) {
+    return new Map<number, string>(
+        budgetCategories.map((cat) => [cat.id, cat.name])
+    );
 }
 
 export interface SimpleEvent {

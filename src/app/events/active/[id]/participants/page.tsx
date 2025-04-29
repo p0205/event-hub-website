@@ -223,28 +223,6 @@ export default function EventParticipantsPage() {
         }
     };
 
-    // // --- Handle Adding a Participant Manually (from Modal) ---
-    // const handleAddParticipant = (newParticipantData: Omit<Participant, 'id'>) => {
-    //     // Generate a unique temporary string ID for the new participant in the frontend state
-    //     const tempId = uuidv4();
-    //     const newParticipant: Participant = {
-    //         ...newParticipantData,
-    //         id: tempId, // Assign the generated unique string ID
-    //         // Ensure nullable fields are explicitly null if empty string from form
-    //         phoneNo: newParticipantData.phoneNo || null,
-    //         gender: newParticipantData.gender || null,
-    //         faculty: newParticipantData.faculty || null,
-    //         course: newParticipantData.course || null,
-    //         year: newParticipantData.year || null,
-    //         role: newParticipantData.role || null,
-    //     };
-    //     // Add the new participant to the state array immutably
-    //     setParticipants([...participants, newParticipant]);
-    //     // Optionally reset filter/sort if adding might make current view inconsistent
-    //     setFilterType('all');
-    //     setFilterValue(null);
-    //     setSortKey(null);
-    // };
 
     const handleAddParticipant = async (participant: Participant | null) => {
         if (!participant) return; // 如果没选到人，就不做事
@@ -335,11 +313,13 @@ export default function EventParticipantsPage() {
         setSortKey(null);
     };
 
-    // --- Delete from uploaded participants only ---
     const handleDeleteUploaded = (id: string) => {
-
-        setUploadedParticipants((prev) => prev.filter((p) => p.id !== id));
+        const confirmDelete = window.confirm("Are you sure you want to delete this participant?");
+        if (!confirmDelete) return;
+    
+        setUploadedParticipants(uploadedParticipants.filter(p => String(p.id) !== id));
     };
+        
 
 
 

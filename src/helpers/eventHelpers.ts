@@ -13,9 +13,9 @@ export const formatDateTime = (dateTimeString: string | null | undefined): strin
         // Format as 'YYYY-MM-DD HH:mm' or similar readable format
         // Adjust locale and options as needed
         return date.toLocaleString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
+            // year: 'numeric',
+            // month: 'short',
+            // day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
             hour12: true, // Use 12-hour format with AM/PM

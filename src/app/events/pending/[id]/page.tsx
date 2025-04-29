@@ -7,9 +7,11 @@ import { notFound } from 'next/navigation'; // Import notFound for 404 handling
 import eventService from '@/services/eventService';
 // Import the updated types from the correct path
 // Make sure this path is correct and the file src/types/event.ts exists and is saved
-import { Event, EventStatus, SupportingDocument, EventVenue, EventBudget, Venue } from '@/types/event'; // <-- Ensure correct import
+import { Event, EventStatus, SupportingDocument, EventVenue, EventBudget, Venue, createBudgetCategoryMap } from '@/types/event'; // <-- Ensure correct import
 import venueService from '@/services/venueService';
 import { formatDate, formatDateTime, groupSessions } from '@/helpers/eventHelpers';
+import budgetService from '@/services/budgetService';
+import BudgetTable from '@/components/BudgetTable';
 
 
 
@@ -42,6 +44,7 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
     // >>> Ensure the 'Event' type here is the one imported from '@/types/event' <<<
     let event: Event | null = null as Event | null;
     let error: string | null = null;
+    let budgetCategoryMap: Map<number, string> = new Map();
 
     try {
         // Call the service function to fetch the event details from the backend API.
@@ -51,6 +54,9 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
         // If eventService.getEventById is correctly typed as Promise<Event>,
         // and the imported Event type is correct, this assignment should work without error.
         event = await eventService.getEventById(eventId);
+        // Fetch budget categories (assuming you have a function like getAllBudgetCategories)
+
+
 
         console.log("This is from pending/[id]/page.tsx");
         // Optional: Add a check here if you *only* want to show PENDING events on this route.
@@ -102,12 +108,11 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
     // If data is successfully fetched (event object is not null), render the event details.
     return (
         <div className="page-container"> {/* Use global page container style */}
-            <h1>Event Details: {event.name}</h1>
+            <h1>{event.name}</h1>
 
             {/* Status Section */}
             {/* Reuse global form-container style for a card-like section */}
             <div className="form-container" style={{ marginBottom: '20px' }}>
-                <h2>Status</h2>
                 <p>
                     <strong>Current Status:</strong>
                     {/* Display the event status using the EventStatus enum */}
@@ -126,7 +131,7 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
 
             {/* Basic Event Information */}
             {/* Reuse global form-container style for a card-like section */}
-            <div className="form-container" style={{ marginBottom: '20px' }}>
+            <div className=" section-card form-container" style={{ marginBottom: '20px' }}>
                 <h2>Basic Information</h2>
                 {/* Reuse global form-group style for layout */}
                 <div className="form-group">
@@ -142,6 +147,11 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
                     <label className="form-label">Organizer ID:</label>
                     {/* Display the organizer's ID. In a real application, you'd likely fetch and display the organizer's name. */}
                     <p>{event.organizerId}</p>
+                </div>
+                <div className="form-group">
+                    <label className="form-label">Event Date:</label>
+                    {/* Display the organizer's ID. In a real application, you'd likely fetch and display the organizer's name. */}
+                    <p>{formatDate(event.startDateTime)}</p>
                 </div>
                 {/* Use global form-group-inline for side-by-side elements */}
                 <div className="form-group form-group-inline">
@@ -230,32 +240,10 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
             {/* Budget Section */}
             {/* Conditionally render this section if there are event budgets */}
             {event.eventBudgets && event.eventBudgets.length > 0 && (
-                <div className="form-container" style={{ marginBottom: '20px' }}>
+                <div className="section-card form-container" style={{ marginBottom: '20px' }}>
                     <h2>Budget Allocation</h2>
-                    {/* Use global budget-list style for the unordered list */}
-                    <ul className="budget-list">
-                        {/* Map over the eventBudgets array to display each budget item */}
-                        {event.eventBudgets.map((budget, index) => (
-                            // Use a unique key for each list item. If backend provided a budget item ID, use that.
-                            // Since sample didn't show ID, using index as a fallback key.
-                            <li key={index} className="budget-item"> {/* Use global budget-item style for each list item */}
-                                <p>
-                                    {/* Use the imported getBudgetCategoryName helper function to display category name based on ID */}
-                                    <strong>Category:</strong> {(Number(budget.budgetCategoryId))}
-                                </p>
-                                <p>
-                                    {/* Display allocated amount, formatted to 2 decimal places */}
-                                    <strong>Allocated:</strong> RM {typeof budget.amountAllocated === 'number' ? budget.amountAllocated.toFixed(2) : '0.00'}
-                                </p>
-                                <p>
-                                    {/* Display spent amount, formatted to 2 decimal places */}
-                                    <strong>Spent:</strong> RM {budget.amountSpent.toFixed(2)}
-                                </p>
-                                {/* Optional: Add a progress bar component here if you want */}
-                                {/* <ProgressBar spent={budget.amountSpent} allocated={budget.amountAllocated} /> */}
-                            </li>
-                        ))}
-                    </ul>
+                    <BudgetTable budgets={event.eventBudgets} />
+
                 </div>
             )}
 
