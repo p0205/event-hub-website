@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation'; // Import notFound for 404 handling
 import eventService from '@/services/eventService';
 // Import the updated types from the correct path
 // Make sure this path is correct and the file src/types/event.ts exists and is saved
-import { Event, EventStatus, SupportingDocument, EventVenue, EventBudget, Venue, createBudgetCategoryMap } from '@/types/event'; // <-- Ensure correct import
+import { Event, EventStatus, SupportingDocument, CreateSessionData, EventBudget, Venue, createBudgetCategoryMap } from '@/types/event'; // <-- Ensure correct import
 import venueService from '@/services/venueService';
 import { formatDate, formatDateTime, groupSessions } from '@/helpers/eventHelpers';
 import budgetService from '@/services/budgetService';
@@ -148,24 +148,9 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
                     {/* Display the organizer's ID. In a real application, you'd likely fetch and display the organizer's name. */}
                     <p>{event.organizerId}</p>
                 </div>
-                <div className="form-group">
-                    <label className="form-label">Event Date:</label>
-                    {/* Display the organizer's ID. In a real application, you'd likely fetch and display the organizer's name. */}
-                    <p>{formatDate(event.startDateTime)}</p>
-                </div>
+               
                 {/* Use global form-group-inline for side-by-side elements */}
-                <div className="form-group form-group-inline">
-                    <div className="form-group-item">
-                        <label className="form-label">Start Date & Time:</label>
-                        {/* Use the imported formatDateTime helper function */}
-                        <p>{formatDateTime(event.startDateTime)}</p>
-                    </div>
-                    <div className="form-group-item">
-                        <label className="form-label">End Date & Time:</label>
-                        {/* Use the imported formatDateTime helper function */}
-                        <p>{formatDateTime(event.endDateTime)}</p>
-                    </div>
-                </div>
+                
                 <div className="form-group">
                     <label className="form-label">Expected Participants:</label>
                     {/* Display the number of participants from the backend response */}
@@ -212,11 +197,11 @@ export default async function PendingEventDetailPage({ params }: { params: { id:
 
 
             {/* Sessions */}
-            {event.eventVenues && event.eventVenues.length > 0 && (
+            {event.sessions && event.sessions.length > 0 && (
                 <div className="section-card form-container">
                     <h2>Sessions</h2>
                     <ul className="sessions-list">
-                        {(await groupSessions(event.eventVenues)).map((session, index) => (
+                        {(await (event.sessions)).map((session, index) => (
                             <li key={index} className="session-item">
                                 {session.sessionName && <h3>{session.sessionName}</h3>}
                                 <p><strong>Date:</strong> {formatDate(session.startDateTime)}</p>

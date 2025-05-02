@@ -2,7 +2,7 @@
 'use client'; // Mark this component as a Client Component
 
 import eventService from '@/services/eventService';
-import { BudgetCategory, CreateEventData, EventBudget, Venue } from '@/types/event';
+import { BudgetCategory, CreateEventData, EventBudget, CreateSessionData, Venue } from '@/types/event';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useState, useEffect } from 'react';
@@ -13,6 +13,17 @@ import budgetService from '@/services/budgetService';
 // import { useRouter } from 'next/navigation'; // Import if using router for navigation
 
 
+// Helper function to create a new default session
+const createDefaultSession = (): CreateSessionData => ({
+    id: uuidv4(),
+    sessionName: '',
+    date: '',
+    startTimeOnly: '',
+    endTimeOnly: '',
+    venueIds: [''], // Start with one empty venue selection field
+    startDateTime: '', // Will be calculated later
+    endDateTime: '',   // Will be calculated later
+});
 
 
 
@@ -25,10 +36,9 @@ export default function CreateEventPage() {
         name: '',
         description: '',
         organizerId: 1, // Replace with actual organizer ID logic
-        startDateTime: '',
-        endDateTime: '',
+    
         participantsNo: '',
-        eventVenues: [],
+        sessions: [],
         eventBudgets: [],
     });
 
@@ -107,9 +117,26 @@ export default function CreateEventPage() {
         fetchVenues();
         fetchBudgetCategories();
 
+
+
     }, []); // Empty dependency array []. This ensures the effect runs only once after the initial render.
 
-
+    // --- Initialize with one default session on client mount ---
+    useEffect(() => {
+        setFormData(prev => {
+            // Only add the initial session if the sessions array is currently empty
+            if (prev.sessions.length === 0) {
+                console.log("Adding initial default session.");
+                return {
+                    ...prev,
+                    sessions: [createDefaultSession()], // Use the helper function
+                };
+            }
+            // If sessions array is not empty (e.g., after state reset, HMR), do nothing
+            return prev;
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
 
     const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
@@ -120,7 +147,7 @@ export default function CreateEventPage() {
         // Add the first session
         setFormData(prev => {
             // Only add if the array is currently empty
-            if (prev.eventVenues.length === 0) {
+            if (prev.sessions.length === 0) {
                 const initialVenues = [{
                     id: uuidv4(), // Generate UUID here, ensuring it runs only client-side
                     sessionName: '',
@@ -205,40 +232,33 @@ export default function CreateEventPage() {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            eventVenues: prev.eventVenues.map(session =>
+            sessions: prev.sessions.map(session =>
                 session.id === sessionId ? { ...session, [name]: value } : session
             ),
         }));
     };
-
     const handleAddSession = () => {
         setFormData(prev => ({
             ...prev,
-            eventVenues: [
-                ...prev.eventVenues,
-                {
-                    id: uuidv4(),
-                    sessionName: '',
-                    date: '',
-                    startTimeOnly: '',
-                    endTimeOnly: '',
-                    venueIds: [],
-                    startDateTime: '',
-                    endDateTime: '',
-                },
+            sessions: [
+                ...prev.sessions,
+                createDefaultSession(), // Use the helper function
             ],
         }));
     };
 
     const handleRemoveSession = (sessionId: string) => {
-        if (formData.eventVenues.length <= 1) {
+        if (formData.sessions.length <= 1) {
             alert("You must have at least one session.");
+            setFormError("Each event must have at least one session."); // Optionally set form error
             return;
         }
         setFormData(prev => ({
             ...prev,
-            eventVenues: prev.eventVenues.filter(session => session.id !== sessionId),
+            sessions: prev.sessions.filter(session => session.id !== sessionId),
         }));
+        setFormError(null);// Clear error if removal was successful
+
     };
 
     // --- Budget Handlers ---
@@ -325,9 +345,9 @@ export default function CreateEventPage() {
     const handleVenueSelectChange = (sessionId: string, venueIndex: number, value: string) => {
         setFormData({
             ...formData,
-            eventVenues: formData.eventVenues.map(session => {
+            sessions: formData.sessions.map(session => {
                 if (session.id === sessionId) {
-                    const updatedVenueIds = [...session.venueIds];
+                    const updatedVenueIds = [...(session.venueIds || [])];
                     updatedVenueIds[venueIndex] = value; // Update the specific venue ID at the given index
                     return { ...session, venueIds: updatedVenueIds };
                 }
@@ -341,10 +361,10 @@ export default function CreateEventPage() {
     const handleAddVenueToSession = (sessionId: string) => {
         setFormData({
             ...formData,
-            eventVenues: formData.eventVenues.map(session => {
+            sessions: formData.sessions.map(session => {
                 if (session.id === sessionId) {
                     // Add an empty string to the venueIds array
-                    return { ...session, venueIds: [...session.venueIds, ''] };
+                    return { ...session, venueIds: [...(session.venueIds || []), ''] };
                 }
                 return session;
             }),
@@ -356,10 +376,10 @@ export default function CreateEventPage() {
     const handleRemoveVenueFromSession = (sessionId: string, venueIndex: number) => {
         setFormData({
             ...formData,
-            eventVenues: formData.eventVenues.map(session => {
+            sessions: formData.sessions.map(session => {
                 if (session.id === sessionId) {
                     // Filter out the venue ID at the given index
-                    const updatedVenueIds = session.venueIds.filter((_, index) => index !== venueIndex);
+                    const updatedVenueIds = (session.venueIds ?? []).filter((_, index) => index !== venueIndex);
                     // Ensure there's always at least one venue select left if you don't want zero
                     if (updatedVenueIds.length === 0) {
                         return { ...session, venueIds: [''] }; // Add one empty select back
@@ -374,204 +394,188 @@ export default function CreateEventPage() {
 
 
     // --- Form Submission ---
-
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-
         console.log("Enter handle submit");
         e.preventDefault();
         setIsLoading(true);
         setFormError(null);
 
+        if (!formData.sessions || formData.sessions.length === 0) {
+            setFormError("The event must have at least one session defined.");
+            setIsLoading(false);
+            return;
+        }
+
         try {
-            // **Data Transformation & Validation (Crucial Step)**
-            let overallStartTime = '';
-            let overallEndTime = '';
+            // *** MODIFIED: Process sessions to match backend SessionDTO structure ***
+            const processedSessionsForBackend = formData.sessions.map((session) => {
+                 // Combine date and time strings
+                 session.startDateTime = `${session.date}T${session.startTimeOnly}`;
+                 session.endDateTime = `${session.date}T${session.endTimeOnly}`;
 
-            const processedEventVenues: {
-                sessionName: string;
-                startDateTime: string;
-                endDateTime?: string;
-                venueId: number; // Backend expects number ID
-            }[] = [];
+                // Validation
+                if (!session.sessionName || session.sessionName.trim() === '') {
+                    throw new Error(`Session Name is required for session (Client ID ${session.id}).`); // Use client ID for error clarity
+                }
+                if (!session.date || !session.startTimeOnly) {
+                     throw new Error(`Start Date & Time is required for session "${session.sessionName}".`);
+                 }
+                 if (!session.endTimeOnly) {
+                    throw new Error(`End Time is required for session "${session.sessionName}".`);
+                 }
 
-            // const processedSessions = formData.eventVenues.map((session, index) => {
-            //     if (!session.date || !session.startTimeOnly || !session.venueId || !session.sessionName) {
-            //         throw new Error(`Please fill in all details for Session ${index + 1} (Name, Date, Start Time, Venue).`);
-            //     }
-
-            //     const startDateTime = `${session.date}T${session.startTimeOnly}`;
-            //     const endDateTime = session.endTimeOnly ? `${session.date}T${session.endTimeOnly}` : undefined;
-
-            //     if (endDateTime && startDateTime >= endDateTime) {
-            //         throw new Error(`End time must be after start time for Session ${index + 1}.`);
-            //     }
-
-            //     if (!overallStartTime || startDateTime < overallStartTime) {
-            //         overallStartTime = startDateTime;
-            //     }
-            //     const effectiveEndTime = endDateTime || startDateTime; // Use start time if end time is missing for comparison
-            //     if (!overallEndTime || effectiveEndTime > overallEndTime) {
-            //         overallEndTime = effectiveEndTime;
-            //     }
-
-
-            //     return {
-            //         // id: session.id, // Usually don't send UI id to backend
-            //         sessionName: session.sessionName,
-            //         startDateTime: startDateTime, // Send combined datetime
-            //         endDateTime: endDateTime,     // Send combined datetime
-            //         venueId: session.venueId,
-            //     };
-            // });
-            for (const session of formData.eventVenues) { // Assuming formData.eventVenues holds the logical sessions from the form state
-                // --- Basic Validation for the logical session ---
-                // Ensure session name, date, and start time are filled
-                if (!session.sessionName || !session.date || !session.startTimeOnly) {
-                    throw new Error(`Please fill in Session Name, Date, and Start Time for all sessions.`);
+                 // Validate combined date/time (basic check)
+                if (session.endDateTime <= session.startDateTime) {
+                    throw new Error(`End time must be after start time for session "${session.sessionName}".`);
                 }
 
-                // Ensure at least one venue is selected for this session
-                // Assuming session.venueIds is an array of strings from the form state
-                // if (!session.venueIds || !Array.isArray(session.venueIds) || session.venueIds.length === 0) {
-                //     throw new Error(`Please select at least one Venue for Session "${session.sessionName}".`);
-                // }
+                // Filter out empty/unselected venue IDs and parse them
+                const validVenueIds = (session.venueIds || [])
+                                        .filter(vid => vid && vid.trim() !== '')
+                                        .map(vid => parseInt(vid, 10));
 
-                // --- Combine Date and Time for the logical session ---
-                const sessionStartDateTime = `${session.date}T${session.startTimeOnly}`;
-                const sessionEndDateTime = session.endTimeOnly ? `${session.date}T${session.endTimeOnly}` : undefined;
-
-                // Validate time range for the logical session
-                if (sessionEndDateTime && sessionStartDateTime >= sessionEndDateTime) {
-                    throw new Error(`End time must be after start time for Session "${session.sessionName}".`);
+                if (validVenueIds.some(isNaN)) {
+                    throw new Error(`Invalid Venue ID selected for Session "${session.sessionName}". Please ensure all selected venues are valid.`);
                 }
 
-                // --- Update Overall Event Time Range (Optional, if needed for main event object) ---
-                // This logic calculates the earliest start and latest end time across all sessions.
-                if (!overallStartTime || sessionStartDateTime < overallStartTime) {
-                    overallStartTime = sessionStartDateTime;
-                }
-                const effectiveSessionEndTime = sessionEndDateTime || sessionStartDateTime; // Use start time if end time is missing for comparison
-                if (!overallEndTime || effectiveSessionEndTime > overallEndTime) {
-                    overallEndTime = effectiveSessionEndTime;
+                 if (validVenueIds.length === 0) {
+                    throw new Error(`At least one venue must be selected for session "${session.sessionName}".`);
                 }
 
 
-                // --- Generate Backend EventVenue Objects for EACH selected venue ---
-                for (const venueIdString of session.venueIds) {
-                    const venueIdNumber = parseInt(venueIdString, 10);
+                // *** Prepare data for backend (SessionDTO structure) ***
+                // The backend SessionDTO expects a List<Venue>. We send a list
+                // of objects containing only the 'id' as that's what the backend
+                // logic actually uses to link venues.
+                const backendSessionData = {
+                    sessionName: session.sessionName,
+                    startDateTime: session.startDateTime, // Format: "YYYY-MM-DDTHH:mm"
+                    endDateTime: session.endDateTime,     // Format: "YYYY-MM-DDTHH:mm"
+                    // --- KEY CHANGE HERE ---
+                    // Transform the array of venue IDs into an array of {id: number} objects
+                    venues: validVenueIds.map(id => ({ id: id })),
+                    // Note: The 'id' field from the frontend Session type (the UUID)
+                    // is *not* sent to the backend, as the backend will generate its own ID.
+                    // Similarly, qrCodeImage is generated backend-side if needed.
+                };
 
-                    // Validate venue ID conversion
-                    if (isNaN(venueIdNumber)) {
-                        throw new Error(`Invalid Venue selected for Session "${session.sessionName}".`);
-                    }
 
-                    // Create a new EventVenue object for this specific venue link
-                    processedEventVenues.push({
-                        sessionName: session.sessionName, // Use the logical session's name
-                        startDateTime: sessionStartDateTime, // Use the logical session's start time
-                        endDateTime: sessionEndDateTime,     // Use the logical session's end time
-                        venueId: venueIdNumber, // Use the numeric ID of the current venue
-                    });
-                }
-            }
+                return backendSessionData;
+            });
 
+
+            // Process Budgets (Structure matches backend EventBudgetDTO)
+            // Filter out budgets without a category or allocated amount
             const processedBudgets = formData.eventBudgets
-                .filter(budget => budget.budgetCategoryId) // Only process budgets with a selected category
+                .filter(budget => budget.budgetCategoryId !== undefined && budget.budgetCategoryId !== null && budget.amountAllocated !== '' && budget.amountAllocated !== null)
                 .map((budget, index) => {
-                    if (budget.amountAllocated === '') {
-                        throw new Error(`Please enter an allocated amount for Budget item ${index + 1}.`);
+                    const amountAllocatedNum = Number(budget.amountAllocated);
+                    if (isNaN(amountAllocatedNum) || amountAllocatedNum <= 0) { // Ensure positive allocation
+                        throw new Error(`Invalid or non-positive allocated amount for Budget item ${index + 1} (${budget.categoryName || 'Unknown Category'}). Amount must be greater than 0.`);
                     }
-                    if (Number(budget.amountAllocated) < 0) {
-                        throw new Error(`Allocated amount cannot be negative for Budget item ${index + 1}.`);
+                    if (budget.budgetCategoryId === undefined || budget.budgetCategoryId === null) { // Redundant check, but safe
+                        throw new Error(`Budget category is missing for item ${index + 1}.`);
                     }
+                    // Structure matches EventBudgetDTO: amountAllocated, amountSpent, budgetCategoryId
                     return {
-                        amountAllocated: Number(budget.amountAllocated),
-                        amountSpent: budget.amountSpent,
+                        amountAllocated: amountAllocatedNum,
+                        amountSpent: budget.amountSpent || 0, // Default spent to 0 if not provided
                         budgetCategoryId: budget.budgetCategoryId,
                     };
                 });
 
 
-            if (!formData.name) {
+            // Basic Form Validation
+            if (!formData.name || formData.name.trim() === '') {
                 throw new Error("Event Title is required.");
             }
-            if (formData.participantsNo === '') {
-                throw new Error("Total Expected Participants is required.");
+            if (formData.participantsNo === '' || Number(formData.participantsNo) <= 0) {
+                throw new Error("Total Expected Participants must be a positive number.");
             }
 
-            // Construct the final payload for the API
-            const finalData: Omit<CreateEventData, 'supportingDocument' | 'eventBudgets' | 'eventVenues'> & { eventBudgets: typeof processedBudgets; eventVenues: typeof processedEventVenues } = {
-                name: formData.name,
-                description: formData.description,
-                organizerId: formData.organizerId,
-                startDateTime: overallStartTime,
-                endDateTime: overallEndTime,
-                participantsNo: Number(formData.participantsNo),
-                eventVenues: processedEventVenues,
-                eventBudgets: processedBudgets,
-            };
-
-            console.log('Submitting data (excluding file):', finalData);
-
-            // --- Replace with your actual API call using FormData for file upload ---
+            // Construct the final payload using FormData for potential file upload
             const apiFormData = new FormData();
-            apiFormData.append('name', finalData.name);
-            apiFormData.append('description', finalData.description);
-            apiFormData.append('organizerId', finalData.organizerId.toString());
-            apiFormData.append('startDateTime', finalData.startDateTime);
-            apiFormData.append('endDateTime', finalData.endDateTime);
-            apiFormData.append('participantsNo', finalData.participantsNo.toString());
-            apiFormData.append('eventVenues', JSON.stringify(finalData.eventVenues));
-            apiFormData.append('eventBudgets', JSON.stringify(finalData.eventBudgets));
+            apiFormData.append('name', formData.name);
+            if (formData.description) apiFormData.append('description', formData.description);
+            apiFormData.append('organizerId', formData.organizerId.toString()); // Ensure it's a string
+            apiFormData.append('participantsNo', formData.participantsNo.toString()); // Ensure it's a string
+
+            // Append the correctly structured session and budget data as JSON strings
+            apiFormData.append('sessions', JSON.stringify(processedSessionsForBackend));
+            apiFormData.append('eventBudgets', JSON.stringify(processedBudgets));
+
+            // Append the file if it exists
             if (approvalFile) {
                 apiFormData.append('supportingDocument', approvalFile);
                 console.log('Appending file:', approvalFile.name);
             } else {
                 console.log('No supporting document file selected.');
+                // Depending on backend requirements, you might need to explicitly send null
+                // or an empty value if the document is optional but expected in the request.
+                // Check your backend API specification. If it's truly optional and the
+                // backend handles its absence, doing nothing here is fine.
             }
 
+            console.log('Submitting FormData:', {
+                name: apiFormData.get('name'),
+                description: apiFormData.get('description'),
+                organizerId: apiFormData.get('organizerId'),
+                participantsNo: apiFormData.get('participantsNo'),
+                sessions: apiFormData.get('sessions'), // Will show the stringified JSON
+                eventBudgets: apiFormData.get('eventBudgets'), // Will show the stringified JSON
+                supportingDocument: apiFormData.get('supportingDocument') ? (apiFormData.get('supportingDocument') as File).name : 'None'
+            });
             console.log('Calling api.....');
-            // Example API call structure:
+
+            // API Call using the service
             const createdEvent = await eventService.createEventService(apiFormData);
             console.log('API Response:', createdEvent);
 
-            // const newEventName = createdEvent.name; // <-- Accesses properties of the response object
-            const newEventId = createdEvent.id; // <-- Accesses properties of the response object
-
-            setSubmitSuccess("Event submitted for approval successfully!"); // <-- Updates state based on success
-            console.log('/events/pending/${newEventId}, ', newEventId);
-            router.push(`/events/pending/${newEventId}`); // <-- Redirects based on success data
-
-            // // Mock Success:
-            // await new Promise(resolve => setTimeout(resolve, 1500));
-            // console.log('Form Submitted Successfully (Simulated)');
-            // alert('Event submitted for approval!');
-            // router.push('/events'); // Navigate on success
+            // --- Success Handling ---
+            const newEventId = createdEvent.id; // Assuming the response contains the new event's ID
+            setSubmitSuccess("Event submitted for approval successfully!"); // Trigger success message/overlay
+            console.log('Redirecting to /events/pending/', newEventId);
+            router.push(`/events/pending/${newEventId}`); // Navigate to a relevant page
 
         } catch (error: any) {
             console.error("Submission Error:", error);
-            setFormError(error.message || "An unexpected error occurred during submission.");
+            // Provide more specific feedback if possible
+            if (error.response && error.response.data && error.response.data.message) {
+                 // Error from backend API
+                setFormError(`Submission Failed: ${error.response.data.message}`);
+            } else if (error instanceof Error) {
+                 // Error generated during frontend processing (validation, etc.)
+                setFormError(`Submission Failed: ${error.message}`);
+            } else {
+                // Generic fallback error
+                setFormError("An unexpected error occurred during submission. Please check your input and try again.");
+            }
         } finally {
-            setIsLoading(false);
+            setIsLoading(false); // Ensure loading indicator is turned off
         }
     };
 
+
     const handleCancel = () => {
-        console.log('Form cancelled');
+        // ... (keep existing cancel logic)
+         console.log('Form cancelled');
         // Optionally add confirmation
-        // Reset form state:
+        // Reset form state using the helper function for default session
         setFormData({
-            name: '', description: '', organizerId: 1, startDateTime: '', endDateTime: '',
+            name: '',
+            description: '',
+            organizerId: 1, // Reset to default or fetch dynamically
             participantsNo: '',
-            eventVenues: [{ id: uuidv4(), sessionName: '', date: '', startTimeOnly: '', endTimeOnly: '', venueIds: [], startDateTime: '', endDateTime: '' }],
-            eventBudgets: [],
+            sessions: [createDefaultSession()], // Reset with one default session
+            eventBudgets: [], // Clear budgets
         });
         setApprovalFile(null);
         setRecommendedVenues([]);
         setFormError(null);
-        // router.back(); // Navigate back
+        setShowSuccessMessage(false); // Hide any success message
+        setSubmitSuccess(null);
+        // router.back(); // Optional: Navigate back
     };
-
 
     // --- Render JSX ---
     return (
@@ -769,12 +773,12 @@ export default function CreateEventPage() {
                         </div>
 
 
-                        {formData.eventVenues.map((session, index) => (
+                        {formData.sessions.map((session, index) => (
                             <div key={session.id} className="session-group"> {/* Use session-group class */}
                                 <div className="session-header"> {/* Define session-header for layout */}
                                     <div className="flex items-center justify-between mb-2">
                                         <h3>Session {index + 1}</h3>
-                                        {formData.eventVenues.length > 1 && (
+                                        {formData.sessions.length > 1 && (
                                             <button
                                                 className="delete-button"
                                                 type="button"
@@ -847,7 +851,7 @@ export default function CreateEventPage() {
                                     <label className="form-label">Venues:</label> {/* Label for the venue section */}
 
                                     {/* Map over the venueIds array to render multiple selects */}
-                                    {(session.venueIds).map((venueId, venueIndex) => (
+                                    {((session.venueIds || [])).map((venueId, venueIndex) => (
                                         <div key={venueIndex} className="form-group-item form-group-inline" style={{ marginBottom: '10px' }}> {/* Use inline for select and remove button */}
                                             <div className="flex items-center justify-between gap-4 mb-2">
                                                 <select
@@ -869,7 +873,7 @@ export default function CreateEventPage() {
                                                     ))}
                                                 </select>
                                                 {/* Remove button for this specific venue select */}
-                                                {session.venueIds.length > 1 && ( // Only show remove if there's more than one venue select
+                                                {(session.venueIds || []).length > 1 && ( // Only show remove if there's more than one venue select
                                                     <button
                                                         type="button"
                                                         onClick={() => handleRemoveVenueFromSession(session.id, venueIndex)} // Use specific handler

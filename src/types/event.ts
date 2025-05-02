@@ -21,10 +21,9 @@ export interface Event {
     startDateTime?: string; // ISO string like "YYYY-MM-DDTHH:mm:ss"
     endDateTime?: string | null; // End time can be null
     status: EventStatus; // Use the enum
-    qrCodePath?: string | null; // Path to QR code, can be null
     supportingDocument?: SupportingDocument | null; // Optional supporting document
     participantsNo?: number; // Number of participants
-    eventVenues?: EventVenue[]; // Array of session/venue details (backend calls them EventVenue)
+    sessions: Session[]; // Array of session/venue details (backend calls them EventVenue)
     eventBudgets: EventBudget[]; // Array of budget details (backend calls them EventBudget)
     team?: TeamMember[];     // Added team members
     posters?: string[]; // Array of poster image URLs (example)
@@ -41,6 +40,47 @@ export interface SupportingDocument {
     uploadedAt: string; // ISO string
 }
 
+export interface EventBudget {
+    id: string; // Unique ID for managing the item in the UI
+    amountAllocated: number | ''; // Allow empty string for input control
+    amountSpent: number; // Typically starts at 0 for creation
+    budgetCategoryId?: number; // ID from backend
+    categoryName?: string; // Store category name used in select
+}
+
+/**
+ * Interface for a Venue.
+ */
+export interface Venue {
+    id: string;
+    name: string;
+    location: string; // e.g., building, room number
+    capacity: number;
+    // Add other venue properties
+}
+
+export interface BudgetCategory {
+    id: number;
+    name: string;
+}
+
+export function createBudgetCategoryMap(budgetCategories: { id: number, name: string }[]) {
+    return new Map<number, string>(
+        budgetCategories.map((cat) => [cat.id, cat.name])
+    );
+}
+
+export interface Session {
+    id: string; // Unique ID for managing the session in the UI
+    sessionName: string; // Name for the specific session/part of the event
+    startDateTime: string; // Combined Date + Time for this session's start
+    endDateTime?: string; // Combined Date + Time for this session's end
+    venues: Venue[]; // ID of the selected venue for this session
+    qrCodeImage?: string; // Separate date field for form input control
+}
+
+
+
 /**
 /**
  * Interface for data needed to create a new Event.
@@ -54,40 +94,21 @@ export interface CreateEventData {
     name: string;
     description: string;
     organizerId: number;
-    startDateTime: string; // ISO format, e.g., "2025-05-21T09:00"
-    endDateTime: string;
     participantsNo: number | '';
-    eventVenues: EventVenues[];
+    sessions: CreateSessionData[];
     eventBudgets: EventBudget[];
     supportingDocument?: File;
 }
 
-export interface EventBudget {
-    id: string; // Unique ID for managing the item in the UI
-    amountAllocated: number | ''; // Allow empty string for input control
-    amountSpent: number; // Typically starts at 0 for creation
-    budgetCategoryId?: number; // ID from backend
-    categoryName?: string; // Store category name used in select
-}
 
-export interface EventVenues {
+
+export interface CreateSessionData {
     id: string; // Unique ID for managing the session in the UI
     sessionName: string; // Name for the specific session/part of the event
     startDateTime: string; // Combined Date + Time for this session's start
-    endDateTime?: string; // Combined Date + Time for this session's end
-    venueIds: string[] // allow multiple venues for a session
-    date?: string; // Separate date field for form input control
-    startTimeOnly?: string; // Separate start time field for form input control
-    endTimeOnly?: string; // Separate end time field for form input control
-}
-
-
-export interface EventVenue {
-    id: string; // Unique ID for managing the session in the UI
-    sessionName: string; // Name for the specific session/part of the event
-    startDateTime: string; // Combined Date + Time for this session's start
-    endDateTime?: string; // Combined Date + Time for this session's end
-    venueId: number; // ID of the selected venue for this session
+    endDateTime: string; // Combined Date + Time for this session's end
+    venueIds?: string[]; // allow multiple venues for a session
+    qr_code_path?: string;
     date?: string; // Separate date field for form input control
     startTimeOnly?: string; // Separate start time field for form input control
     endTimeOnly?: string; // Separate end time field for form input control
@@ -122,20 +143,6 @@ export interface UpdateEventData extends Partial<CreateEventData> {
 //     qrCodeUrl?: string; // URL for the attendance QR code (if backend generates)
 // }
 
-/**
- * Interface for data needed to create a new Session.
- */
-export interface CreateSessionData {
-    name: string;
-    date: string;
-    startTime: string;
-    endTime?: string;
-    venueId: string;
-    description?: string;
-    speaker?: string;
-    // Backend will typically link it to the event ID upon creation
-}
-
 
 /**
  * Interface for a Participant registered for an Event.
@@ -163,27 +170,6 @@ export interface AttendanceRecord {
     // Add other relevant attendance details
 }
 
-/**
- * Interface for a Venue.
- */
-export interface Venue {
-    id: string;
-    name: string;
-    location: string; // e.g., building, room number
-    capacity: number;
-    // Add other venue properties
-}
-
-export interface BudgetCategory {
-    id: number;
-    name: string;
-}
-
-export function createBudgetCategoryMap(budgetCategories: { id: number, name: string }[]) {
-    return new Map<number, string>(
-        budgetCategories.map((cat) => [cat.id, cat.name])
-    );
-}
 
 export interface SimpleEvent {
     id: number;

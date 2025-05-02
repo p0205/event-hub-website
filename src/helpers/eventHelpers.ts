@@ -1,5 +1,5 @@
 import venueService from "@/services/venueService";
-import { EventVenue, Venue } from "@/types/event";
+import { CreateSessionData, Venue } from "@/types/event";
 
 // Helper function to format date and time
 export const formatDateTime = (dateTimeString: string | null | undefined): string => {
@@ -46,7 +46,7 @@ export const formatDate = (dateString: string | null | undefined): string => {
 };
 
 // Helper to group sessions by sessionName + startDateTime + endDateTime
-export const groupSessions = async (eventVenues: EventVenue[]): Promise<{ sessionName: string; startDateTime: string; endDateTime: string; venues: Venue[] }[]> => {
+export const groupSessions = async (eventVenues: CreateSessionData[]): Promise<{ sessionName: string; startDateTime: string; endDateTime: string; venues: Venue[] }[]> => {
     const sessionMap: Map<string, { sessionName: string; startDateTime: string; endDateTime: string; venues: Venue[] }> = new Map(); // Use a Map to group sessions by unique keys
 
     console.log("Event Venues:", eventVenues); // Debugging log

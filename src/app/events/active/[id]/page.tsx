@@ -6,18 +6,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation'; // To get route parameters (the event ID)
 import Link from 'next/link'; // For any internal links
 import eventService from '@/services/eventService';
-import { Event, EventVenue, TeamMember, Venue } from '@/types/event'; // Ensure Venue is imported
+import { Event, Session, TeamMember, Venue } from '@/types/event'; // Ensure Venue is imported
 import venueService from '@/services/venueService';
 import { formatDate, formatDateTime, groupSessions } from '@/helpers/eventHelpers'; // Assuming this path is correct
 import BudgetTable from '@/components/BudgetTable';
 
-// Define the structure for grouped sessions if not already globally defined
-interface GroupedSession {
-  sessionName: string;
-  startDateTime: string;
-  endDateTime: string;
-  venues: Venue[];
-}
+
 
 interface UserSearchResult {
   id: string;
@@ -56,9 +50,9 @@ export default function ActiveEventDetailsPage() {
   // const [team, setTeam] = useState<TeamMember[]>([]); // Not used directly, event.team is used
 
   // --- State for grouped sessions ---
-  const [groupedSessionsData, setGroupedSessionsData] = useState<GroupedSession[]>([]);
-  const [loadingSessions, setLoadingSessions] = useState(false); // Loading state for sessions specifically
-  const [sessionError, setSessionError] = useState<string | null>(null); // Error state for sessions
+  // const [sessions, setSessions] = useState<Session[]>([]);
+  // const [loadingSessions, setLoadingSessions] = useState(false); // Loading state for sessions specifically
+  // const [sessionError, setSessionError] = useState<string | null>(null); // Error state for sessions
 
   // Assume current user ID is available (e.g., from auth context)
   const currentUserId = 1; // TODO: Replace with actual logged-in user ID
@@ -76,8 +70,8 @@ export default function ActiveEventDetailsPage() {
       setLoading(true);
       setError(null);
       setEvent(null); // Reset event data on new fetch
-      setGroupedSessionsData([]); // Reset sessions
-      setSessionError(null);
+      // setSessions([]); // Reset sessions
+      // setSessionError(null);
 
       try {
         const fetchedEvent = await eventService.getEventById(eventId);
@@ -98,34 +92,34 @@ export default function ActiveEventDetailsPage() {
 
   }, [eventId]); // Refetch if eventId changes
 
-  // Effect 2: Process sessions AFTER event data is loaded
-  useEffect(() => {
-    // Only run if event data exists, has venues, and sessions aren't already loaded/loading
-    if (event && event.eventVenues && event.eventVenues.length > 0 && groupedSessionsData.length === 0 && !loadingSessions) {
-      const processSessions = async () => {
-        setLoadingSessions(true);
-        setSessionError(null);
-        try {
-          // Call the async groupSessions function
-          const sessions = await groupSessions(event.eventVenues ?? []);
-          setGroupedSessionsData(sessions); // Store results in state
-        } catch (err: any) {
-          console.error("Error processing sessions:", err);
-          setSessionError("Failed to load session details."); // Set session-specific error
-        } finally {
-          setLoadingSessions(false);
-        }
-      };
-      processSessions();
-    } else if (event && (!event.eventVenues || event.eventVenues.length === 0)) {
-         // Handle case where event exists but has no venues
-         setGroupedSessionsData([]);
-         setLoadingSessions(false);
-    }
+  // // Effect 2: Process sessions AFTER event data is loaded
+  // useEffect(() => {
+  //   // Only run if event data exists, has venues, and sessions aren't already loaded/loading
+  //   if (event && event.sessions && event.sessions.length > 0 && sessions.length === 0 && !loadingSessions) {
+  //     const processSessions = async () => {
+  //       setLoadingSessions(true);
+  //       setSessionError(null);
+  //       try {
+  //         // Call the async groupSessions function
+  //         const sessions = await groupSessions(event.eventVenues ?? []);
+  //         setGroupedSessionsData(sessions); // Store results in state
+  //       } catch (err: any) {
+  //         console.error("Error processing sessions:", err);
+  //         setSessionError("Failed to load session details."); // Set session-specific error
+  //       } finally {
+  //         setLoadingSessions(false);
+  //       }
+  //     };
+  //     processSessions();
+  //   } else if (event && (!event.eventVenues || event.eventVenues.length === 0)) {
+  //        // Handle case where event exists but has no venues
+  //        set([]);
+  //        setLoadingSessions(false);
+  //   }
     
-    // Intentionally NOT depending on groupedSessionsData to avoid loops
-    // Only depends on 'event' state changing and 'loadingSessions' state
-  }, [event, loadingSessions]); // Rerun when event data is fetched or if loading state changes
+  //   // Intentionally NOT depending on groupedSessionsData to avoid loops
+  //   // Only depends on 'event' state changing and 'loadingSessions' state
+  // }, [event, loadingSessions]); // Rerun when event data is fetched or if loading state changes
 
 
   // --- Handlers (Keep as they are, they correctly use async/await internally) ---
@@ -223,16 +217,12 @@ export default function ActiveEventDetailsPage() {
       </div>
 
 
-      {/* Sessions - Render from groupedSessionsData state */}
+      {/* Sessions  */}
       <div className="section-card form-container">
           <h2>Sessions</h2>
-          {loadingSessions ? (
-              <p className="loading-message">Loading session details...</p>
-          ) : sessionError ? (
-              <p className="error-message">{sessionError}</p>
-          ) : groupedSessionsData.length > 0 ? (
+          {event.sessions.length > 0 ? (
               <ul className="sessions-list">
-                  {groupedSessionsData.map((session, index) => (
+                  {event.sessions.map((session, index) => (
                       <li key={`${session.sessionName}-${index}`} className="session-item"> {/* More stable key */}
                           {session.sessionName && <h3>{session.sessionName}</h3>}
                           <p><strong>Date:</strong> {formatDate(session.startDateTime)}</p>
