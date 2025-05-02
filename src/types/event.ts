@@ -76,7 +76,7 @@ export interface Session {
     startDateTime: string; // Combined Date + Time for this session's start
     endDateTime?: string; // Combined Date + Time for this session's end
     venues: Venue[]; // ID of the selected venue for this session
-    qrCodeImage?: string; // Separate date field for form input control
+    qrCodeImage?: Blob; // Separate date field for form input control
 }
 
 
