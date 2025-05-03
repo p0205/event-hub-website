@@ -1,5 +1,6 @@
 // src/services/api.ts (using axios example)
 import axios from 'axios';
+import qs from 'qs';
 
 // Use an environment variable for the backend API URL
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8080';
@@ -8,6 +9,8 @@ const api = axios.create({
   baseURL: BACKEND_API_URL,
   // You can add a timeout here
   // timeout: 10000,
+  paramsSerializer: params =>
+    qs.stringify(params, { arrayFormat: 'repeat' })
 });
 
 // Optional: Add a request interceptor to include auth tokens

@@ -190,7 +190,7 @@ export interface Role {
     name: string;
 }
 export interface TeamMember {
-    userId: string; // User ID
+    userId: number; // User ID
     name: string;
     email: string;
     role: string; // Role assigned in this event's team

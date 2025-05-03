@@ -5,15 +5,12 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
-
 // Assuming a CSS Module for team page specific styles
 import styles from './team.module.css'; // Create this CSS module
 import userService from '@/services/userService';
 import { User } from '@/types/user';
 import teamService from '@/services/teamService';
-import { Role, TeamMember } from '@/types/event';
-
-
+import { Role, TeamMember } from '@/types/event'; // Ensure TeamMember type includes userId, name, email, role
 
 export default function EventTeamPage() {
     const params = useParams();
@@ -21,23 +18,23 @@ export default function EventTeamPage() {
 
     // --- State for data and loading ---
     const [eventTeam, setEventTeam] = useState<TeamMember[]>([]);
-    const [teamRoles, setTeamRoles] = useState<Role[]>([]); // Assuming roles are strings
+    const [teamRoles, setTeamRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // --- State for adding team members ---
+    // --- State for bulk adding team members ---
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<User[]>([]);
-    const [searching, setSearching] = useState(false); // State for search loading
+    const [searching, setSearching] = useState(false);
     const [searchError, setSearchError] = useState<string | null>(null);
 
-    const [showAddMemberModal, setShowAddMemberModal] = useState(false);
-    const [selectedUserToAdd, setSelectedUserToAdd] = useState<User | null>(null); // User selected from search results
-    const [selectedRoleToAdd, setSelectedRoleToAdd] = useState<Role | null>(null); // Role selected for the user to be added
+    const [showAddMemberSection, setShowAddMemberSection] = useState(false); // Controls visibility of the add section
+    const [selectedRoleForAdd, setSelectedRoleForAdd] = useState<Role | null>(null); // Role selected for the bulk add
+    const [selectedUsersForAdd, setSelectedUsersForAdd] = useState<User[]>([]); // List of users selected for bulk add
 
-    const [addingUser, setAddingUser] = useState(false); // State for adding user loading
-    const [addUserSuccess, setAddUserSuccess] = useState(false); // State for successful addition
-    const [addUserError, setAddUserError] = useState<string | null>(null);
+    const [addingUsers, setAddingUsers] = useState(false); // State for bulk adding users loading
+    const [addUsersSuccess, setAddUsersSuccess] = useState(false); // State for successful bulk addition
+    const [addUsersError, setAddUsersError] = useState<string | null>(null); // State for bulk addition errors
 
     const [refreshTeamTrigger, setRefreshTeamTrigger] = useState(0); // State to trigger refresh of team data
 
@@ -48,9 +45,9 @@ export default function EventTeamPage() {
             setError(null);
             try {
                 const teamMembers = await teamService.getTeamMembers(Number(eventId));
-                console.log("--- Fetched team data ---", teamMembers); // <-- Check this log
+                console.log("--- Fetched team data ---", teamMembers);
                 setEventTeam(teamMembers);
-                console.log("--- eventTeam state updated ---", teamMembers); // <-- Check this log too
+                console.log("--- eventTeam state updated ---", teamMembers);
             } catch (e: any) {
                 console.error("Error loading team data:", e);
                 setError(`Failed to load team data: ${e.message || 'Unknown error'}`);
@@ -58,55 +55,62 @@ export default function EventTeamPage() {
                 setLoading(false);
             }
         };
-    
+
         console.log("Loading team data effect triggered for event ID:", eventId, "Trigger:", refreshTeamTrigger);
         loadTeamData();
-    
+
     }, [eventId, refreshTeamTrigger]); // Rerun if eventId or trigger changes
 
+    // --- Data Loading (fetch roles - triggered when add section is shown) ---
     useEffect(() => {
         const loadRoles = async () => {
-            setLoading(true);
-            setError(null); // Clear previous errors on new load attempt
+            setLoading(true); // Consider a separate loading state for roles if main loading is disruptive
+            // setError(null); // Decide if you want to clear main error here
             try {
-                const data = await teamService.getRoles(); // Replace with your actual service call
+                const data = await teamService.getRoles();
                 setTeamRoles(data);
-
             } catch (e: any) {
                 console.error("Error loading team roles:", e);
-                setError(`Failed to load team roles data: ${e.message || 'Unknown error'}`);
+                // Set a specific error for roles if needed, or use the main error state
+                setError(`Failed to load team roles: ${e.message || 'Unknown error'}`);
             } finally {
-                setLoading(false);
+                setLoading(false); // Decide if you want to manage main loading state here
             }
         };
 
-        if (showAddMemberModal) {
-            console.log("showAddMemberModal is true, loading roles...");
+        if (showAddMemberSection) {
+            console.log("showAddMemberSection is true, loading roles...");
             loadRoles();
         } else {
+            // Clear roles when the section is hidden
             setTeamRoles([]);
-            setError(null);
+            setSelectedRoleForAdd(null); // Clear selected role too
+            setSelectedUsersForAdd([]); // Clear selected users
+            setSearchQuery(''); // Clear search
+            setSearchResults([]); // Clear results
+            setSearchError(null); // Clear search error
+            setAddUsersError(null); // Clear add errors
+            setAddUsersSuccess(false); // Clear success state
         }
-        // ---------------------------------------------
 
-    }, [showAddMemberModal]); // Dependency array: rerun effect when showAddMemberModal changes
+    }, [showAddMemberSection]); // Dependency array: rerun effect when showAddMemberSection changes
 
 
     // --- Handlers ---
 
-    // Handle email search input change
+    // Handle search input change (Keep existing)
     const handleSearchEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(e.target.value);
-        // Clear selected user and results when input changes
-        setSelectedUserToAdd(null);
+        // Clear search results and selected users when input changes substantially (optional debounce recommended)
         setSearchResults([]);
+        // Consider if you want to clear selectedUsersForAdd here or only on section close/successful add
+        // setSelectedUsersForAdd([]);
         setSearchError(null);
     };
 
-    // Handle triggering the user search (e.g., on button click or after debounce)
-    // Using useCallback to memoize the function
+    // Handle triggering the user search (Keep existing)
     const handleSearchUsers = useCallback(async () => {
-        if (!searchQuery) {
+        if (!searchQuery.trim()) { // Check for empty or whitespace query
             setSearchResults([]);
             setSearchError(null);
             return;
@@ -114,21 +118,11 @@ export default function EventTeamPage() {
 
         setSearching(true);
         setSearchError(null);
-        setSearchResults([]); // Clear previous results
-        setSelectedUserToAdd(null); // Clear selected user
+        setSearchResults([]);
+        // Keep selectedUsersForAdd, don't clear on search
 
         try {
-            // TODO: Implement API call to search users by email
-            // Example: const response = await fetch(`/api/users/search?email=${searchEmail}`);
-            // if (!response.ok) throw new Error('Search failed');
-            // const data: User[] = await response.json();
-
-            const data = await userService.getUserByNameOrEmail(searchQuery); // Call the user service to get users by name or email
-            // --- Simulate Mock Search Results ---
-            // Filter mock results based on the search email
-            // --- End Simulate Mock Search Results ---
-
-
+            const data = await userService.getUserByNameOrEmail(searchQuery.trim());
             setSearchResults(data);
 
             if (data.length === 0) {
@@ -142,123 +136,177 @@ export default function EventTeamPage() {
         } finally {
             setSearching(false);
         }
-    }, [searchQuery]); // Dependencies for useCallback
+    }, [searchQuery]);
 
 
-    // Handle selecting a user from the search results
-    const handleSelectUserToAdd = (user: User) => {
-        setSelectedUserToAdd(user);
-        setSearchResults([]); // Clear results after selection
-        setSearchQuery(''); // Clear the search input
-        setShowAddMemberModal(true);
-    };
-
-    // Handle changing the role for the user to be added
+    // Handle changing the role for the bulk add (New)
     const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedRoleName = e.target.value; // Get the string value from the dropdown
-    
+        const selectedRoleName = e.target.value; // Get the value from the <option>
+
         // Find the corresponding Role object in the teamRoles array
+        // Assuming <option value={role.id}> and role.id is a number
         const selectedRole = teamRoles.find(role => role.name === selectedRoleName);
-    
-        // Set the state to the found Role object
+
         if (selectedRole) {
-            setSelectedRoleToAdd(selectedRole);
+            setSelectedRoleForAdd(selectedRole);
+            // Optional: Clear selected users if changing the role makes the previous selection irrelevant
+            // setSelectedUsersForAdd([]);
         } else {
-            // Handle the case where the role is not found (shouldn't happen if teamRoles is correct)
             console.warn(`Selected role  "${selectedRoleName}" not found in teamRoles.`);
-            setSelectedRoleToAdd(null); // Or set to a default role if appropriate
+            setSelectedRoleForAdd(null);
         }
+         setAddUsersError(null); // Clear previous errors when role changes
     };
 
-    // Handle adding the selected user to the team (Simulated with state update)
-    const handleAddTeamMember = async () => {
-        if (!selectedUserToAdd || !selectedRoleToAdd) {
-            console.error("No user or role selected to add.");
-            // TODO: Show user feedback
+
+    // Handle toggling user selection for bulk add (New)
+    const handleToggleUserSelection = (user: User) => {
+        setSelectedUsersForAdd(prevSelected => {
+            // Check if the user is already in the selected list by comparing IDs
+            const isSelected = prevSelected.some(u => u.id === user.id);
+
+            if (isSelected) {
+                // If already selected, remove them from the list
+                console.log(`Deselecting user: ${user.name}`);
+                return prevSelected.filter(u => u.id !== user.id);
+            } else {
+                // If not selected, add them to the list
+                 // Optional: Add a check here if the user is already a *member* of the event team
+                 const isAlreadyMember = eventTeam.some(member => member.userId === user.id);
+                 if (isAlreadyMember) {
+                      console.warn(`User ${user.name} is already a member of the event team.`);
+                      setAddUsersError(`User ${user.name} is already a member.`); // Provide feedback to the user
+                      // Don't add to the selected list
+                      return prevSelected;
+                 }
+
+                console.log(`Selecting user: ${user.name}`);
+                return [...prevSelected, user];
+            }
+        });
+         setAddUsersError(null); // Clear previous errors when selection changes
+         setAddUsersSuccess(false); // Clear success message
+    };
+
+    // Handle adding all selected users with the chosen role (New)
+    const handleAddSelectedUsers = async () => {
+        if (!selectedRoleForAdd || selectedUsersForAdd.length === 0) {
+            console.error("Attempted bulk add without selected role or users.");
+            setAddUsersError("Please select a role and at least one user.");
+            setAddUsersSuccess(false);
             return;
         }
 
-        // Check if the user is already in the team
-        const alreadyInTeam = eventTeam.some(member => member.userId === selectedUserToAdd.id);
-        if (alreadyInTeam) {
-            console.warn(`User ${selectedUserToAdd.name} is already in the team.`);
-            setAddUserError(`User ${selectedUserToAdd.name} is already in the team.`);
-            // TODO: Show user feedback
-            return;
-        }
+        setAddingUsers(true);
+        setAddUsersError(null);
+        setAddUsersSuccess(false);
 
-        setAddingUser(true);
-        setAddUserError(null);
+        const userIdsToAdd = selectedUsersForAdd.map(user => Number(user.id));
+        const roleIdToAssign = selectedRoleForAdd.id; // Get the ID from the selected Role object
 
+        console.log(`Initiating bulk add for users (IDs: ${userIdsToAdd.join(', ')}) with role ID ${roleIdToAssign} to event ${eventId}`);
 
-        console.log(`Simulating adding user ${selectedUserToAdd.name} (ID: ${selectedUserToAdd.id}) with role ${selectedRoleToAdd.name} (ID: ${selectedRoleToAdd.id}) to event ${eventId}`);
+        console.log("Selected users for bulk add:", userIdsToAdd);
         try {
-            await teamService.addTeamMember(Number(eventId), Number(selectedUserToAdd.id), selectedRoleToAdd.id);
+            // --- API Call for Bulk Add ---
+            // Call the service method that talks to your backend's bulk add endpoint.
+            // You MUST implement teamService.addTeamMembersBulk
+            await teamService.addTeamMembers(Number(eventId), userIdsToAdd, roleIdToAssign);
+            // -----------------------------
 
-            // Reset add user form state
-            setSelectedUserToAdd(null);
-            setSelectedRoleToAdd((teamRoles[0] as Role) || null);
-            setSearchQuery(''); // Clear search email input too
+            // On successful backend response:
+            setAddUsersSuccess(true); // Indicate success
+            setAddUsersError(null); // Clear any previous errors
+
+            // --- Reset Add Form State ---
+            setSelectedUsersForAdd([]); // Clear the list of selected users
+            setSelectedRoleForAdd(null); // Optional: Clear the selected role too
+            setSearchQuery(''); // Clear search input
             setSearchResults([]); // Clear search results
-            setAddUserSuccess(true); // Set success state
-            setShowAddMemberModal(false);
+            // Optional: Close the add section automatically on success
+            // setShowAddMemberSection(false);
+            // ----------------------------
+
+            // Trigger a refetch of the main team list to show the newly added members
+            console.log("Bulk add successful. Triggering team data refetch.");
             setRefreshTeamTrigger(prev => prev + 1);
-            console.log("Simulated successful team member addition.");
 
         } catch (e: any) {
-            console.error("Simulated add team member error:", e);
-            setAddUserError(`Failed to add team member: ${e.message || 'Unknown error'}`);
+            console.error("Bulk add team member API error:", e);
+             // Attempt to extract a user-friendly error message
+            const apiErrorMessage = e.response?.data?.message || e.message || 'Unknown error';
+            setAddUsersError(`Failed to add users: ${apiErrorMessage}`);
+            setAddUsersSuccess(false); // Ensure success state is false on error
         } finally {
-            setAddingUser(false);
+            setAddingUsers(false); // End loading state
         }
-        // --- End Simulated State Update ---
     };
 
 
-    // Handle deleting a team member (Simulated with state update)
-    const handleDeleteTeamMember = async (teamMemberId: string, userName: string) => {
-        console.log(`Simulating deleting team member ${userName} (ID: ${teamMemberId}) from event ${eventId}`);
+    // Handle deleting a team member (Keep existing, confirm userId usage)
+    const handleDeleteTeamMember = async (userIdToDelete: number, userName: string) => { // Changed type to number
+        console.log(`Attempting to delete team member ${userName} (User ID: ${userIdToDelete}) from event ${eventId}`);
 
-        // TODO: Add confirmation dialog before deleting
+        if (!window.confirm(`Are you sure you want to remove ${userName} from the team?`)) {
+            return;
+        }
 
-        setLoading(true); // Show loading while deleting
-        setError(null); // Clear previous errors
+        // Use loading state while deleting (can use a separate state if needed)
+        setLoading(true);
+        setError(null);
 
-        // TODO: Implement API call to delete the team member
-        // Example: fetch(`/api/events/${eventId}/team/${teamMemberId}`, {
-        //     method: 'DELETE',
-        // });
-
-        // --- Simulate State Update for Deleting Team Member ---
-        // In a real app, you would make an API call here first.
-        // After successful API call, update the state.
         try {
+            // Implement the actual API call to delete the team member on the backend
+            // This call likely needs eventId and the user ID (userIdToDelete)
+            // You MUST implement teamService.deleteTeamMember
+            //  await teamService.deleteTeamMember(Number(eventId), userIdToDelete);
 
-            setEventTeam(prevTeam => prevTeam.filter(member => member.userId !== teamMemberId)); // Remove from the list
-            console.log("Simulated successful team member deletion.");
+            // // If the API call is successful, update the local state by filtering
+            // setEventTeam(prevTeam => prevTeam.filter(member => member.userId !== userIdToDelete)); // Assuming TeamMember DTO has userId property
+
+            console.log("Team member successfully deleted.");
+            // No need to trigger full refetch unless filtering state is problematic
 
         } catch (e: any) {
-            console.error("Simulated delete team member error:", e);
-            setError(`Failed to delete team member: ${e.message || 'Unknown error'}`);
+            console.error("Delete team member error:", e);
+            const apiErrorMessage = e.response?.data?.message || e.message || 'Unknown error';
+            setError(`Failed to delete team member: ${apiErrorMessage}`);
+             // Trigger refetch on error to sync state with backend if filtering failed
+            setRefreshTeamTrigger(prev => prev + 1);
         } finally {
-            setLoading(false); // Hide loading
+            setLoading(false);
         }
-        // --- End Simulated State Update ---
     };
 
 
     // --- Effect for Debouncing Search (Optional but Recommended) ---
-    // You might want to add a debounce effect here so search doesn't fire on every keystroke
+    // Consider adding a debounce effect here so search doesn't fire on every keystroke
+    // You would replace the call to handleSearchUsers in handleSearchEmailChange
     // Example using lodash.debounce or a custom debounce hook:
-    // const debouncedSearch = useMemo(() => debounce(handleSearchUsers, 300), [handleSearchUsers]);
-    // useEffect(() => {
-    //   debouncedSearch();
-    //   return () => debouncedSearch.cancel(); // Cleanup debounce on component unmount
-    // }, [searchEmail, debouncedSearch]);
+    /*
+    const debouncedSearchUsers = useMemo(() => debounce(handleSearchUsers, 300), [handleSearchUsers]);
+
+    useEffect(() => {
+      // Only trigger debounce if search query is not empty
+      if (searchQuery.trim()) {
+         debouncedSearchUsers();
+      } else {
+         // If query is empty, cancel any pending debounce call and clear results/error
+         debouncedSearchUsers.cancel();
+         setSearchResults([]);
+         setSearchError(null);
+      }
+
+      // Cleanup debounce on component unmount or if handleSearchUsers changes
+      return () => {
+        debouncedSearchUsers.cancel();
+      };
+    }, [searchQuery, debouncedSearchUsers]);
+    */
 
 
     // --- Render Logic ---
-    if (loading) {
+    if (loading && eventTeam.length === 0) { // Show initial loading only if team data is empty
         return (
             <div className="page-content-wrapper">
                 <h2 className="page-title">Team</h2>
@@ -267,148 +315,195 @@ export default function EventTeamPage() {
         );
     }
 
-    if (error) {
-        return (
+    if (error && eventTeam.length === 0) { // Show initial error only if team data is empty
+         return (
             <div className="page-content-wrapper">
                 <h2 className="page-title">Team</h2>
                 <p className="error-message">Error: {error}</p>
             </div>
-        );
+         );
     }
 
     const hasTeamMembers = eventTeam && eventTeam.length > 0;
     const hasCategoriesForRoles = teamRoles && teamRoles.length > 0; // Check if there are roles defined
 
+
     return (
-        <div className="page-content-wrapper"> {/* Wrapper for padding/spacing */}
-            {/* --- Page Title --- */}
+        <div className="page-content-wrapper">
             <h2 className="page-title">Team</h2>
 
             {/* --- Add Team Member Section --- */}
-            <div className="form-container"> {/* Reuse form-container for card styling */}
+            <div className="form-container" style={{ marginBottom: '20px' }}> {/* Add spacing below section */}
                 <h3>Add Team Member</h3>
-                <div className={styles["add-team-member-form"]}> {/* Use CSS Module for layout */}
-                    {/* Email Search Input */}
-                    <div className="form-group"> {/* Reuse form-group */}
-                        <label htmlFor="searchEmail">Search User by Email or Name:</label>
-                        <input
-                            type="email" // Or text, depending on preferred search field
-                            id="searchEmail"
-                            value={searchQuery}
-                            onChange={handleSearchEmailChange}
-                            placeholder="Enter user email or name"
-                        />
-                        {/* Optional: Add a search button if not using debounce */}
-                        <button className="button-secondary" onClick={handleSearchUsers} disabled={searching || !searchQuery} style={{ marginLeft: '10px' }}>
-                            {searching ? 'Searching...' : 'Search'}
-                        </button>
-                    </div>
+                 {/* Button/Trigger to show/hide the section */}
+                <button className="button-secondary" onClick={() => setShowAddMemberSection(!showAddMemberSection)} style={{ marginBottom: '15px' }}>
+                    {showAddMemberSection ? 'Hide Add Member Form' : 'Show Add Member Form'}
+                </button>
 
-                    {/* Search Results Display */}
-                    {searching && <p className="loading-message">Searching...</p>}
-                    {searchError && <p className="error-message">{searchError}</p>}
 
-                    {searchResults.length > 0 && (
-                        <div className={styles["search-results"]}> {/* Use CSS Module for layout */}
-                            <h4>Search Results:</h4>
-                            <ul>
-                                {searchResults.map(user => (
-                                    <li key={user.id} className={styles["search-result-item"]}> {/* Use CSS Module */}
-                                        {/* User Profile Image */}
-                                        <img
-                                            src={'/default-avatar.png'} // Use default if no image
-                                            alt={user.name}
-                                            className={styles["profile-image"]} // Use CSS Module
-                                            width={40} // Set size or use CSS
-                                            height={40}
-                                        />
-                                        <div className={styles["user-info"]}> {/* Use CSS Module */}
-                                            <div className={styles["user-name"]}>{user.name}</div> {/* Use CSS Module */}
-                                            <div className={styles["user-email"]}>{user.email}</div> {/* Use CSS Module */}
-                                        </div>
-                                        {/* Select Button */}
-                                        <button className="button-secondary" onClick={() => handleSelectUserToAdd(user)}>
-                                            Select
-                                        </button>
-                                    </li>
+                {showAddMemberSection && (
+                    <div className={styles["add-team-member-form"]}>
+
+                        {/* --- Role Selection --- */}
+                        <div className="form-group">
+                            <label htmlFor="teamRole">Assign Role:</label>
+                            <select
+                                id="teamRole"
+                                value={selectedRoleForAdd?.name || ''}
+                                onChange={handleRoleChange}
+                                disabled={!hasCategoriesForRoles || addingUsers || loading}
+                            >
+                                <option value="" disabled>Select a Role</option>
+                                {teamRoles.map(role => (
+                                    <option key={role.name} value={role.name}>{role.name}</option>
                                 ))}
-                            </ul>
+                            </select>
+                             {/* Optional: Display selected role name */}
+                             {selectedRoleForAdd && (
+                                <p style={{ marginTop: '5px', fontWeight: 'bold' }}>Selected Role: {selectedRoleForAdd.name}</p>
+                             )}
                         </div>
-                    )}
 
-                    {/* Selected User and Role Selection */}
-                    {selectedUserToAdd && showAddMemberModal && hasCategoriesForRoles && ( // Show this section only if a user is selected and roles exist
-                        <div className={styles["selected-user-area"]}> {/* Use CSS Module */}
-                            <h4>Selected User:</h4>
-                            <div className={styles["selected-user-details"]}> {/* Use CSS Module */}
-                                {/* User Profile Image */}
-                                <img
-                                    src={'/default-avatar.png'} // Use default if no image
-                                    alt={selectedUserToAdd.name}
-                                    className={styles["profile-image"]} // Use CSS Module (reuse style)
-                                    width={40}
-                                    height={40}
+
+                        {/* --- User Search Input --- */}
+                         {/* Show search only if a role is selected and roles exist */}
+                        {selectedRoleForAdd && hasCategoriesForRoles && (
+                            <div className="form-group" style={{ marginTop: '15px' }}>
+                                <label htmlFor="searchEmail">Search User by Email or Name:</label>
+                                <input
+                                    type="text"
+                                    id="searchEmail"
+                                    value={searchQuery}
+                                    onChange={handleSearchEmailChange}
+                                    placeholder="Enter user email or name"
+                                    disabled={addingUsers || searching}
                                 />
-                                <div className={styles["user-info"]}> {/* Use CSS Module (reuse style) */}
-                                    <div className={styles["user-name"]}>{selectedUserToAdd.name}</div>
-                                    <div className={styles["user-email"]}>{selectedUserToAdd.email}</div>
-                                </div>
-                                {/* Role Selection */}
-                                <div className="form-group" style={{ marginLeft: '20px' }}> {/* Reuse form-group */}
-                                    <label htmlFor="teamRole">Assign Role:</label>
-                                    <select
-                                        id="teamRole"
-                                        value={selectedRoleToAdd?.name || ''}
-                                        onChange={handleRoleChange}
-                                    >
-                                        {teamRoles.map(role => (
-                                            <option key={role.id} value={role.name}>{role.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                                 {/* If using debounce, this button might trigger the debounce directly */}
+                                <button className="button-secondary" onClick={handleSearchUsers} disabled={searching || !searchQuery.trim() || addingUsers}>
+                                    {searching ? 'Searching...' : 'Search'}
+                                </button>
                             </div>
-                            {/* Add to Team Button */}
-                            <button className="button-primary" onClick={handleAddTeamMember} disabled={addingUser}>
-                                {addingUser ? 'Adding...' : 'Add to Team'}
-                            </button>
-                            {addUserError && <p className="error-message" style={{ marginTop: '10px' }}>{addUserError}</p>}
-                        </div>
-                    )}
-                    {selectedUserToAdd && !hasCategoriesForRoles && (
-                        <div className={styles["selected-user-area"]}>
-                            <p className="error-message">No team roles defined to assign.</p>
-                        </div>
-                    )}
-                </div>
+                        )}
+
+
+                        {/* Search Results Display */}
+                         {selectedRoleForAdd && hasCategoriesForRoles && ( // Show results area only if role selected
+                            <> {/* Use fragment if needed */}
+                                {searching && <p className="loading-message">Searching...</p>}
+                                {searchError && <p className="error-message">{searchError}</p>}
+
+                                {searchResults.length > 0 && (
+                                    <div className={styles["search-results"]} style={{ marginTop: '15px' }}>
+                                        <h4>Search Results:</h4>
+                                        <ul>
+                                            {searchResults.map(user => {
+                                                const isSelected = selectedUsersForAdd.some(u => u.id === user.id);
+                                                const isAlreadyMember = eventTeam.some(member => member.userId === user.id);
+
+                                                return (
+                                                    <li key={user.id} className={`${styles["search-result-item"]} ${isSelected ? styles["selected"] : ''} ${isAlreadyMember ? styles["already-member"] : ''}`}>
+                                                        <img src={'/default-avatar.png'} alt={user.name} className={styles["profile-image"]} width={40} height={40} />
+                                                        <div className={styles["user-info"]}>
+                                                            <div className={styles["user-name"]}>{user.name}</div>
+                                                            <div className={styles["user-email"]}>{user.email}</div>
+                                                        </div>
+                                                        {isAlreadyMember ? (
+                                                            <span className={styles["already-member-tag"]}>Already Member</span>
+                                                        ) : (
+                                                            <button
+                                                                className={isSelected ? "button-secondary" : "button-primary"}
+                                                                onClick={() => handleToggleUserSelection(user)}
+                                                                disabled={addingUsers}
+                                                            >
+                                                                {isSelected ? 'Deselect' : 'Select'}
+                                                            </button>
+                                                        )}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    </div>
+                                )}
+                            </>
+                         )}
+
+
+                        {/* --- Selected Users List --- */}
+                        {selectedUsersForAdd.length > 0 && (
+                            <div className={styles["selected-users-list"]} style={{ marginTop: '20px' }}>
+                                <h4>Selected Users ({selectedUsersForAdd.length}):</h4>
+                                <ul>
+                                    {selectedUsersForAdd.map(user => (
+                                        <li key={user.id} className={styles["selected-user-item"]}>
+                                            <img src={'/default-avatar.png'} alt={user.name} className={styles["profile-image"]} width={30} height={30} />
+                                            <div className={styles["user-info"]}>
+                                                <div className={styles["user-name"]}>{user.name}</div>
+                                                <div className={styles["user-email"]}>{user.email}</div>
+                                            </div>
+                                            <button
+                                                className="button-secondary"
+                                                onClick={() => handleToggleUserSelection(user)}
+                                                disabled={addingUsers}
+                                            >
+                                                Remove
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+
+                        {/* --- Add All Selected Users Button --- */}
+                        {selectedRoleForAdd && selectedUsersForAdd.length > 0 && (
+                            <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                                <button
+                                    className="button-primary"
+                                    onClick={handleAddSelectedUsers}
+                                    disabled={addingUsers}
+                                >
+                                    {addingUsers ? 'Adding...' : `Add ${selectedUsersForAdd.length} User(s) with Role ${selectedRoleForAdd.name}`}
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Add/Error/Success Messages */}
+                        {addUsersError && <p className="error-message" style={{ marginTop: '10px' }}>{addUsersError}</p>}
+                        {addUsersSuccess && <p className="success-message" style={{ marginTop: '10px' }}>Users added successfully!</p>}
+
+                    </div>
+                )}
             </div>
 
 
             {/* --- Event Team Members List --- */}
-            <div className="form-container"> {/* Reuse form-container */}
-                <h3>Event Team Members ({eventTeam.length})</h3>
+            <div className="form-container">
+                <h3>Event Team Members ({eventTeam.length}) {loading && eventTeam.length > 0 && <span className="loading-message" style={{marginLeft: '10px'}}>Updating...</span>}</h3> {/* Indicate updating when list is already loaded */}
+                {error && eventTeam.length > 0 && <p className="error-message">{error}</p>} {/* Show error below heading if list exists */}
+
                 {hasTeamMembers ? (
-                    <div className={styles["team-members-list-container"]}> {/* Use CSS Module for layout/container */}
+                    <div className={styles["team-members-list-container"]}>
                         <ul>
                             {eventTeam.map(member => (
-                                <li key={member.userId} className={styles["team-member-item"]}> {/* Use CSS Module for each item */}
+                                <li key={member.userId} className={styles["team-member-item"]}>
                                     {/* User Profile Image */}
                                     <img
-                                        src={'/default-avatar.png'} // Use default if no image
+                                        src={'/default-avatar.png'}
                                         alt={member.name}
-                                        className={styles["profile-image"]} // Use CSS Module (reuse style)
+                                        className={styles["profile-image"]}
                                         width={40}
                                         height={40}
                                     />
-                                    <div className={styles["user-info"]}> {/* Use CSS Module (reuse style) */}
+                                    <div className={styles["user-info"]}>
                                         <div className={styles["user-name"]}>{member.name}</div>
                                         <div className={styles["user-email"]}>{member.email}</div>
                                     </div>
-                                    <span className={styles["team-member-role"]}>{member.role}</span> {/* Display Role */}
+                                    <span className={styles["team-member-role"]}>{member.role}</span>
                                     {/* Delete Button */}
                                     <button
-                                        className="button-secondary" // Reuse button style
+                                        className="button-secondary"
                                         onClick={() => handleDeleteTeamMember(member.userId, member.name)}
-                                        disabled={loading} // Disable while deleting
+                                        disabled={addingUsers || loading} // Disable if adding or loading the main list/deleting
                                     >
                                         Delete
                                     </button>
@@ -417,7 +512,8 @@ export default function EventTeamPage() {
                         </ul>
                     </div>
                 ) : (
-                    <p className="no-events-message">No team members added to this event yet.</p>
+                     // Show "no members" message only when not loading and the list is empty
+                    !loading && <p className="no-events-message">No team members added to this event yet.</p>
                 )}
             </div>
 
