@@ -185,8 +185,12 @@ export interface EventList {
     completedEvents: SimpleEvent[];
 }
 
+export interface Role {
+    id: number;
+    name: string;
+}
 export interface TeamMember {
-    id: string; // User ID
+    userId: string; // User ID
     name: string;
     email: string;
     role: string; // Role assigned in this event's team
