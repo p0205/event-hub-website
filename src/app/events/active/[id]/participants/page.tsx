@@ -15,7 +15,7 @@ import {
 // Adjust paths based on your project structure
 import ParticipantsTable from '@/components/ParticipantsTable';
 import AddParticipantModal from '@/components/AddParticipantModal';
-import { Participant } from '@/types/user'; // Ensure this matches your backend model
+import { User } from '@/types/user'; // Ensure this matches your backend model
 import { eventService } from '@/services'; // Adjust path to your service module
 import { toast } from 'sonner';
 
@@ -34,7 +34,7 @@ interface DemographicsSummary {
     byRole: { [key: string]: number }; // Added role demographics
 }
 
-type SortKey = keyof Participant | null;
+type SortKey = keyof User | null;
 type SortDirection = 'asc' | 'desc';
 
 type FilterType = 'all' | 'faculty' | 'course' | 'year' | 'gender' | 'role'; // Added gender and role filters
@@ -42,7 +42,7 @@ type FilterType = 'all' | 'faculty' | 'course' | 'year' | 'gender' | 'role'; // 
 
 // --- Helper function to calculate demographics ---
 // Move demographics calculation out to a function for clarity
-const calculateDemographics = (data: Participant[]): DemographicsSummary => {
+const calculateDemographics = (data: User[]): DemographicsSummary => {
     const summary: DemographicsSummary = {
         total: data.length,
         byFaculty: {},
@@ -78,7 +78,7 @@ export default function EventParticipantsPage() {
     const eventId = Array.isArray(params.id) ? params.id[0] : params.id; // event ID as string
 
     // --- State for the main list of participants ---
-    const [participants, setParticipants] = useState<Participant[]>([]);
+    const [participants, setParticipants] = useState<User[]>([]);
     // State for demographics derived from participants
     const [demographics, setDemographics] = useState<DemographicsSummary | null>(null);
 
@@ -87,7 +87,7 @@ export default function EventParticipantsPage() {
     const [initialLoadError, setInitialLoadError] = useState<string | null>(null); // Error loading initial data
 
     const [isImporting, setIsImporting] = useState(false); // File import process
-    const [uploadedParticipants, setUploadedParticipants] = useState<Participant[]>([]);
+    const [uploadedParticipants, setUploadedParticipants] = useState<User[]>([]);
     const [importError, setImportError] = useState<string | null>(null);
     const [importSuccess, setImportSuccess] = useState<string | null>(null);
 
@@ -224,7 +224,7 @@ export default function EventParticipantsPage() {
     };
 
 
-    const handleAddParticipant = async (participant: Participant | null) => {
+    const handleAddParticipant = async (participant: User | null) => {
         if (!participant) return; // 如果没选到人，就不做事
         setIsModalOpen(false);
         setIsSaving(true); // Start saving state
@@ -242,7 +242,7 @@ export default function EventParticipantsPage() {
                 return `${name}_${phone}`;
             }));
 
-            let addedParticipants: Participant[] = [];
+            let addedParticipants: User[] = [];
             let skippedCount = 0;
 
           

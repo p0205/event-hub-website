@@ -3,11 +3,11 @@
 
 
 import React, { useState } from 'react';
-import { Participant } from '@/types/user'; // Adjust path
+import { User } from '@/types/user'; // Adjust path
 import ConfirmationModal from './ConfirmationModal';
 
 interface ParticipantsTableProps {
-    participants: Participant[];
+    participants: User[];
     onDeleteParticipant: (id: number | string) => void; // ID can be number or string
 }
 

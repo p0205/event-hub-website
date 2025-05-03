@@ -2,7 +2,7 @@
 import { HttpStatusCode } from 'axios';
 import api from './api'; // Import the central API client
 import { Event, EventList, SimpleEvent } from '@/types/event';
-import { Participant } from '@/types/user';
+import { User } from '@/types/user';
 
 /**
  * Represents the expected successful response structure from the create event API.
@@ -182,14 +182,14 @@ const eventService = {
     return response.data;
   },
 
-  importParticipantsInfo: async (eventId: number, file: File): Promise<Participant[]> => {
+  importParticipantsInfo: async (eventId: number, file: File): Promise<User[]> => {
     console.log("API Call: POST /events/{id}/participants/getInfo");
     // Create a new FormData object to hold the file
     const formData = new FormData();
     formData.append('file', file);
 
     // Makes a POST request to the backend endpoint /events
-    const response = await api.post<Participant[]>(`/events/${eventId}/participants/getInfo`, formData, {
+    const response = await api.post<User[]>(`/events/${eventId}/participants/getInfo`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -201,8 +201,8 @@ const eventService = {
     return response.data;
   },
 
-  getParticipantsByEventId: async (eventId: number): Promise<Participant[]> => {
-    const response = await api.get<Participant[]>(`/events/${eventId}/participants`, {
+  getParticipantsByEventId: async (eventId: number): Promise<User[]> => {
+    const response = await api.get<User[]>(`/events/${eventId}/participants`, {
       params: { eventId }
     });
 
@@ -214,10 +214,10 @@ const eventService = {
   },
 
 
-  saveParticipants: async (eventId: number, participantList: Participant[]): Promise<Participant[]> => {
+  saveParticipants: async (eventId: number, participantList: User[]): Promise<User[]> => {
     console.log("API Call: POST /events/{id}/participants");
 
-    const response = await api.post<Participant[]>(`/events/${eventId}/participants`, participantList,{
+    const response = await api.post<User[]>(`/events/${eventId}/participants`, participantList,{
       params: { eventId }
     });
 

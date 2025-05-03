@@ -624,7 +624,6 @@ export default function EventAttendancePage() {
             {/* Show session selection only if there are sessions */}
             {sessionsExist ? (
                 <div className="form-container"> {/* Reuse form-container for card styling */}
-                    <h3>Select Session</h3>
                     <div className="form-group"> {/* Reuse form-group for layout */}
                         <label htmlFor="sessionSelect" className="form-label">Choose a Session:</label> {/* Added label and class */}
                         <select id="sessionSelect" value={selectedSessionId || ''} onChange={handleSessionChange} className="form-select"> {/* Added class */}

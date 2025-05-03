@@ -6,19 +6,13 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
 // Assuming user data structure
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    profileImageUrl?: string; // Optional profile image
-    // Add other relevant user fields
-}
+
 
 // Assuming team member structure (links user + role to event)
 interface EventTeamMember {
     id: string; // ID for this team membership record
     eventId: string;
-    userId: string; // Link to the User
+    userId: number; // Link to the User
     user: User; // Assuming user details are nested/fetched with the team member
     role: string; // Assigned role (e.g., "Organizer", "Volunteer Coordinator")
 }
@@ -29,6 +23,8 @@ const teamRoles = ['Organizer', 'Volunteer Coordinator', 'Marketing Lead', 'Logi
 
 // Assuming a CSS Module for team page specific styles
 import styles from './team.module.css'; // Create this CSS module
+import userService from '@/services/userService';
+import { User } from '@/types/user';
 
 
 // --- Define Mock Data ---
@@ -38,34 +34,26 @@ const mockEventTeam: EventTeamMember[] = [
     {
         id: 'team-mem-1',
         eventId: 'mock-event-1',
-        userId: 'user-a',
-        user: { id: 'user-a', name: 'Alice Wonderland', email: 'alice@example.com', profileImageUrl: 'https://i.pravatar.cc/50?u=alice@example.com' },
+        userId: 1,
+        user: { id: 'user-a', name: 'Alice Wonderland', email: 'alice@example.com'},
         role: 'Organizer'
     },
      {
         id: 'team-mem-2',
         eventId: 'mock-event-1',
-        userId: 'user-b',
-        user: { id: 'user-b', name: 'Bob The Builder', email: 'bob@example.com', profileImageUrl: 'https://i.pravatar.cc/50?u=bob@example.com' },
+        userId: 2,
+        user: { id: 'user-b', name: 'Bob The Builder', email: 'bob@example.com',  },
         role: 'Volunteer Coordinator'
     },
       {
         id: 'team-mem-3',
         eventId: 'mock-event-1',
-        userId: 'user-c',
-        user: { id: 'user-c', name: 'Charlie Chaplin', email: 'charlie@example.com', profileImageUrl: 'https://i.pravatar.cc/50?u=charlie@example.com' },
+        userId: 3,
+        user: { id: 'user-c', name: 'Charlie Chaplin', email: 'charlie@example.com', },
         role: 'Logistics Support'
     },
 ];
 
-// Mock data for user search results (users who *could* be added)
-const mockUserSearchResults: User[] = [
-    { id: 'user-d', name: 'David Copperfield', email: 'david@example.com', profileImageUrl: 'https://i.pravatar.cc/50?u=david@example.com' },
-    { id: 'user-e', name: 'Eve Adams', email: 'eve.a@example.com', profileImageUrl: 'https://i.pravatar.cc/50?u=eve@example.com' },
-    { id: 'user-f', name: 'Frankenstein', email: 'frank@example.com', profileImageUrl: 'https://i.pravatar.cc/50?u=frank@example.com' },
-    { id: 'user-g', name: 'Grace Hopper', email: 'grace@example.com', profileImageUrl: 'https://i.pravatar.cc/50?u=grace@example.com' },
-];
-// --- End Mock Data ---
 
 
 export default function EventTeamPage() {
@@ -78,7 +66,7 @@ export default function EventTeamPage() {
     const [error, setError] = useState<string | null>(null);
 
     // --- State for adding team members ---
-    const [searchEmail, setSearchEmail] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<User[]>([]);
     const [searching, setSearching] = useState(false); // State for search loading
     const [searchError, setSearchError] = useState<string | null>(null);
@@ -119,7 +107,7 @@ export default function EventTeamPage() {
 
     // Handle email search input change
     const handleSearchEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchEmail(e.target.value);
+        setSearchQuery(e.target.value);
         // Clear selected user and results when input changes
         setSelectedUserToAdd(null);
         setSearchResults([]);
@@ -129,7 +117,7 @@ export default function EventTeamPage() {
     // Handle triggering the user search (e.g., on button click or after debounce)
     // Using useCallback to memoize the function
     const handleSearchUsers = useCallback(async () => {
-        if (!searchEmail) {
+        if (!searchQuery) {
             setSearchResults([]);
             setSearchError(null);
             return;
@@ -146,14 +134,9 @@ export default function EventTeamPage() {
             // if (!response.ok) throw new Error('Search failed');
             // const data: User[] = await response.json();
 
+            const data = await userService.getUserByNameOrEmail(searchQuery); // Call the user service to get users by name or email
             // --- Simulate Mock Search Results ---
             // Filter mock results based on the search email
-            await new Promise(resolve => setTimeout(resolve, 300)); // Simulate search delay
-            const filteredMockResults = mockUserSearchResults.filter(user =>
-                user.email.toLowerCase().includes(searchEmail.toLowerCase()) ||
-                 user.name.toLowerCase().includes(searchEmail.toLowerCase()) // Also allow searching by name
-            );
-            const data = filteredMockResults;
             // --- End Simulate Mock Search Results ---
 
 
@@ -170,14 +153,14 @@ export default function EventTeamPage() {
         } finally {
             setSearching(false);
         }
-    }, [searchEmail]); // Dependencies for useCallback
+    }, [searchQuery]); // Dependencies for useCallback
 
 
     // Handle selecting a user from the search results
     const handleSelectUserToAdd = (user: User) => {
         setSelectedUserToAdd(user);
         setSearchResults([]); // Clear results after selection
-        setSearchEmail(''); // Clear the search input
+        setSearchQuery(''); // Clear the search input
     };
 
     // Handle changing the role for the user to be added
@@ -227,7 +210,7 @@ export default function EventTeamPage() {
              const newTeamMember: EventTeamMember = {
                  id: `team-mem-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Mock ID
                  eventId: eventId,
-                 userId: selectedUserToAdd.id,
+                 userId: Number(selectedUserToAdd.id),
                  user: selectedUserToAdd, // Use the selected user object
                  role: selectedRoleToAdd,
              };
@@ -237,7 +220,7 @@ export default function EventTeamPage() {
              // Reset add user form state
              setSelectedUserToAdd(null);
              setSelectedRoleToAdd(teamRoles[0] || '');
-             setSearchEmail(''); // Clear search email input too
+             setSearchQuery(''); // Clear search email input too
              setSearchResults([]); // Clear search results
 
              console.log("Simulated successful team member addition.");
@@ -332,12 +315,12 @@ export default function EventTeamPage() {
                          <input
                             type="email" // Or text, depending on preferred search field
                             id="searchEmail"
-                            value={searchEmail}
+                            value={searchQuery}
                             onChange={handleSearchEmailChange}
                             placeholder="Enter user email or name"
                          />
                          {/* Optional: Add a search button if not using debounce */}
-                         <button className="button-secondary" onClick={handleSearchUsers} disabled={searching || !searchEmail} style={{ marginLeft: '10px' }}>
+                         <button className="button-secondary" onClick={handleSearchUsers} disabled={searching || !searchQuery} style={{ marginLeft: '10px' }}>
                              {searching ? 'Searching...' : 'Search'}
                          </button>
                     </div>
@@ -354,7 +337,7 @@ export default function EventTeamPage() {
                                      <li key={user.id} className={styles["search-result-item"]}> {/* Use CSS Module */}
                                           {/* User Profile Image */}
                                           <img
-                                             src={user.profileImageUrl || '/default-avatar.png'} // Use default if no image
+                                             src={'/default-avatar.png'} // Use default if no image
                                              alt={user.name}
                                              className={styles["profile-image"]} // Use CSS Module
                                              width={40} // Set size or use CSS
@@ -381,7 +364,7 @@ export default function EventTeamPage() {
                              <div className={styles["selected-user-details"]}> {/* Use CSS Module */}
                                    {/* User Profile Image */}
                                    <img
-                                      src={selectedUserToAdd.profileImageUrl || '/default-avatar.png'} // Use default if no image
+                                      src={ '/default-avatar.png'} // Use default if no image
                                       alt={selectedUserToAdd.name}
                                       className={styles["profile-image"]} // Use CSS Module (reuse style)
                                       width={40}
@@ -431,7 +414,7 @@ export default function EventTeamPage() {
                                  <li key={member.id} className={styles["team-member-item"]}> {/* Use CSS Module for each item */}
                                      {/* User Profile Image */}
                                       <img
-                                         src={member.user.profileImageUrl || '/default-avatar.png'} // Use default if no image
+                                         src={'/default-avatar.png'} // Use default if no image
                                          alt={member.user.name}
                                          className={styles["profile-image"]} // Use CSS Module (reuse style)
                                          width={40}

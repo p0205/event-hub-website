@@ -5,17 +5,17 @@
 import React, { useState } from 'react';
 import ParticipantsTable from '@/components/ParticipantsTable'; // Adjust path
 import AddParticipantModal from '@/components/AddParticipantModal'; // Adjust path
-import { Participant } from '@/types/user'; // Import Participant for Omit
+import { User } from '@/types/user'; // Import Participant for Omit
 import { v4 as uuidv4 } from 'uuid'; // Library to generate unique string IDs for new participants
 import { useRouter } from 'next/navigation'; // For navigation after save
 
 interface ParticipantReviewUIProps {
-    initialParticipants: Participant[];
+    initialParticipants: User[];
     eventId: string;
 }
 
 // --- Simulate API Call for SAVING ---
-const simulateSaveParticipants = async (eventId: string, participants: Participant[]): Promise<boolean> => {
+const simulateSaveParticipants = async (eventId: string, participants: User[]): Promise<boolean> => {
     console.log(`[ParticipantReviewUI] Simulating saving ${participants.length} participants for event ${eventId}`);
 
     const dataToSend = participants.map(p => ({
@@ -50,7 +50,7 @@ const simulateSaveParticipants = async (eventId: string, participants: Participa
 
 const ParticipantReviewUI: React.FC<ParticipantReviewUIProps> = ({ initialParticipants, eventId }) => {
 
-    const [participants, setParticipants] = useState<Participant[]>(initialParticipants);
+    const [participants, setParticipants] = useState<User[]>(initialParticipants);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,10 +61,10 @@ const ParticipantReviewUI: React.FC<ParticipantReviewUIProps> = ({ initialPartic
     };
 
     // Changed parameter type to Omit<Participant, 'id'>
-    const handleAddParticipant = (newParticipantData: Omit<Participant, 'id'>) => {
+    const handleAddParticipant = (newParticipantData: Omit<User, 'id'>) => {
         // Generate a temporary string ID for the new participant in the frontend state
         const tempId = uuidv4();
-        const newParticipant: Participant = {
+        const newParticipant: User = {
              ...newParticipantData,
              id: tempId, // Assign the generated unique string ID
              // Ensure nullable fields are explicitly null if empty string from form (already done in modal, but belt-and-suspenders)
