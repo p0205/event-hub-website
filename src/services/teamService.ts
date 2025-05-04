@@ -57,6 +57,13 @@ const teamService = {
         return response.data; // axios puts the response body in .data
     },
 
+    deleteTeamMember: async (eventId: number, userId: number): Promise<void> => { // Replace 'any' with actual types
+        const response = await api.delete(`/events/${eventId}/teams/${userId}`);
+        if (response.status !== HttpStatusCode.NoContent) {
+            throw new Error('Failed to delete team member');
+        }
+        return;
+    }
 };
 
 export default teamService;

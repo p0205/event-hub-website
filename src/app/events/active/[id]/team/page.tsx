@@ -259,13 +259,14 @@ export default function EventTeamPage() {
             // Implement the actual API call to delete the team member on the backend
             // This call likely needs eventId and the user ID (userIdToDelete)
             // You MUST implement teamService.deleteTeamMember
-            //  await teamService.deleteTeamMember(Number(eventId), userIdToDelete);
+             await teamService.deleteTeamMember(Number(eventId), userIdToDelete);
 
             // // If the API call is successful, update the local state by filtering
             // setEventTeam(prevTeam => prevTeam.filter(member => member.userId !== userIdToDelete)); // Assuming TeamMember DTO has userId property
 
             console.log("Team member successfully deleted.");
-            // No need to trigger full refetch unless filtering state is problematic
+            setRefreshTeamTrigger(prev => prev + 1);
+
 
         } catch (e: any) {
             console.error("Delete team member error:", e);
