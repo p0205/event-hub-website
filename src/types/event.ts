@@ -42,10 +42,10 @@ export interface SupportingDocument {
 
 export interface EventBudget {
     id: string; // Unique ID for managing the item in the UI
-    amountAllocated: number | ''; // Allow empty string for input control
+    amountAllocated: number; // Allow empty string for input control
     amountSpent: number; // Typically starts at 0 for creation
     budgetCategoryId?: number; // ID from backend
-    categoryName?: string; // Store category name used in select
+    budgetCategoryName?: string; // Store category name used in select
 }
 
 /**

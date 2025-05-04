@@ -7,10 +7,10 @@ import { notFound } from 'next/navigation'; // Import notFound for 404 handling
 import eventService from '@/services/eventService';
 // Import the updated types from the correct path
 // Make sure this path is correct and the file src/types/event.ts exists and is saved
-import { Event, EventStatus, SupportingDocument, CreateSessionData, EventBudget, Venue, createBudgetCategoryMap } from '@/types/event'; // <-- Ensure correct import
+import { Event, EventStatus, SupportingDocument, CreateSessionData, Venue, createBudgetCategoryMap } from '@/types/event'; // <-- Ensure correct import
 import venueService from '@/services/venueService';
 import { formatDate, formatDateTime, groupSessions } from '@/helpers/eventHelpers';
-import budgetService from '@/services/budgetService';
+import eventBudgetService from '@/services/eventBudgetService';
 import BudgetTable from '@/components/BudgetTable';
 
 

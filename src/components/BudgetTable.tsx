@@ -4,7 +4,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { createBudgetCategoryMap, EventBudget } from '@/types/event'; // adjust if needed
-import budgetService from '@/services/budgetService';
+import eventBudgetService from '@/services/eventBudgetService';
+import budgetCategoryService from '@/services/budgetCategoryService';
 
 interface BudgetTableProps {
     budgets: EventBudget[];
@@ -19,7 +20,7 @@ const BudgetTable: React.FC<BudgetTableProps> = ({ budgets }) => {
     useEffect(() => {
         const fetchBudgetCategories = async () => {
             try {
-                const budgetCategories = await budgetService.fetchBudgetCategories();       
+                const budgetCategories = await budgetCategoryService.fetchBudgetCategories();       
                 setBudgetCategoryMap(createBudgetCategoryMap(budgetCategories));
             } catch (error) {
                 console.error('Failed to fetch budget categories:', error);

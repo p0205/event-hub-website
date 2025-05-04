@@ -3,310 +3,264 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
+import Link from 'next/link'; // Keep Link if needed elsewhere, otherwise can be removed
+import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
 // Import the ProgressBar component (using global CSS)
 import ProgressBar from '@/components/ProgressBar';
 
 
-// Assuming data structures for Budget Category and Expense
-interface BudgetCategory {
-    id: string;
-    name: string;
-    allocatedAmount: number; // Fixed amount
-    expenses: Expense[]; // Assuming expenses are nested for simplicity in frontend state
-}
-
-interface Expense {
-    id: string;
-    categoryId: string; // Link back to the category
-    description: string; // What the expense was for
-    amount: number;
-    date: string; // When the expense occurred (ISO string or similar)
-    receiptUrl?: string; // URL to the uploaded receipt (if applicable)
-    // Add other relevant fields
-}
-
-
 // Assuming a CSS Module for budget page specific styles
-import styles from './budget.module.css'; // Create this CSS module
-
-
-// --- Define Mock Budget Data ---
-const mockBudgetCategories: BudgetCategory[] = [
-    {
-        id: 'cat-venue',
-        name: 'Venue Rental',
-        allocatedAmount: 5000.00,
-        expenses: [
-            { id: 'exp-v1', categoryId: 'cat-venue', description: 'Main hall rental fee', amount: 4500.00, date: '2025-04-15', receiptUrl: '/mock-receipts/venue-rental.pdf' },
-            { id: 'exp-v2', categoryId: 'cat-venue', description: 'Cleaning service', amount: 250.00, date: '2025-04-20' },
-        ]
-    },
-    {
-        id: 'cat-catering',
-        name: 'Catering',
-        allocatedAmount: 3000.00,
-        expenses: [
-            { id: 'exp-c1', categoryId: 'cat-catering', description: 'Lunch for 50 people', amount: 1500.00, date: '2025-04-20' },
-            { id: 'exp-c2', categoryId: 'cat-catering', description: 'Coffee break snacks', amount: 300.00, date: '2025-04-20' },
-        ]
-    },
-    {
-        id: 'cat-marketing',
-        name: 'Marketing & Promotion',
-        allocatedAmount: 1000.00,
-        expenses: [
-            { id: 'exp-m1', categoryId: 'cat-marketing', description: 'Social media ads', amount: 400.00, date: '2025-04-10' },
-            { id: 'exp-m2', categoryId: 'cat-marketing', description: 'Flyer printing', amount: 200.00, date: '2025-04-05' },
-             { id: 'exp-m3', categoryId: 'cat-marketing', description: 'Exceeded budget item', amount: 500.00, date: '2025-04-22' }, // Expense to exceed budget
-        ]
-    },
-     {
-        id: 'cat-misc',
-        name: 'Miscellaneous',
-        allocatedAmount: 500.00,
-        expenses: [
-             // No expenses yet in this category
-        ]
-    }
-];
-// --- End Mock Budget Data ---
-
+import styles from './budget.module.css'; // Ensure this CSS module exists and is appropriate
+// Import services (assuming they fetch EventBudget data without nested expenses)
+// import { BudgetCategory } from '@/types/event'; // BudgetCategory might not be needed directly if fetched within eventBudget
+import budgetCategoryService from '@/services/budgetCategoryService'; // Keep if used elsewhere, maybe for category names if not in EventBudget
+import eventBudgetService from '@/services/eventBudgetService';
+import { EventBudget } from '@/types/event';
 
 export default function EventBudgetPage() {
     const params = useParams();
     const eventId = params.id as string;
 
     // --- State ---
-    const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
+    const [eventBudgets, setEventBudgets] = useState<EventBudget[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // State for managing the centralized "Add Expense" form
+    // State for managing the centralized "Add Expense" form (Modal)
     const [isAddExpenseFormOpen, setIsAddExpenseFormOpen] = useState(false);
     const [newExpenseData, setNewExpenseData] = useState({
-        categoryId: '', // Add categoryId to form state
-        description: '',
+        categoryId: '', // ID of the EventBudget category to update
+        description: '', // Still capture description for the API call
         amount: '',
-        date: ''
+        date: '' // Still capture date for the API call
     });
-    // State for handling potential receipt file upload
+    // State for handling potential receipt file upload (for API call)
     const [newExpenseReceiptFile, setNewExpenseReceiptFile] = useState<File | null>(null);
-     const [receiptFileName, setReceiptFileName] = useState<string | null>(null); // To show selected file name
+    const [receiptFileName, setReceiptFileName] = useState<string | null>(null); // To show selected file name
 
-
-    // --- Data Loading (using Mock Data) ---
+    // --- Data Loading (Load event budgets) ---
     useEffect(() => {
-        const loadMockBudgetData = async () => {
+        const loadBudgetData = async () => {
             setLoading(true);
             setError(null);
             try {
-                // Simulate data loading delay (optional)
+                // Fetch event budget data (assuming it returns EventBudget[] without nested expenses)
+                const data = await eventBudgetService.getEventBudgets(Number(eventId));
+                // Ensure amountAllocated is a number or '', and amountSpent is a number
+                // --- Mapping step ---
+                const mappedData = data.map(backendBudget => ({
+                    // Generate a UUID for the frontend UI id
+                    id: uuidv4(), // Assuming you use a library like uuid and import v4()
+                    // Keep the backend's ID if you need it for updates/deletes later
+                    backendId: backendBudget.id, // Assuming backend ID is 'id' property and is a number
+                    amountAllocated: Number(backendBudget.amountAllocated), // Ensure correct types
+                    amountSpent: Number(backendBudget.amountSpent),     // Ensure correct types
+                    budgetCategoryId: backendBudget.budgetCategoryId,
+                    budgetCategoryName: backendBudget.budgetCategoryName,
+                    // Include nested expenses if your backend returns them and your interface expects it
+                    // amountSpent: backendBudget.amountSpent, // If backend returns array of expenses
+                }));
+                // --------------------
 
-                // Use mock data directly
-                const data: BudgetCategory[] = mockBudgetCategories;
-                setBudgetCategories(data);
+                setEventBudgets(mappedData); 
+                console.log("Event Budgets loaded:", data);
 
             } catch (e: any) {
-                console.error("Error loading mock budget data:", e);
-                setError(`Failed to load mock budget data: ${e.message || 'Unknown error'}`);
+                console.error("Error loading budget data:", e);
+                setError(`Failed to load budget data: ${e.message || 'Unknown error'}`);
             } finally {
                 setLoading(false);
             }
         };
 
-        loadMockBudgetData();
+        if (eventId) {
+            loadBudgetData();
+        }
 
     }, [eventId]);
-
 
     // --- Derived Data ---
 
     // Calculate total spent for each category and remaining balance
+    // This calculation remains the same as it relies on eventBudget.amountSpent
     const categoryBudgetSummary = useMemo(() => {
-        return budgetCategories.map(category => {
-            const totalSpent = category.expenses.reduce((sum, expense) => sum + expense.amount, 0);
-            const remainingBalance = category.allocatedAmount - totalSpent;
-             // Percentage calculation is now handled inside the ProgressBar component
-             // We still need the flag for checking if the budget is exceeded
-            const percentageCheck = category.allocatedAmount > 0
-                ? (totalSpent / category.allocatedAmount) * 100
-                : (totalSpent > 0 ? 100 : 0);
+        return eventBudgets.map(eventBudget => {
+            const totalSpent = eventBudget.amountSpent; // Already cumulative
+            const allocated = Number(eventBudget.amountAllocated) || 0;
+            const remainingBalance = allocated - totalSpent;
+            const percentageCheck = allocated > 0
+                ? (totalSpent / allocated) * 100
+                : (totalSpent > 0 ? 100 : 0); // Handle division by zero
             const exceeded = percentageCheck > 100;
 
             return {
-                ...category,
+                ...eventBudget,
                 totalSpent,
                 remainingBalance,
-                exceeded, // Include the exceeded flag
+                exceeded,
+                allocated: allocated, // Ensure allocated is a number for progress bar
             };
         });
-    }, [budgetCategories]);
+    }, [eventBudgets]);
 
     // Calculate overall event budget summary
+    // This calculation also remains largely the same
     const overallBudgetSummary = useMemo(() => {
-        const totalAllocated = budgetCategories.reduce((sum, category) => sum + category.allocatedAmount, 0);
-        // Sum totalSpent from categoryBudgetSummary to use the already calculated values
+        const totalAllocated = categoryBudgetSummary.reduce((sum, summary) => sum + summary.allocated, 0);
         const totalSpentAcrossAllCategories = categoryBudgetSummary.reduce((sum, summary) => sum + summary.totalSpent, 0);
         const overallRemaining = totalAllocated - totalSpentAcrossAllCategories;
-         // Percentage calculation is now handled inside the ProgressBar component
-         // We still need the flag for checking if the overall budget is exceeded
-         const overallPercentageCheck = totalAllocated > 0
-             ? (totalSpentAcrossAllCategories / totalAllocated) * 100
-             : (totalSpentAcrossAllCategories > 0 ? 100 : 0);
+        const overallPercentageCheck = totalAllocated > 0
+            ? (totalSpentAcrossAllCategories / totalAllocated) * 100
+            : (totalSpentAcrossAllCategories > 0 ? 100 : 0); // Handle division by zero
         const overallExceeded = overallPercentageCheck > 100;
 
         return {
             totalAllocated,
             totalSpent: totalSpentAcrossAllCategories,
             overallRemaining,
-             overallExceeded, // Include the overallExceeded flag
+            overallExceeded,
         };
-    }, [budgetCategories, categoryBudgetSummary]);
+    }, [categoryBudgetSummary]);
 
 
     // --- Handlers ---
 
-    // Handle opening/closing the centralized "Add Expense" form (now a modal)
+    // Handle opening/closing the centralized "Add Expense" modal
     const handleOpenAddExpenseForm = () => {
-        // Check if there are categories available before opening the form
-        if (budgetCategories.length > 0) {
+        if (eventBudgets.length > 0) {
             setIsAddExpenseFormOpen(true);
-            // Reset form data and file when opening
-            // Pre-select the first category if available
-            setNewExpenseData({ categoryId: budgetCategories[0]?.id || '', description: '', amount: '', date: '' });
+            // Reset form data and file when opening, pre-select first category if available
+            setNewExpenseData({ categoryId: eventBudgets[0]?.id || '', description: '', amount: '', date: '' });
             setNewExpenseReceiptFile(null);
             setReceiptFileName(null);
         } else {
+            // Maybe show a notification that no budget categories exist
             console.warn("Cannot add expense: No budget categories found.");
-            // TODO: Show a user-friendly message indicating no categories exist
+            alert("Please add budget categories before adding expenses."); // Simple feedback
         }
     };
 
     const handleCloseAddExpenseForm = () => {
         setIsAddExpenseFormOpen(false);
-        // Optionally reset form data when closing
+        // Reset form data when closing
         setNewExpenseData({ categoryId: '', description: '', amount: '', date: '' });
         setNewExpenseReceiptFile(null);
         setReceiptFileName(null);
     };
 
-
     // Handle input changes in the "Add Expense" form
-    const handleNewExpenseInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { // Accept SelectElement too
+    const handleNewExpenseInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setNewExpenseData(prevData => ({ ...prevData, [name]: value }));
     };
 
-     // Handle receipt file input change
+    // Handle receipt file input change
     const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         setNewExpenseReceiptFile(file || null);
         setReceiptFileName(file ? file.name : null);
     };
 
-
-    // Handle submitting a new expense (Simulated with state update)
-    const handleAddExpense = async () => { // Removed categoryId parameter
-        const { categoryId, description, amount, date } = newExpenseData; // Get categoryId from state
+    // Handle submitting a new expense
+    const handleAddExpense = async () => {
+        const { categoryId, description, amount, date } = newExpenseData;
 
         // Basic validation
         if (!categoryId || !description || !amount || !date) {
-            console.error("Category, Description, Amount, and Date are required for a new expense.");
-            // TODO: Show user feedback (e.g., a toast notification or error message in the form)
+            alert("Please fill in all fields: Category, Description, Amount, and Date.");
             return;
         }
         const expenseAmount = parseFloat(amount);
-         if (isNaN(expenseAmount) || expenseAmount <= 0) {
-             console.error("Invalid expense amount.");
-             // TODO: Show user feedback
-             return;
-         }
+        if (isNaN(expenseAmount) || expenseAmount <= 0) {
+            alert("Please enter a valid positive amount for the expense.");
+            return;
+        }
 
-        console.log(`Simulating adding expense to category ${categoryId}:`, newExpenseData);
-        console.log("Simulated receipt file:", newExpenseReceiptFile);
+        const targetCategory = eventBudgets.find(budget => budget.id === categoryId);
+        if (!targetCategory) {
+            alert("Selected budget category not found.");
+            return;
+        }
 
-        // TODO: Implement API call to add a new expense.
-        // This API call needs to handle file upload if newExpenseReceiptFile is not null.
-        // A FormData object is typically used for sending files with other data.
-        // Example (conceptual):
-        // const formData = new FormData();
-        // formData.append('categoryId', categoryId);
-        // formData.append('description', description);
-        // formData.append('amount', expenseAmount.toString());
-        // formData.append('date', date);
-        // if (newExpenseReceiptFile) {
-        //     formData.append('receipt', newExpenseReceiptFile);
-        // }
-        // fetch(`/api/events/${eventId}/budget/expenses`, { // Centralized endpoint
-        //     method: 'POST',
-        //     body: formData, // Use FormData for file uploads
-        // });
+        console.log(`Adding expense of ${expenseAmount} to category ${categoryId}`);
+        console.log("Expense Details:", { description, amount, date });
+        console.log("Receipt file selected:", newExpenseReceiptFile?.name || 'None');
 
+        // --- TODO: Implement Backend API Call ---
+        // This is where you would send the data to your backend.
+        // The backend should:
+        // 1. Record the expense details (description, amount, date, categoryId, eventId).
+        // 2. Optionally handle the receipt file upload.
+        // 3. **Crucially, update the `amountSpent` on the corresponding EventBudget record in the database.**
+        // 4. Return the updated EventBudget object (or at least confirm success).
 
-        // --- Simulate State Update for Adding Expense ---
-        // In a real app, you would make an API call here first.
-        // After successful API call (and getting the actual saved expense data including its ID and receiptUrl from backend):
-        // You would update the state.
-         setBudgetCategories(prevCategories =>
-            prevCategories.map(category =>
-                category.id === categoryId
+        // Example structure for API call using FormData for potential file upload:
+        /*
+        const formData = new FormData();
+        formData.append('eventId', eventId);
+        formData.append('eventBudgetId', categoryId); // Or budgetCategoryId if using the number ID
+        formData.append('description', description);
+        formData.append('amount', expenseAmount.toString());
+        formData.append('date', date);
+        if (newExpenseReceiptFile) {
+            formData.append('receipt', newExpenseReceiptFile);
+        }
+
+        try {
+            // Replace with your actual API endpoint and service call
+            const response = await fetch(`/api/events/${eventId}/expenses`, { // Example endpoint
+                 method: 'POST',
+                 body: formData,
+             });
+
+             if (!response.ok) {
+                 throw new Error('Failed to add expense');
+             }
+
+             // const updatedBudget = await response.json(); // Assuming backend returns updated budget item
+
+             // --- Frontend State Update (Optimistic or based on response) ---
+             setEventBudgets(prevBudgets =>
+                prevBudgets.map(budget =>
+                    budget.id === categoryId
+                        ? {
+                              ...budget,
+                              // Update amountSpent directly
+                              amountSpent: (budget.amountSpent || 0) + expenseAmount,
+                              // Or if backend returns the whole updated budget item:
+                              // ...updatedBudget // Ensure interface matches
+                          }
+                        : budget
+                )
+            );
+
+             // Reset form and close modal
+             handleCloseAddExpenseForm();
+
+        } catch (error: any) {
+            console.error("Failed to add expense:", error);
+            alert(`Error adding expense: ${error.message}`);
+        }
+        */
+
+        // --- Simulate Frontend State Update (REMOVE THIS when API call is implemented) ---
+        // This simulates the effect of the backend updating the amountSpent
+        setEventBudgets(prevBudgets =>
+            prevBudgets.map(budget =>
+                budget.id === categoryId
                     ? {
-                          ...category,
-                          expenses: [
-                              ...category.expenses,
-                              {
-                                  // Generate a mock ID for the new expense (replace with actual backend ID)
-                                  id: `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                                  categoryId: categoryId,
-                                  description: description,
-                                  amount: expenseAmount,
-                                  date: newExpenseData.date,
-                                  // Simulate a receipt URL if a file was selected (replace with actual backend URL)
-                                  receiptUrl: newExpenseReceiptFile ? `simulated-upload-url/${newExpenseReceiptFile.name}` : undefined,
-                              },
-                          ],
-                      }
-                    : category
+                        ...budget,
+                        amountSpent: (budget.amountSpent || 0) + expenseAmount,
+                    }
+                    : budget
             )
         );
-        // --- End Simulated State Update ---
+        console.log('Simulated state update complete.');
+        handleCloseAddExpenseForm(); // Close modal after simulated update
+        // --- End Simulation ---
 
-
-        // Reset the form and close the modal after successful add (simulated)
-        setNewExpenseData({ categoryId: '', description: '', amount: '', date: '' });
-        setNewExpenseReceiptFile(null);
-        setReceiptFileName(null);
-        setIsAddExpenseFormOpen(false); // Close the modal
-
-         // TODO: Add actual API call here and handle success/error (e.g., show error message)
     };
-
-    // Handle deleting an expense (Simulated with state update)
-    const handleDeleteExpense = async (categoryId: string, expenseId: string) => {
-        console.log(`Simulating deleting expense ${expenseId} from category ${categoryId}`);
-
-         // TODO: Add confirmation dialog before deleting
-
-        // --- Simulate State Update for Deleting Expense ---
-        // In a real app, you would make an API call here first.
-        // After successful API call, update the state.
-         setBudgetCategories(prevCategories =>
-            prevCategories.map(category =>
-                category.id === categoryId
-                    ? {
-                          ...category,
-                          expenses: category.expenses.filter(expense => expense.id !== expenseId),
-                      }
-                    : category
-            )
-        );
-        // --- End Simulated State Update ---
-
-        // TODO: Add actual API call here and handle success/error
-    };
-
 
     // --- Render Logic ---
     if (loading) {
@@ -327,228 +281,182 @@ export default function EventBudgetPage() {
         );
     }
 
-     const hasBudgetCategories = budgetCategories && budgetCategories.length > 0;
-
+    const hasBudgetCategories = eventBudgets && eventBudgets.length > 0;
+    console.log("Event Budgets:", eventBudgets);
+    console.log("Category Budget Summary:", categoryBudgetSummary);
 
     return (
         <div className="page-content-wrapper"> {/* Wrapper for padding/spacing */}
             {/* --- Page Title --- */}
             <h2 className="page-title">Budget</h2>
+
+            {/* --- Add Expense Button (only if categories exist) --- */}
             {hasBudgetCategories && (
-                            <button className="button-primary" onClick={handleOpenAddExpenseForm}>
-                                Add New Expense
-                            </button>
-                         )}
+                <button
+                    className="button-primary"
+                    onClick={handleOpenAddExpenseForm}
+                    style={{ marginBottom: '20px' }} // Add some space below button
+                >
+                    Add New Expense
+                </button>
+            )}
+
             {/* --- Overall Budget Summary --- */}
-             {hasBudgetCategories && overallBudgetSummary.totalAllocated >= 0 && ( // Show summary if categories exist and total allocated is non-negative
-                <div className="form-container"> {/* Reuse form-container for card styling */}
-                    <div className={styles["overall-summary-header"]}> {/* Flex container for title and button */}
+            {hasBudgetCategories && overallBudgetSummary.totalAllocated >= 0 && (
+                <div className="form-container" style={{ marginBottom: '20px' }}> {/* Add spacing */}
+                    <div className={styles["overall-summary-header"]}>
                         <h3>Overall Budget Summary</h3>
-                         {/* Centralized Add Expense Button - Only show if categories exist to add to */}
-                        
                     </div>
-                     <div className={styles["overall-summary"]}> {/* Use CSS Module for summary layout */}
-                         <p><strong>Total Allocated:</strong> ${overallBudgetSummary.totalAllocated.toFixed(2)}</p>
-                         <p><strong>Total Spent:</strong> ${overallBudgetSummary.totalSpent.toFixed(2)}</p>
-                         <p><strong>Overall Remaining:</strong> ${overallBudgetSummary.overallRemaining.toFixed(2)}</p>
-                          {/* Overall Progress Bar - Pass spent and allocated */}
-                          {/* Show progress bar only if total allocated > 0 to avoid division by zero visual issues */}
-                         {overallBudgetSummary.totalAllocated > 0 && (
+                    <div className={styles["overall-summary"]}>
+                        <p><strong>Total Allocated:</strong> RM{overallBudgetSummary.totalAllocated.toFixed(2)}</p>
+                        <p><strong>Total Spent:</strong> RM{overallBudgetSummary.totalSpent.toFixed(2)}</p>
+                        <p><strong>Overall Remaining:</strong> RM{overallBudgetSummary.overallRemaining.toFixed(2)}</p>
+                        {overallBudgetSummary.totalAllocated > 0 ? (
                             <ProgressBar spent={overallBudgetSummary.totalSpent} allocated={overallBudgetSummary.totalAllocated} />
-                         )}
-                          {/* Optional: Message if total allocated is 0 */}
-                         {overallBudgetSummary.totalAllocated === 0 && overallBudgetSummary.totalSpent === 0 && (
-                            <p className="no-events-message">No budget allocated overall.</p>
-                         )}
-                          {/* Optional: Show exceeded message */}
-                          {overallBudgetSummary.overallExceeded && (
-                               <p className="error-message" style={{ marginTop: '10px' }}>Warning: Overall budget exceeded!</p>
-                          )}
-                     </div>
-                </div>
-             )}
-              {/* Message if no budget categories found */}
-              {!hasBudgetCategories && !loading && !error && (
-                 <div className="form-container">
-                     <p className="no-events-message">No budget categories found for this event. Cannot add expenses.</p> {/* Updated message */}
-                 </div>
-             )}
-
-             {/* --- Budget Categories and Detailed Expenses --- */}
-             {hasBudgetCategories && (
-                 <div>
-                     {categoryBudgetSummary.map(category => (
-                         <div key={category.id} className="form-container" style={{ marginBottom: '20px' }}> {/* Reuse form-container for each category card, add space */}
-                             {/* Category Header */}
-                             <div className={styles["category-header"]}> {/* Use CSS Module for layout */}
-                                 <h3>{category.name} Budget</h3>
-                                 <div className={styles["category-summary"]}> {/* Use CSS Module for summary layout */}
-                                     <p>Allocated: ${category.allocatedAmount.toFixed(2)}</p>
-                                     <p>Spent: ${category.totalSpent.toFixed(2)}</p>
-                                     <p>Remaining: ${category.remainingBalance.toFixed(2)}</p>
-                                 </div>
-                             </div>
-
-                             {/* Category Progress Bar - Pass spent and allocated */}
-                             {/* Show progress bar only if allocated amount > 0 to avoid division by zero visual issues */}
-                             {category.allocatedAmount > 0 && (
-                                 <ProgressBar spent={category.totalSpent} allocated={category.allocatedAmount} />
-                             )}
-                              {/* Optional: Message if allocated amount is 0 */}
-                             {category.allocatedAmount === 0 && category.totalSpent === 0 && (
-                                 <p className="no-events-message">No budget allocated for this category.</p>
-                             )}
-                              {/* Optional: Show exceeded message for category */}
-                             {category.exceeded && (
-                                  <p className="error-message" style={{ marginTop: '10px' }}>Warning: Budget for "{category.name}" exceeded!</p>
-                             )}
-
-
-                             {/* Expenses List */}
-                             <h4>Expenses</h4>
-                             {category.expenses.length === 0 ? (
-                                 <p className={styles["no-expenses-message"]}>No expenses recorded for this category yet.</p>
-                             ) : (
-                                 <div className={styles["expenses-list-container"]}> 
-                                     <table className={styles["expenses-table"]}> 
-                                         <thead>
-                                             <tr>
-                                                 <th>Date</th>
-                                                 <th>Description</th>
-                                                 <th>Amount</th>
-                                                  <th>Receipt</th> 
-                                                 <th>Actions</th>
-                                             </tr>
-                                         </thead>
-                                         <tbody>
-                                             {category.expenses.map(expense => (
-                                                 <tr key={expense.id}>
-                                                     <td>{new Date(expense.date).toLocaleDateString()}</td>
-                                                     <td>{expense.description}</td>
-                                                     <td>${expense.amount.toFixed(2)}</td>
-                                                      <td>
-                                                         {expense.receiptUrl ? (
-                                                             <a href={expense.receiptUrl} target="_blank" rel="noopener noreferrer">View</a>
-                                                         ) : (
-                                                             '-'
-                                                         )}
-                                                      </td>
-                                                     <td>
-                                                         <button
-                                                             className="button-secondary" // Reuse button style
-                                                             onClick={() => handleDeleteExpense(category.id, expense.id)}
-                                                         >
-                                                             Delete
-                                                         </button>
-                                                     </td>
-                                                 </tr>
-                                             ))}
-                                         </tbody>
-                                     </table>
-                                 </div>
-                             )}
-
-                         </div>
-                     ))}
-                 </div>
-             )}
-
-            {/* --- Modal Structure for Add New Expense Form --- */}
-            {isAddExpenseFormOpen && (
-                <div className={styles.modalOverlay} onClick={handleCloseAddExpenseForm}> {/* Overlay */}
-                    {/* Modal Content (stopPropagation to prevent closing when clicking inside) */}
-                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                        <div className={styles.modalHeader}>
-                            <h3>Add New Expense</h3>
-                            <button className={styles.closeButton} onClick={handleCloseAddExpenseForm}>
-                                &times; {/* Times symbol for a close button */}
-                            </button>
-                        </div>
-                        <div className={styles.modalBody}>
-                            {/* The Centralized Add Expense Form Content */}
-                            <div className={styles["centralized-add-expense-form"]}> {/* Reuse the form structure styles */}
-                                <div className="form-group">
-                                    <label htmlFor="expenseCategory">Category:</label>
-                                    <select
-                                        id="expenseCategory"
-                                        name="categoryId"
-                                        value={newExpenseData.categoryId}
-                                        onChange={handleNewExpenseInputChange}
-                                        required
-                                    >
-                                        <option value="">-- Select Category --</option>
-                                        {budgetCategories.map(category => (
-                                            <option key={category.id} value={category.id}>{category.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="expenseDescription">Description:</label>
-                                    <input
-                                        type="text"
-                                        id="expenseDescription"
-                                        name="description"
-                                        value={newExpenseData.description}
-                                        onChange={handleNewExpenseInputChange}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="expenseAmount">Amount ($):</label>
-                                    <input
-                                        type="number"
-                                        id="expenseAmount"
-                                        name="amount"
-                                        value={newExpenseData.amount}
-                                        onChange={handleNewExpenseInputChange}
-                                        required
-                                        step="0.01"
-                                        min="0"
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="expenseDate">Date:</label>
-                                    <input
-                                        type="date"
-                                        id="expenseDate"
-                                        name="date"
-                                        value={newExpenseData.date}
-                                        onChange={handleNewExpenseInputChange}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="expenseReceipt">Receipt (Optional):</label>
-                                    <input
-                                        type="file"
-                                        id="expenseReceipt"
-                                        name="receipt"
-                                        onChange={handleReceiptUpload}
-                                        accept=".pdf, .jpg, .jpeg, .png"
-                                    />
-                                    {receiptFileName && (
-                                        <p style={{ fontSize: '0.9em', color: '#555', marginTop: '5px' }}>Selected file: {receiptFileName}</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        <div className={styles.modalFooter}>
-                             {/* Form Buttons - now in the modal footer */}
-                           <div className={styles["form-buttons"]}> {/* Use CSS Module for button layout */}
-                               <button className="button-primary" onClick={handleAddExpense}>
-                                   Save Expense
-                               </button>
-                                {/* Cancel button */}
-                                <button className="button-secondary" onClick={handleCloseAddExpenseForm} style={{ marginLeft: '10px' }}>
-                                   Cancel
-                               </button>
-                           </div>
-                        </div>
+                        ) : (
+                            overallBudgetSummary.totalSpent === 0 && <p className="no-events-message">No budget allocated overall.</p>
+                        )}
+                        {overallBudgetSummary.overallExceeded && (
+                            <p className="error-message" style={{ marginTop: '10px' }}>Warning: Overall budget exceeded!</p>
+                        )}
                     </div>
                 </div>
             )}
 
+            {/* Message if no budget categories found */}
+            {!hasBudgetCategories && !loading && !error && (
+                <div className="form-container">
+                    <p className="no-events-message">No budget categories found for this event. Add categories via the Event settings to track expenses.</p>
+                </div>
+            )}
 
+            {/* --- Budget Categories Summary (No Detailed Expenses List) --- */}
+            {hasBudgetCategories && (
+                <div>
+                    {categoryBudgetSummary.map(category => (
+                        <div key={category.id} className="form-container" style={{ marginBottom: '20px' }}>
+                            {/* Category Header & Summary */}
+                            <div className={styles["category-header"]}>
+                                <h3>{category.budgetCategoryName}</h3>
+                                <div className={styles["category-summary"]}>
+                                    <p>Allocated: RM{category.allocated.toFixed(2)}</p>
+                                    <p>Spent: RM{category.totalSpent.toFixed(2)}</p>
+                                    <p>Remaining: RM{category.remainingBalance.toFixed(2)}</p>
+                                </div>
+                            </div>
+
+                            {/* Category Progress Bar */}
+                            {category.allocated > 0 ? (
+                                <ProgressBar spent={category.totalSpent} allocated={category.allocated} />
+                            ) : (
+                                category.totalSpent === 0 && <p className="no-events-message">No budget allocated for this category.</p>
+                            )}
+                            {category.exceeded && (
+                                <p className="error-message" style={{ marginTop: '10px' }}>Warning: Budget for "{category.budgetCategoryName || 'this category'}" exceeded!</p>
+                            )}
+
+                            {/* --- Expense List Section Removed --- */}
+                            {/* No table or list of individual expenses here anymore */}
+
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* --- Modal Structure for Add New Expense Form (Remains the Same) --- */}
+            {isAddExpenseFormOpen && (
+                <div className={styles.modalOverlay} onClick={handleCloseAddExpenseForm}>
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h3>Add New Expense</h3>
+                            <button className={styles.closeButton} onClick={handleCloseAddExpenseForm}>
+                                &times;
+                            </button>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <div className="form-group"> {/* Use standard form-group class if defined globally */}
+                                <label htmlFor="expenseCategory">Category:</label>
+                                <select
+                                    id="expenseCategory"
+                                    name="categoryId" // This should match the key in newExpenseData
+                                    value={newExpenseData.categoryId}
+                                    onChange={handleNewExpenseInputChange}
+                                    required
+                                    className="form-input" // Add form styling class if available
+                                >
+                                    <option value="">-- Select Category --</option>
+                                    {/* Map over eventBudgets directly */}
+                                    {eventBudgets.map(budget => (
+                                        <option key={budget.id} value={budget.id}>{budget.budgetCategoryName || `Category ${budget.id}`}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="expenseDescription">Description:</label>
+                                <input
+                                    type="text"
+                                    id="expenseDescription"
+                                    name="description"
+                                    value={newExpenseData.description}
+                                    onChange={handleNewExpenseInputChange}
+                                    required
+                                    className="form-input"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="expenseAmount">Amount (RM):</label>
+                                <input
+                                    type="number"
+                                    id="expenseAmount"
+                                    name="amount"
+                                    value={newExpenseData.amount}
+                                    onChange={handleNewExpenseInputChange}
+                                    required
+                                    step="0.01"
+                                    min="0.01" // Expenses should likely be positive
+                                    className="form-input"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="expenseDate">Date:</label>
+                                <input
+                                    type="date"
+                                    id="expenseDate"
+                                    name="date"
+                                    value={newExpenseData.date}
+                                    onChange={handleNewExpenseInputChange}
+                                    required
+                                    className="form-input"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="expenseReceipt">Receipt (Optional):</label>
+                                <input
+                                    type="file"
+                                    id="expenseReceipt"
+                                    name="receipt"
+                                    onChange={handleReceiptUpload}
+                                    accept=".pdf, .jpg, .jpeg, .png"
+                                    className="form-input" // Style file input if needed
+                                />
+                                {receiptFileName && (
+                                    <p style={{ fontSize: '0.9em', color: '#555', marginTop: '5px' }}>Selected file: {receiptFileName}</p>
+                                )}
+                            </div>
+                        </div>
+                        <div className={styles.modalFooter}>
+                            <div className={styles["form-buttons"]}> {/* Check if this style exists/is needed */}
+                                <button className="button-primary" onClick={handleAddExpense}>
+                                    Save Expense
+                                </button>
+                                <button className="button-secondary" onClick={handleCloseAddExpenseForm} style={{ marginLeft: '10px' }}>
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

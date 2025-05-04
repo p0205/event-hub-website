@@ -1,12 +1,23 @@
-/* src/app/events/[id]/budget/styles/budgetPage.module.css */
+/* src/app/events/[id]/budget/budget.module.css */
 
 /* --- Styles specific to the Budget Page --- */
 
+/* Styles for the header area within the Overall Budget Summary card */
+/* Corresponds to the div with className={styles['overall-summary-header']} */
+.overall-summary-header {
+    font-size: 1.25em;  /* Increase font size (adjust value as needed, e.g., 1.1em, 1.3em) */
+    font-weight: 500;   /* Make it bolder (600 is semi-bold, 700 is bold) */
+    color: #272727;       /* Slightly darker color for better contrast */
 
-/* Styles for the Overall Budget Summary section layout */
-/* Corresponds to the div with className={styles.overallSummary} */
+    /* Simple styling, maybe just add some bottom margin or ensure font size */
+    margin-bottom: 10px; /* Space below the overall header */
+    padding-bottom: 5px; /* Small padding below text */
+    border-bottom: 1px solid #eee;
+}
+
+/* Styles for the Overall Budget Summary content section */
+/* Corresponds to the div with className={styles['overall-summary']} */
 .overall-summary {
-    /* Simple layout for summary lines */
     display: flex;
     flex-direction: column;
     gap: 8px; /* Space between lines */
@@ -14,98 +25,28 @@
 }
 
 /* Styles for the header area of each budget category card */
-/* Corresponds to the div with className={styles.categoryHeader} */
-.category-header {
-    display: flex;
-    justify-content: space-between; /* Put title on left, summary on right */
-    align-items: center; /* Vertically align items */
-    margin-bottom: 15px; /* Space below the header */
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
-    gap: 10px; /* Space between title and summary when wrapped */
+/* Corresponds to the div with className={styles['category-header']} */
+.category-header h3 {
+    font-size: 1.25em;  /* Increase font size (adjust value as needed, e.g., 1.1em, 1.3em) */
+    font-weight: 500;   /* Make it bolder (600 is semi-bold, 700 is bold) */
+    margin: 0;          /* Remove default h3 margin */
+    color: #333;       /* Slightly darker color for better contrast */
+    line-height: 1.3;   /* Adjust line height if needed for spacing */
+    /* Ensure it doesn't push the summary too far down if title is long */
+    flex-grow: 1; /* Allow title to take available space */
+    margin-right: 10px; /* Add some space between title and summary */
+    margin-bottom: 10px; /* Space below the title */
 }
 
 /* Styles for the summary within the category header (Allocated, Spent, Remaining) */
-/* Corresponds to the div with className={styles.categorySummary} */
+/* Corresponds to the div with className={styles['category-summary']} */
 .category-summary {
      display: flex;
-     gap: 20px; /* Space between Allocated, Spent, Remaining */
+     gap: 15px; /* Space between Allocated, Spent, Remaining */
      flex-wrap: wrap; /* Allow wrapping */
+     font-size: 0.9em; /* Slightly smaller text for summary */
+     color: #555; /* Grey text for summary */
 }
-
-/* Styles for the "No expenses recorded" message */
-/* Corresponds to the p with className={styles.noExpensesMessage} */
-.no-expenses-message {
-    font-style: italic;
-    color: #777;
-    margin-top: 10px;
-}
-
-
-/* Container for the expenses list table */
-/* Corresponds to the div with className={styles.expensesListContainer} */
-/* Important for managing table width and horizontal scrolling */
-.expenses-list-container {
-    margin-top: 10px; /* Space above the table container */
-    overflow-x: auto; /* Add horizontal scrollbar if the table content overflows */
-    width: 100%; /* --- Make the container take the full width of its parent --- */
-    box-sizing: border-box; /* Include padding/border in element's total width/height */
-}
-
-/* Styles for the expenses table itself */
-/* Corresponds to the table with className={styles.expensesTable} */
-.expenses-table {
-    width: 100%; /* --- Make the table expand to the full width of its container --- */
-    border-collapse: collapse; /* Collapse borders between table cells */
-    /* Optional: Add a border around the entire table */
-    /* border: 1px solid #ddd; */
-}
-
-/* Styles for table header cells (th) and data cells (td) */
-.expenses-table th,
-.expenses-table td {
-    padding: 10px; /* Inner padding within each cell */
-    text-align: left; /* Align text to the left */
-    border-bottom: 1px solid #eee; /* Add a light bottom border */
-}
-
-/* Specific styles for table header cells (th) */
-.expenses-table th {
-    background-color: #f8f8f8; /* Very light gray background for headers */
-    font-weight: bold;
-}
-
-/* Styles for the "Add New Expense" section within a category */
-/* Corresponds to the div with className={styles.addExpenseSection} */
-.add-expense-section {
-    margin-top: 20px; /* Space above this section */
-    /* Optional: Add a border or background to distinguish it */
-    /* border-top: 1px solid #eee; */
-    /* padding-top: 20px; */
-}
-
-/* Styles for the "Add Expense" form itself */
-/* Corresponds to the div with className={styles.addExpenseForm} */
-.add-expense-form {
-    border: 1px solid #ddd; /* Border around the form */
-    border-radius: 4px;
-    padding: 15px;
-    margin-top: 15px; /* Space above the form when it appears */
-    background-color: #fefefe; /* Light background for the form */
-
-    display: flex;
-    flex-direction: column; /* Stack form groups vertically */
-    gap: 15px; /* Space between form groups */
-}
-
-/* Style for the Save Expense button if needed, or rely on global styles */
-/* .addExpenseForm button {} */
-
-
-/* Note: Reusable styles that apply broadly (like .page-content-wrapper, .page-title,
-   .form-container, .form-group, .button-primary, .button-secondary, .loading-message,
-   .error-message, .no-events-message) should remain in your globals.css file. */
-
-
 
 /* --- Modal Styles for Add New Expense Form --- */
 
@@ -121,23 +62,26 @@
     justify-content: center; /* Center horizontally */
     align-items: center; /* Center vertically */
     z-index: 1000; /* Ensure it's above most other content */
-    backdrop-filter: blur(5px); /* Optional: Add a blur effect to the background */
-    -webkit-backdrop-filter: blur(5px); /* Safari support */
+    backdrop-filter: blur(3px); /* Optional: Add a blur effect */
+    -webkit-backdrop-filter: blur(3px); /* Safari support */
+    padding: 15px; /* Add padding for small screens */
+    box-sizing: border-box;
 }
 
 /* The modal content container */
 .modalContent {
     background-color: #fff; /* White background */
-    padding: 25px; /* Inner padding */
+    padding: 20px 25px; /* Inner padding */
     border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a shadow */
-    max-width: 500px; /* Set a maximum width */
-    width: 90%; /* Allow it to be responsive */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Add a shadow */
+    max-width: 550px; /* Set a maximum width */
+    width: 100%; /* Responsive width */
     max-height: 90vh; /* Max height, allow scrolling inside if content overflows */
     overflow-y: auto; /* Add scrollbar if content is too tall */
     display: flex;
     flex-direction: column; /* Stack header, body, footer */
     position: relative; /* Needed for close button absolute positioning */
+    box-sizing: border-box;
 }
 
 /* Header within the modal */
@@ -147,27 +91,37 @@
     align-items: center;
     border-bottom: 1px solid #eee; /* Separator line */
     padding-bottom: 15px;
-    margin-bottom: 15px; /* Space below header */
+    margin-bottom: 20px; /* Space below header */
+}
+
+.modalHeader h3 {
+    margin: 0; /* Remove default margin from h3 */
+    font-size: 1.25em;
+    font-weight: 600;
 }
 
 /* Style for the close button (top right) */
 .closeButton {
     background: none;
     border: none;
-    font-size: 1.5em;
+    font-size: 1.8em; /* Slightly larger for easier clicking */
+    line-height: 1;
     cursor: pointer;
     color: #aaa;
+    padding: 0 5px; /* Add padding for click area */
     transition: color 0.2s ease;
 }
 
 .closeButton:hover {
-    color: #777;
+    color: #333; /* Darker on hover */
 }
 
 /* Body area within the modal (contains the form) */
 .modalBody {
     flex-grow: 1; /* Allow body to take up available space */
-    margin-bottom: 15px; /* Space below body */
+    margin-bottom: 20px; /* Space below body */
+    /* Styles for form elements (like .form-group, .form-input) should be in global CSS */
+    /* Add specific overrides if needed */
 }
 
 /* Footer within the modal (contains action buttons) */
@@ -175,13 +129,22 @@
     border-top: 1px solid #eee; /* Separator line */
     padding-top: 15px;
     display: flex;
-    justify-content: flex-end; /* Align buttons to the right */
-    /* align-items: center; Optional */
+    justify-content: flex-end; /* Align button container to the right */
 }
 
-/* Reuse the centralized add expense form styles within the modal body */
-/* No changes needed to .centralized-add-expense-form itself, it just gets rendered here */
+/* Styles for the container holding the form action buttons */
+/* Corresponds to the div with className={styles['form-buttons']} */
+.form-buttons {
+    display: flex;
+    gap: 10px; /* Space between buttons (e.g., Save, Cancel) */
+}
 
+/* --- Removed Styles --- */
+/* Styles for .no-expenses-message, .expenses-list-container, .expenses-table, */
+/* .add-expense-section, and .add-expense-form have been removed as they are no longer used. */
 
-/* Reuse the form buttons layout style within the modal footer */
-/* No changes needed to .form-buttons itself */
+/* --- Global Style Dependencies --- */
+/* Remember that reusable styles like .page-content-wrapper, .page-title,
+   .form-container, .form-group, .form-input, .button-primary, .button-secondary,
+   .loading-message, .error-message, .no-events-message should be defined
+   in your global CSS file (e.g., globals.css) for consistency across your app. */

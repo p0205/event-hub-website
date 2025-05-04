@@ -3,7 +3,7 @@ import { BudgetCategory } from '@/types/event';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
 
-const budgetService = {
+const budgetCategoryService = {
     addBudgetCategory: async (budget: BudgetCategory): Promise<BudgetCategory> => { // Replace 'any' with actual types
         const response = await api.post(`/budgetCategory`, budget);
         if(response.status !== HttpStatusCode.Created) {
@@ -38,4 +38,4 @@ const budgetService = {
 
 };
 
-export default budgetService;
+export default budgetCategoryService;

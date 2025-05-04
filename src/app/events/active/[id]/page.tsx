@@ -256,7 +256,7 @@ export default function ActiveEventDetailsPage() {
         {event.team && event.team.length > 0 ? (
           <ul className="team-list">
             {event.team.map(member => (
-              <li key={member.id} className="team-member-item">
+              <li key={member.userId} className="team-member-item">
                 <span>{member.name} ({member.email}) - <strong>{member.role}</strong></span>
               </li>
             ))}

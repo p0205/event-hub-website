@@ -9,7 +9,8 @@ import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import { FaTrash } from 'react-icons/fa';
 import venueService from '@/services/venueService';
-import budgetService from '@/services/budgetService';
+import eventBudgetService from '@/services/eventBudgetService';
+import budgetCategoryService from '@/services/budgetCategoryService';
 // import { useRouter } from 'next/navigation'; // Import if using router for navigation
 
 
@@ -93,7 +94,7 @@ export default function CreateEventPage() {
                 console.log("Calling budgetCategoryService.fetchVenues()");
                 // Call the service function to get venues from the backend API.
                 // 'await' pauses execution until the Promise resolves with the fetched data.
-                const fetchBudgetCategories = await budgetService.fetchBudgetCategories(); // Assumes eventService.getVenues() exists and works
+                const fetchBudgetCategories = await budgetCategoryService.fetchBudgetCategories(); // Assumes eventService.getVenues() exists and works
                 // Update the 'venues' state with the data received from the API
 
                 setBudgetCategories(fetchBudgetCategories);
@@ -269,7 +270,7 @@ export default function CreateEventPage() {
             eventBudgets: prev.eventBudgets.map(item => {
                 if (item.id === budgetId) {
                     let processedValue: string | number | undefined = value;
-                    let categoryName = item.categoryName;
+                    let categoryName = item.budgetCategoryName;
                     let categoryId = item.budgetCategoryId;
 
                     if (field === 'amountAllocated') {
@@ -286,7 +287,7 @@ export default function CreateEventPage() {
                     // If the field was categoryName, also update budgetCategoryId and categoryName explicitly
                     if (field === 'categoryName') {
                         updatedItem.budgetCategoryId = categoryId;
-                        updatedItem.categoryName = categoryName;
+                        updatedItem.budgetCategoryName = categoryName;
                     }
 
                     return updatedItem;
@@ -304,10 +305,10 @@ export default function CreateEventPage() {
                 ...prev.eventBudgets,
                 {
                     id: uuidv4(),
-                    amountAllocated: '',
+                    amountAllocated: 0,
                     amountSpent: 0,
                     budgetCategoryId: undefined,
-                    categoryName: '',
+                    budgetCategoryName: '',
                 },
             ],
         }));
@@ -467,11 +468,11 @@ export default function CreateEventPage() {
             // Process Budgets (Structure matches backend EventBudgetDTO)
             // Filter out budgets without a category or allocated amount
             const processedBudgets = formData.eventBudgets
-                .filter(budget => budget.budgetCategoryId !== undefined && budget.budgetCategoryId !== null && budget.amountAllocated !== '' && budget.amountAllocated !== null)
+                .filter(budget => budget.budgetCategoryId !== undefined && budget.budgetCategoryId !== null && budget.amountAllocated !== null && budget.amountAllocated !== undefined)
                 .map((budget, index) => {
                     const amountAllocatedNum = Number(budget.amountAllocated);
                     if (isNaN(amountAllocatedNum) || amountAllocatedNum <= 0) { // Ensure positive allocation
-                        throw new Error(`Invalid or non-positive allocated amount for Budget item ${index + 1} (${budget.categoryName || 'Unknown Category'}). Amount must be greater than 0.`);
+                        throw new Error(`Invalid or non-positive allocated amount for Budget item ${index + 1} (${budget.budgetCategoryName || 'Unknown Category'}). Amount must be greater than 0.`);
                     }
                     if (budget.budgetCategoryId === undefined || budget.budgetCategoryId === null) { // Redundant check, but safe
                         throw new Error(`Budget category is missing for item ${index + 1}.`);
@@ -670,7 +671,7 @@ export default function CreateEventPage() {
                                     <select
                                         id={`budget-category-${item.id}`}
                                         name="categoryName" // Use categoryName to match handler
-                                        value={item.categoryName} // Use categoryName from state
+                                        value={item.budgetCategoryName} // Use categoryName from state
                                         onChange={(e) => handleBudgetChange(item.id, "categoryName", e.target.value)} // Pass categoryName
                                         className="form-input"
                                         required // Make category selection required
