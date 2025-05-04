@@ -1236,3 +1236,29 @@ list-style: none;
   /* If using a Font Awesome icon, you might adjust padding/margin here */
 }
 
+
+
+.add-button {
+  background-color: var(--primary-color); /* Use your primary color variable */
+  color: rgb(54, 54, 54);
+  border: none; /* No border */
+  border-radius: 50%; /* Makes it round */
+  width: 36px;       /* Fixed width */
+  height: 36px;      /* Fixed height */
+  font-size: 24px;   /* Adjust size of '+' */
+  font-weight: bold;
+  line-height: 34px; /* Helps center the '+' vertically */
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+.add-button:hover:not(:disabled) {
+  background-color: var(--primary-color-dark); /* Darker shade on hover */
+}
+
+.add-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

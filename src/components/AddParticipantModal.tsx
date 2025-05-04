@@ -16,11 +16,6 @@ interface AddParticipantModalProps {
   onConfirm: (selectedParticipant: Participant | null) => void;
 }
 
-const fakeParticipants: Participant[] = [
-  { id: 1, name: 'Phoebe Kiew Jing Yao', email: 'b032210164@student.utem.edu.my' },
-  { id: 2, name: 'Yvonne Ngu Rui Ging', email: 'b032210249@student.utem.edu.my' },
-  { id: 3, name: 'John Doe', email: 'john@example.com' },
-];
 
 export default function AddParticipantModal({ open, onCancel, onConfirm }: AddParticipantModalProps) {
   const [searchText, setSearchText] = useState('');

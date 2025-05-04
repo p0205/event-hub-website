@@ -4,11 +4,6 @@
 
 
 /* Styles for the "Add Team Member" form area */
-/* Corresponds to the div with className={styles["add-team-member-form"]} */
-.add-team-member-form {
-    /* Add padding or margin if needed */
-    /* padding: 15px; */
-}
 
 /* Styles for the search results list container */
 /* Corresponds to the div with className={styles["search-results"]} */
@@ -152,6 +147,173 @@
      color: #007bff; /* Example color */
      margin-right: 10px; /* Space before delete button */
      flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Adjust existing styles if needed */
+.profile-image {
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover; /* Prevent distortion */
+    flex-shrink: 0; /* Prevent image shrinking */
+}
+
+.team-member-item,
+.search-result-item,
+.selected-user-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee; /* Add separator */
+}
+.team-member-item:last-child,
+.search-result-item:last-child,
+.selected-user-item:last-child {
+    border-bottom: none; /* Remove border from last item */
+}
+
+.user-info {
+    flex-grow: 1; /* Allow user info to take available space */
+    margin-right: 10px; /* Space before role/button */
+}
+
+.user-email {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.team-member-role {
+    font-weight: bold;
+    margin-right: 15px; /* Space between role and delete button */
+    white-space: nowrap; /* Prevent role from wrapping */
+}
+
+
+/* --- Styles for the Team List Header --- */
+.teamListHeader {
+    display: flex;
+    justify-content: space-between; /* Pushes title and button apart */
+    align-items: center; /* Vertically aligns title and button */
+    margin-bottom: 15px; /* Space below the header */
+}
+
+
+/* --- Styles for the Modal Overlay --- */
+.modalOverlay {
+    position: fixed; /* Stay in place even when scrolling */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+    display: flex; /* Use flexbox to center the modal */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    z-index: 1050; /* Ensure it's above most other content */
+    backdrop-filter: blur(2px); /* Optional: Add a blur effect */
+    -webkit-backdrop-filter: blur(3px); /* Safari support */
+    padding: 15px; /* Add padding for small screens */
+    box-sizing: border-box;
+}
+
+/* --- Styles for the Modal Content --- */
+.modalContent {
+    background-color: #fff;
+    padding: 25px 30px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    position: relative; /* Needed for absolute positioning of the close button */
+    width: 100%;
+    max-width: 600px; /* Max width of the modal */
+    max-height: 90vh; /* Limit height to 90% of viewport height */
+    overflow-y: auto; /* Add scrollbar if content exceeds max-height */
+    box-sizing: border-box;
+}
+
+/* --- Styles for the Modal Close Button --- */
+.closeModalButton {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 28px; /* Make it larger */
+    font-weight: bold;
+    color: #888;
+    cursor: pointer;
+    line-height: 1; /* Ensure tight line height */
+    padding: 0;
+}
+.closeModalButton:hover {
+    color: #333;
+}
+
+/* --- Styles for Modal Form Elements --- */
+.modalContent h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+}
+
+.searchInputContainer {
+    display: flex;
+    align-items: center; /* Align input and button vertically */
+    gap: 5px; /* Space between input and button */
+}
+
+.searchInput {
+    flex-grow: 1; /* Allow input to take most space */
+    /* Add any specific input styles if needed */
+}
+
+.searchButton {
+    flex-shrink: 0; /* Prevent button from shrinking */
+    padding: 8px 12px; /* Adjust padding if needed */
+}
+
+/* Style results/selected user lists within modal */
+.resultsList {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+    max-height: 200px; /* Limit height and make scrollable */
+    overflow-y: auto;
+    border: 1px solid #eee; /* Optional border */
+    border-radius: 4px;
+}
+/* Adjust padding inside the list items if needed */
+.resultsList li {
+    padding: 8px 10px;
+}
+
+/* Buttons inside the lists */
+.selectUserButton, .removeUserButton {
+    padding: 4px 8px; /* Smaller buttons in lists */
+    font-size: 0.9em;
+    margin-left: auto; /* Push button to the right */
+}
+
+
+/* --- Styles for Modal Actions Area --- */
+.modalActions {
+    display: flex;
+    justify-content: flex-end; /* Align button to the right */
+    align-items: center; /* Align messages and button vertically */
+    margin-top: 25px;
+    padding-top: 15px; /* Add space above actions */
+    border-top: 1px solid #eee; /* Separator line */
+    gap: 15px; /* Space between messages and button if both present */
+}
+
+.modalMessages {
+    flex-grow: 1; /* Allow messages to take available space */
+    text-align: left; /* Align messages to the left */
+}
+
+/* Ensure messages within modal are visible */
+.modalMessages .error-message,
+.modalMessages .success-message {
+    margin: 0; /* Remove default margins */
 }
 
 
