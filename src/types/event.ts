@@ -79,6 +79,13 @@ export interface Session {
     qrCodeImage?: Blob; // Separate date field for form input control
 }
 
+export interface EventMedia{
+    id:string;
+    filename: string;
+    fileUrl: string;
+    uploadedAt: string;
+}
+
 
 
 /**

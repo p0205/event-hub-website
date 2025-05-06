@@ -1,0 +1,67 @@
+/* Container for the upload section and gallery */
+.upload-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Grid layout for media gallery */
+  .media-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+  
+  /* Each media item card */
+  .media-item {
+    background-color: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease;
+  }
+  
+  .media-item:hover {
+    transform: translateY(-4px);
+  }
+  
+  /* The image preview */
+  .media-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-bottom: 1px solid #eee;
+  }
+  
+  /* File info section */
+  .media-details {
+    padding: 12px;
+    font-size: 0.9rem;
+    color: #333;
+  }
+  
+  .file-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .upload-info {
+    font-size: 0.8rem;
+    color: #777;
+  }
+  
+  /* Actions below the image */
+  .media-actions {
+    padding: 0 12px 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  
