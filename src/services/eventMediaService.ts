@@ -20,6 +20,12 @@ const eventMediaService = {
         return response.data;
     },
 
+    deleteEventMedia: async (mediaId: number, eventId: number): Promise<void> => {
+        const response = await api.delete(`/events/${eventId}/media/${mediaId}`);
+        if(response.status !== HttpStatusCode.NoContent){
+            throw new Error('Failed to delete event media');
+        }
+    }
 
 };
 

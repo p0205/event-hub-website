@@ -11,6 +11,7 @@ import userService from '@/services/userService';
 import { User } from '@/types/user';
 import teamService from '@/services/teamService';
 import { Role, TeamMember } from '@/types/event'; // Ensure TeamMember type includes userId, name, email, role
+import { toast } from 'sonner';
 
 export default function EventTeamPage() {
     const params = useParams();
@@ -185,13 +186,9 @@ export default function EventTeamPage() {
 
             // Refresh team list *after* success message potentially shown briefly
             setRefreshTeamTrigger(prev => prev + 1);
-
+            setShowAddMemberModal(false);
+            toast.success(`${selectedUsersForAdd.length} User(s) added successfully.`);
             // Close modal on success after a short delay (optional)
-            setTimeout(() => {
-                 setShowAddMemberModal(false);
-                 // State cleanup happens via the useEffect watching showAddMemberModal
-            }, 1500); // Close after 1.5 seconds
-
             // Or close immediately:
             // setShowAddMemberModal(false);
 
@@ -277,7 +274,7 @@ export default function EventTeamPage() {
             <div className="form-container">
                  {/* Heading with Add Button */}
                 <div className={styles["teamListHeader"]}>
-                    <h3>Event Team Members ({eventTeam.length}) {loading && eventTeam.length > 0 && <span className="loading-message" style={{marginLeft: '10px'}}>Updating...</span>}</h3>
+                    <h3>Event Team Members ({eventTeam.length})</h3>
                     <button
                         className="add-button"
                         onClick={() => setShowAddMemberModal(true)}
@@ -342,9 +339,6 @@ export default function EventTeamPage() {
                                     <option key={role.name} value={role.name}>{role.name}</option>
                                 ))}
                             </select>
-                            {selectedRoleForAdd && (
-                                <p style={{ marginTop: '5px', fontSize: '0.9em', color: '#555' }}>Role selected: {selectedRoleForAdd.name}</p>
-                            )}
                         </div>
 
                         {/* --- User Search (conditional on role selected) --- */}

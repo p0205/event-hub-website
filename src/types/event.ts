@@ -80,7 +80,7 @@ export interface Session {
 }
 
 export interface EventMedia{
-    id:string;
+    id:number;
     filename: string;
     fileUrl: string;
     uploadedAt: string;

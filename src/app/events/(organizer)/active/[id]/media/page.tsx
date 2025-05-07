@@ -1,12 +1,15 @@
 // src/app/events/[id]/media/page.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import styles from './media.module.css'; // Create this CSS module
 import eventMediaService from '@/services/eventMediaService';
 import { EventMedia } from '@/types/event';
 import { formatDate } from '@/helpers/eventHelpers';
+import { Upload, Loader2, CheckCircle } from "lucide-react";
+import clsx from "clsx";
+import { toast } from 'sonner';
 
 
 export default function EventMediaPage() {
@@ -26,11 +29,18 @@ export default function EventMediaPage() {
     const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
     // Optional: State for a single caption applied to all selected files (if multi-upload) or a way to add caption per file
 
+    const[deleteSuccess,setDeleteSuccess] = useState(false);
     const [trigger, setTrigger] = useState(0);
 
-    // --- Data Loading (using Mock Data for initial media list) ---
+    const [previewMedia, setPreviewMedia] = useState<EventMedia | null>(null); // selected media to preview
+    const [dragActive, setDragActive] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+
+    // --- Data Loading  ---
     useEffect(() => {
-        const loadMockMedia = async () => {
+        console.log("Fetch media.....");
+        const loadMedia = async () => {
             setLoading(true);
             setError(null);
             try {
@@ -48,15 +58,25 @@ export default function EventMediaPage() {
             }
         };
 
-        loadMockMedia();
+        loadMedia();
 
     }, [eventId, trigger]); // Rerun if eventId changes
 
 
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        handleFileSelect(e.dataTransfer.files);
+    };
 
     // Handle file selection
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSelectedFiles(e.target.files);
+    const handleFileSelect = (files: FileList | null) => {
+        if (!files) return;
+
+        const filesArray = Array.from(files);
+
+        setSelectedFiles(files);
         setUploadError(null); // Clear previous errors
         setUploadSuccess(null); // Clear previous success messages
         // Reset category if needed, or default to first
@@ -80,10 +100,9 @@ export default function EventMediaPage() {
 
         try {
 
-            eventMediaService.addEventMedia(formData, eventId);
+            await eventMediaService.addEventMedia(formData, eventId);
 
             setTrigger(prev => prev + 1);
-
 
             // setMediaFiles(prevMedia => [...prevMedia, ...uploadedFileDetails]); // Add new files to the list
             setUploadSuccess(`${selectedFiles.length} file(s) uploaded successfully!`); // Show success message
@@ -106,28 +125,22 @@ export default function EventMediaPage() {
     };
 
     // Handle deleting a media file (Simulated with state update)
-    const handleDeleteMedia = async (mediaId: string, fileName: string) => {
-        console.log(`Simulating deleting media file ${fileName} (ID: ${mediaId}) from event ${eventId}`);
+    const handleDeleteMedia = async (mediaId: number, fileName: string) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this media?");
+        if (!confirmDelete) return;
 
-        // TODO: Add confirmation dialog before deleting
+        console.log(`Deleting media file ${fileName} (ID: ${mediaId}) from event ${eventId}`);
 
         setLoading(true); // Show overall loading while deleting (can use separate state if preferred)
         setError(null); // Clear previous errors
 
-        // TODO: Implement API call to delete the media file
-        // Example: fetch(`/api/events/${eventId}/media/${mediaId}`, {
-        //     method: 'DELETE',
-        // });
-
-        // --- Simulate State Update for Deleting Media ---
-        // In a real app, you would make an API call here.
-        // On success, update the state.
         try {
-            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+            await eventMediaService.deleteEventMedia(mediaId, eventId);
 
-            setMediaFiles(prevMedia => prevMedia.filter(media => media.id !== mediaId)); // Remove from the list
-            console.log("Simulated successful media deletion.");
-
+            setTrigger(prev => prev + 1);
+            setLoading(false);
+            setDeleteSuccess(true);
+            toast.success("Deleted successfully");
         } catch (e: any) {
             console.error("Simulated delete media error:", e);
             setError(`Failed to delete media file: ${e.message || 'Unknown error'}`);
@@ -166,47 +179,72 @@ export default function EventMediaPage() {
             <h2 className="page-title">Event Media</h2>
 
             {/* --- Upload Media Section --- */}
-            <div className="form-container"> {/* Reuse form-container for card styling */}
-                <h3>Upload Media Files</h3>
-                <div className={styles["upload-section"]}> {/* Use CSS Module for layout */}
-                    <div className="form-group"> {/* Reuse form-group for spacing */}
-                        <label htmlFor="mediaFileInput" className="button-secondary" style={{ cursor: uploading ? 'not-allowed' : 'pointer' }}>
-                            {uploading ? 'Uploading...' : 'Select Files'}
-                        </label>
-                        <input
-                            type="file"
-                            id="mediaFileInput"
-                            multiple // Allow multiple file selection
-                            accept="image/*" // Accept any image type
-                            onChange={handleFileSelect}
-                            disabled={uploading}
-                            style={{ display: 'none' }} // Hide the default file input
-                        />
-                        {/* Display selected file names */}
-                        {selectedFiles && selectedFiles.length > 0 && (
-                            <span style={{ marginLeft: '10px' }}>
-                                {selectedFiles.length} file(s) selected: {Array.from(selectedFiles).map(f => f.name).join(', ')}
-                            </span>
-                        )}
-                    </div>
+            <div className="bg-white p-6 rounded-xl shadow-sm">
+                <h2 className="text-xl font-semibold mb-4">Upload Media Files</h2>
 
-                    {/* Upload Button */}
-                    {selectedFiles && selectedFiles.length > 0 && (
-                        <button
-                            className="button-primary" // Reuse button style
-                            onClick={handleUploadFiles}
-                            disabled={!selectedFiles || selectedFiles.length === 0 || uploading} // Disable if no files, uploading, or no category selected
-                            style={{ marginTop: '20px' }} // Add space above button
-                        >
-                            {uploading ? 'Uploading...' : 'Upload Files'}
-                        </button>
-)}
-
-                    {/* Upload Feedback */}
-                    {uploading && <p className="loading-message" style={{ marginTop: '10px' }}>Uploading...</p>}
-                    {uploadError && <p className="error-message" style={{ marginTop: '10px' }}>{uploadError}</p>}
-                    {uploadSuccess && <p className="loading-message" style={{ marginTop: '10px' }}>{uploadSuccess}</p>} {/* Using loading style for success */}
+                <div
+                    className={clsx(
+                        "flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-10 cursor-pointer transition-colors",
+                        dragActive ? "border-blue-400 bg-blue-50" : "border-gray-300"
+                    )}
+                    onClick={() => inputRef.current?.click()}
+                    onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragActive(true);
+                    }}
+                    onDragLeave={() => setDragActive(false)}
+                    onDrop={handleDrop}
+                >
+                    <Upload className="w-10 h-10 text-gray-400 mb-2" />
+                    <p className="text-gray-600">Click or drag files here to upload</p>
+                    <p className="text-sm text-gray-400">Supported: PNG, JPG, PDF, JPEG</p>
+                    <input
+                        ref={inputRef}
+                        type="file"
+                        accept=".png,.pdf,.jpg,.jpeg"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleFileSelect(e.target.files)}
+                    />
                 </div>
+
+                {/* Display selected file names */}
+                {selectedFiles && selectedFiles.length > 0 && (
+                    <span style={{ marginLeft: '10px' }}>
+                        {selectedFiles.length} file(s) selected: {Array.from(selectedFiles).map(f => f.name).join(', ')}
+                    </span>
+                )}
+
+
+                {/* Upload Button */}
+                {selectedFiles && selectedFiles.length > 0 && (
+                    <button
+                        className="button-primary" // Reuse button style
+                        onClick={handleUploadFiles}
+                        disabled={!selectedFiles || selectedFiles.length === 0 || uploading} // Disable if no files, uploading, or no category selected
+                        style={{ marginTop: '20px' }} // Add space above button
+                    >
+                        {uploading ? 'Uploading...' : 'Upload Files'}
+                    </button>
+                )}
+
+
+                {/* Uploading Indicator */}
+                {uploading && (
+                    <div className="mt-4 text-blue-500 flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Uploading file(s)...
+                    </div>
+                )}
+
+                {/* Success Message */}
+                {uploadSuccess && (
+                    <div className="mt-4 bg-green-100 border border-green-300 text-green-800 px-4 py-2 rounded-md flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5" />
+                        Uploaded successfully!
+                    </div>
+                )}
+
             </div>
 
 
@@ -231,6 +269,8 @@ export default function EventMediaPage() {
                                         src={media.fileUrl}
                                         alt={media.filename}
                                         className={styles["media-image"]} // Use CSS Module
+                                        onClick={() => setPreviewMedia(media)} // Show modal on click
+                                        style={{ cursor: 'pointer' }}
                                     // Optional: Add onClick to view larger
                                     // onClick={() => handleViewMedia(media)}
                                     />
@@ -269,6 +309,18 @@ export default function EventMediaPage() {
                     <p className="no-events-message">No media files uploaded for this event yet.</p>
                 )}
             </div>
+
+            {previewMedia && (
+                <div className={styles["modal-overlay"]} onClick={() => setPreviewMedia(null)}>
+                    <div className={styles["modal-content"]} onClick={(e) => e.stopPropagation()}>
+                        <button className={styles["close-button"]} onClick={() => setPreviewMedia(null)}>
+                            &times;
+                        </button>
+                        <img src={previewMedia.fileUrl} alt={previewMedia.filename} className={styles["modal-image"]} />
+
+                    </div>
+                </div>
+            )}
 
 
         </div>
