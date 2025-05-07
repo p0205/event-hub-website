@@ -10,6 +10,16 @@ export enum EventStatus {
     CANCELLED = 'CANCELLED',
     // Add other statuses if your backend supports them
 }
+
+export interface CalendarEvent{
+    eventId: number;
+    eventName: string;
+    sessionId: number;
+    sessionName: string;
+    startDateTime: string;
+    endDateTime: string;
+    venueNames: string;
+}
 /**
  * Interface for the main Event object structure.
  */
