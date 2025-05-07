@@ -1,7 +1,7 @@
 // --- eventService.ts ---
 import { HttpStatusCode } from 'axios';
 import api from './api'; // Import the central API client
-import { Event, EventList, SimpleEvent } from '@/types/event';
+import { CalendarEvent, Event, EventList, SimpleEvent } from '@/types/event';
 import { User } from '@/types/user';
 
 /**
@@ -242,7 +242,19 @@ const eventService = {
     if(response.status !== HttpStatusCode.NoContent) {
       throw new Error('Failed to delete participant');
     }
+  },
+
+  getCalendarEvents: async (userId: number): Promise<CalendarEvent[]> =>{
+    const response = await api.get<CalendarEvent[]>(`/events/calendar`,{
+      params:{userId }
+    });
+    if(response.status !== HttpStatusCode.Ok) {
+      throw new Error('Failed to fetch calendar events');
+    }
+    console.log(response.data);
+    return response.data;
   }
+
 
 
 }
