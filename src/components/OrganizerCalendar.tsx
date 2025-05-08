@@ -6,6 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { CalendarEvent } from '@/types/event';
 import { eventService } from '@/services';
+import { formatDateTime } from '@/helpers/eventHelpers';
 
 export default function OrganizerCalendar() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -28,13 +29,11 @@ export default function OrganizerCalendar() {
     fetchEvents();
   }, []);
 
-  const handleDateClick = (arg: any) => {
-    alert('Date clicked: ' + arg.dateStr);
-  };
 
   const handleEventClick = (arg: any) => {
     const clickedEvent = arg.event.extendedProps as CalendarEvent;
-    alert(`Event: ${clickedEvent.eventName}\nSession: ${clickedEvent.sessionName}\nVenues: ${clickedEvent.venueNames}`);
+    const description = `${clickedEvent.eventName} (${clickedEvent.sessionName})\n\nStart Time: ${formatDateTime(clickedEvent.startDateTime)}\nEnd Time: ${formatDateTime(clickedEvent.endDateTime)}\nVenues: ${clickedEvent.venueNames}`;
+    alert(description);
   };
 
   const renderEventContent = (eventInfo: any) => {
@@ -45,7 +44,7 @@ export default function OrganizerCalendar() {
             {eventInfo.timeText}
           </div>
         )}
-        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.85em' }}>
+        <div className="fc-event-title-wrap">
           {eventInfo.event.title}
         </div>
       </>
@@ -72,7 +71,6 @@ export default function OrganizerCalendar() {
           end: e.endDateTime,
           extendedProps: e,
         }))}
-        dateClick={handleDateClick}
         eventClick={handleEventClick}
         editable={false}
         selectable={true}

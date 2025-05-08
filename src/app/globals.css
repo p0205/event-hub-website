@@ -134,10 +134,31 @@ body {
 
 /* Highlight current day */
 .fc .fc-day-today {
-  background-color: #fff8e1 !important;
+  background-color: #9c9c9c !important;
 }
 
+/* Make sure long event names wrap instead of truncate */
+.fc-event-title-wrap {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  word-break: break-word !important;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
 
+/* Override FullCalendar’s default truncation */
+.fc .fc-daygrid-event {
+  padding: 2px 4px;
+  border-radius: 4px;
+  background-color: #1565c0;
+  color: white;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow: visible !important;
+  display: block;
+  text-overflow: unset !important;
+}
 
 /* Add this to src/app/globals.css */
 
