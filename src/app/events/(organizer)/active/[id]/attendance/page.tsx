@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation'; // To get event ID from URL
-import Link from 'next/link'; // If needed
 
 // We no longer need a client-side QR generation library like qrcode.react
 // import QRCode from 'qrcode.react';
@@ -20,95 +19,20 @@ import { formatDate, formatDateTime } from '@/helpers/eventHelpers';
 
 // Assuming a CSS Module for attendance page specific styles
 import styles from './attendance.module.css'; // Create this CSS module
-import { Session } from '@/types/event';
-
-// Define the structure for a Session (without the direct qrCodeUrl)
-// We will fetch the QR code image separately based on selectedSessionId
-
-
-// Define the structure for an attendance record
-interface AttendanceRecord {
-    participantId: string; // Link to the participant
-    sessionId: string; // Link to the session
-    timestamp: string; // When attendance was marked (ISO string or similar)
-    method: 'QR' | 'Manual'; // How attendance was recorded
-    // Add other relevant fields, e.g., location, etc.
-}
-
-// Define a structure to combine participant info with their attendance status for a given session
-interface ParticipantAttendanceStatus {
-    // Include relevant participant details you want to display
-    id: string;
-    name: string;
-    email: string;
-    faculty: string; // Include faculty for context in the list
-    course: string; // Include course
-    year: number; // Include year
-
-    // Attendance status for the selected session
-    attended: boolean;
-    attendanceTime?: string; // Timestamp if attended
-    attendanceMethod?: 'QR' | 'Manual'; // Method if attended
-}
-
-// Define a simplified Event structure assuming it contains participants
-interface EventDetails {
-    id: string;
-    name: string;
-    participants: any[]; // Assuming participant structure matches what's needed for ParticipantAttendanceStatus
-    // Add other event details
-}
-
-// --- Define Mock Data ---
-
-const mockEventParticipants = [
-    { id: 'p1', name: 'Alice Smith', email: 'alice.s@example.com', faculty: 'Engineering', course: 'ME', year: 3 },
-    { id: 'p2', name: 'Bob Johnson', email: 'bob.j@example.com', faculty: 'Science', course: 'Physics', year: 2 },
-    { id: 'p3', name: 'Charlie Brown', email: 'charlie.b@example.com', faculty: 'Arts', course: 'History', year: 4 },
-    { id: 'p4', name: 'David Green', email: 'david.g@example.com', faculty: 'Engineering', course: 'EE', year: 3 },
-    { id: 'p5', name: 'Eve Adams', email: 'eve.a@example.com', faculty: 'Science', course: 'Chemistry', year: 1 },
-    { id: 'p6', name: 'Frank White', email: 'frank.w@example.com', faculty: 'Arts', course: 'Sociology', year: 2 },
-    { id: 'p7', sessionId: 's1', name: 'Grace Black', email: 'grace.b@example.com', faculty: 'Engineering', course: 'ME', year: 4 },
-    { id: 'p8', sessionId: 's2', name: 'Heidi Blue', email: 'heidi.b@example.com', faculty: 'Science', course: 'Biology', year: 3 },
-    { id: 'p9', sessionId: 's1', name: 'Ivan Red', email: 'ivan.r@example.com', faculty: 'Arts', course: 'Literature', year: 1 },
-    { id: 'p10', sessionId: 's2', name: 'Judy Grey', email: 'judy.g@example.com', faculty: 'Engineering', course: 'EE', year: 2 },
-];
-
-
-const mockAttendanceRecords: AttendanceRecord[] = [
-    // Attendance for Session 1 (s1)
-    { participantId: 'p1', sessionId: 's1', timestamp: new Date('2025-05-01T09:05:00Z').toISOString(), method: 'QR' },
-    { participantId: 'p3', sessionId: 's1', timestamp: new Date('2025-05-01T09:10:00Z').toISOString(), method: 'QR' },
-    { participantId: 'p5', sessionId: 's1', timestamp: new Date('2025-05-01T09:15:00Z').toISOString(), method: 'Manual' },
-    { participantId: 'p7', sessionId: 's1', timestamp: new Date('2025-05-01T09:20:00Z').toISOString(), method: 'QR' },
-
-    // Attendance for Session 2 (s2)
-    { participantId: 'p1', sessionId: 's2', timestamp: new Date('2025-05-01T13:02:00Z').toISOString(), method: 'QR' },
-    { participantId: 'p2', sessionId: 's2', timestamp: new Date('2025-05-01T13:08:00Z').toISOString(), method: 'Manual' },
-    { participantId: 'p4', sessionId: 's2', timestamp: new Date('2025-05-01T13:12:00Z').toISOString(), method: 'QR' },
-    { participantId: 'p6', sessionId: 's2', timestamp: new Date('2025-05-01T13:18:00Z').toISOString(), method: 'QR' },
-];
-
-
-// Combine mock data into a mock event structure
-const mockEvent: EventDetails = {
-    id: 'mock-event-1', // This ID won't be used for fetching, but matches the route params
-    name: 'Mock Event with Attendance',
-    participants: mockEventParticipants, // Include participants directly in event data
-};
-
-// --- End Mock Data ---
+import { Attendee, Session } from '@/types/event';
+import AttendanceTable from '@/components/attendance/AttendanceTable';
+import attendanceService from '@/services/attendanceService';
+import { PageData } from '@/types/api';
 
 
 export default function EventAttendancePage() {
     const params = useParams();
-    const eventId = params.id as string; // Get event ID from route params (ensure it's string)
+    const eventId = Number(params.id); // Get event ID from route params (ensure it's string)
     const numericEventId = Number(eventId); // Convert to number for service calls
 
     // --- State for data and loading ---
-    const [event, setEvent] = useState<EventDetails | null>(null);
     const [sessions, setSessions] = useState<Session[] | null>(null); // State to hold session details
-    const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]); // State for raw attendance records
+    const [attendanceRecords, setAttendanceRecords] = useState<PageData<Attendee>>(); // State for raw attendance records
     const [loading, setLoading] = useState(true); // Loading for initial page data
     const [error, setError] = useState<string | null>(null); // Error for initial page data
 
@@ -125,6 +49,12 @@ export default function EventAttendancePage() {
     const [showGenerateQrModal, setShowGenerateQrModal] = useState(false);
     const [customExpiresAt, setCustomExpiresAt] = useState<string>(''); // State for the input value in the modal
 
+    // State for participant table
+    const [participants, setParticipants] = useState<Attendee[]>([]);
+    const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
+    const [pageSize, setPageSize] = useState(10);
+    const [totalItems, setTotalItems] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
 
     // --- Data Fetching (Initial Page Load) ---
     useEffect(() => {
@@ -132,34 +62,8 @@ export default function EventAttendancePage() {
             setLoading(true);
             setError(null);
             try {
-                // TODO: Replace with your actual API calls to fetch event details and attendance records
-                // Assume fetching event details also brings the list of registered participants
-                // Example API calls:
-                // const [eventResponse, sessionsResponse, attendanceResponse] = await Promise.all([
-                //     fetch(`/api/events/${eventId}`), // Fetches event and registered participants
-                //     fetch(`/api/events/${eventId}/sessions`), // Fetches sessions list
-                //     fetch(`/api/events/${eventId}/attendance-records`), // Fetches attendance records for the event
-                // ]);
-
-                // if (!eventResponse.ok) throw new Error('Failed to fetch event details');
-                // if (!sessionsResponse.ok) throw new Error('Failed to fetch sessions');
-                // if (!attendanceResponse.ok) throw new Error('Failed to fetch attendance records');
-
-                // const eventData: EventDetails = await eventResponse.json();
-                // const sessionsData: Session[] = await sessionsResponse.json();
-                // const attendanceData: AttendanceRecord[] = await attendanceResponse.json();
-
-                // Use mock data directly
-                setEvent(mockEvent); // Set event data
                 setSessions(await sessionService.getSessionsByEventId(Number(eventId))); // Assuming this fetches session list
-                const attendanceData: AttendanceRecord[] = mockAttendanceRecords; // Use mock attendance
 
-                // setEvent(eventData); // Use fetched event data if real API
-                setAttendanceRecords(attendanceData);
-
-                // Set the default selected session to the first one if sessions exist
-                // This will trigger the NEW useEffect for fetching the QR code
-                // Wait until sessions state is updated before setting selectedSessionId
                 const sessionsData = await sessionService.getSessionsByEventId(Number(eventId));
                 setSessions(sessionsData); // Set the sessions state here
 
@@ -168,8 +72,6 @@ export default function EventAttendancePage() {
                 } else {
                     setSelectedSessionId(null); // Ensure no session is selected if none exist
                 }
-
-
             } catch (e: any) {
                 console.error("Failed to fetch attendance data:", e);
                 setError(`Failed to load attendance data: ${e.message || 'Unknown error'}`);
@@ -209,8 +111,8 @@ export default function EventAttendancePage() {
             return; // Do nothing if no session is selected or data isn't ready
         }
 
-        console.log(selectedSession?.qrCodeImage );
-        if(selectedSession?.qrCodeImage == null){
+        console.log(selectedSession?.qrCodeImage);
+        if (selectedSession?.qrCodeImage == null) {
             return;
         }
 
@@ -259,14 +161,45 @@ export default function EventAttendancePage() {
         };
 
 
-    }, [selectedSessionId, ]); // Add qrCodeImageUrl to dependencies for cleanup correctness. Also sessionService if it's not stable.
+    }, [selectedSessionId,]); // Add qrCodeImageUrl to dependencies for cleanup correctness. Also sessionService if it's not stable.
 
+    useEffect(() => {
+        fetchParticipants(currentPage, pageSize);
+    }, [selectedSessionId, currentPage, pageSize]);
 
-    // --- Derived Data (useMemo for performance) ---
-    // Keep useMemo hooks as they were
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+    };
 
+    const handlePageSizeChange = (newSize: number) => {
+        setPageSize(newSize);
+        setCurrentPage(1); // Reset to the first page on page size change
+    };
 
-    // --- Derived Data (useMemo for performance) ---
+    const handleManualAttendanceChange = (participantId: string, currentlyAttended: boolean) => {
+        console.log(`Attendance change for participant ${participantId} to ${currentlyAttended}`);
+    };
+
+    const fetchParticipants = async (page: number, size: number) => {
+        setLoading(true);
+        try {
+            const pageIndex = page - 1; // Convert to 0-based for backend
+            const data: PageData<Attendee> = await attendanceService.getCheckInParticipantsBySessionId(
+                eventId,
+                Number(selectedSessionId),
+                pageIndex,
+                size
+            );
+            setParticipants(data.content);
+            setTotalItems(data.totalElements);
+            setTotalPages(data.totalPages);
+        } catch (error) {
+            console.error("Error fetching participants:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     // Get the currently selected session object from the sessions list
     const selectedSession = useMemo(() => {
@@ -286,43 +219,43 @@ export default function EventAttendancePage() {
             return String(session.id) === String(selectedSessionId);
         });
 
-        
+
         console.log("Result of find:", foundSession);
         return foundSession || null; // Return found session or explicitly null if find returns undefined
 
     }, [selectedSessionId, sessions]);
-    
-    // Generate the data structure for the attendance list table
-    const participantAttendanceList = useMemo<ParticipantAttendanceStatus[]>(() => {
-        console.log("Enter useMemo for participantAttendanceList");
-        if (!event || !event.participants || !selectedSessionId || attendanceRecords.length === 0) {
-            console.log("useMemo participantAttendanceList returning empty array");
-            return [];
-        }
 
-        const recordsForSelectedSession = attendanceRecords.filter(record => record.sessionId === selectedSessionId);
-        const attendedParticipantIds = new Set(recordsForSelectedSession.map(record => record.participantId));
+    // // Generate the data structure for the attendance list table
+    // const participantAttendanceList = useMemo<ParticipantAttendanceStatus[]>(() => {
+    //     console.log("Enter useMemo for participantAttendanceList");
+    //     if (!event || !event.participants || !selectedSessionId || attendanceRecords.length === 0) {
+    //         console.log("useMemo participantAttendanceList returning empty array");
+    //         return [];
+    //     }
 
-        const list = event.participants.map((participant: any) => {
-            const attended = attendedParticipantIds.has(participant.id);
-            const attendanceRecord = recordsForSelectedSession.find(record => record.participantId === participant.id);
+    //     const recordsForSelectedSession = attendanceRecords.filter(record => record.sessionId === selectedSessionId);
+    //     const attendedParticipantIds = new Set(recordsForSelectedSession.map(record => record.participantId));
 
-            return {
-                id: participant.id,
-                name: participant.name,
-                email: participant.email,
-                faculty: participant.faculty,
-                course: participant.course,
-                year: participant.year,
-                attended: attended,
-                attendanceTime: attendanceRecord?.timestamp,
-                attendanceMethod: attendanceRecord?.method,
-            };
-        });
-        console.log("useMemo participantAttendanceList result count:", list.length);
-        return list;
+    //     const list = event.participants.map((participant: any) => {
+    //         const attended = attendedParticipantIds.has(participant.id);
+    //         const attendanceRecord = recordsForSelectedSession.find(record => record.participantId === participant.id);
 
-    }, [event, attendanceRecords, selectedSessionId]); // Depends on event, attendanceRecords, and selectedSessionId
+    //         return {
+    //             id: participant.id,
+    //             name: participant.name,
+    //             email: participant.email,
+    //             faculty: participant.faculty,
+    //             course: participant.course,
+    //             year: participant.year,
+    //             attended: attended,
+    //             attendanceTime: attendanceRecord?.timestamp,
+
+    //         };
+    //     });
+    //     console.log("useMemo participantAttendanceList result count:", list.length);
+    //     return list;
+
+    // }, [event, attendanceRecords, selectedSessionId]); // Depends on event, attendanceRecords, and selectedSessionId
 
 
     // --- Handlers ---
@@ -612,7 +545,6 @@ export default function EventAttendancePage() {
 
     const sessionsExist = sessions && sessions.length > 0;
     // Use event?.participants.length > 0 or similar if fetching event data
-    const participantsRegistered = mockEventParticipants.length > 0; // Using mock count for now
 
 
     return (
@@ -701,14 +633,13 @@ export default function EventAttendancePage() {
                         // Use a simple div-based modal here. Replace with your actual Modal component if available.
                         <div className="modal-overlay"> {/* CSS for dimming background */}
                             <div className="modal-content form-container"> {/* Reuse form-container for styling */}
-                                <h3>Generate QR Code for {selectedSession.sessionName}</h3>
                                 {/* Show error message specifically for generation attempt if any */}
                                 {/* Only show generation errors when the modal is open and attempting generation */}
                                 {qrCodeError && isGeneratingQr && showGenerateQrModal && (
                                     <p className="error-message">Error: {qrCodeError}</p>
                                 )}
                                 <div className="form-group"> {/* Reuse form-group */}
-                                    <label htmlFor="expiresAtInput" className="form-label">Expires At (Optional):</label>
+                                    <label htmlFor="expiresAtInput" className="form-label">QR Expires At (Optional):</label>
                                     {/* Use type="datetime-local" for date and time input */}
                                     <input
                                         id="expiresAtInput"
@@ -748,12 +679,14 @@ export default function EventAttendancePage() {
 
             {/* --- Participants Attendance List Section --- */}
             {/* Show list only if a session is selected */}
+            {/* --- Participants Attendance List Section --- */}
+            {/* Show list only if a session is selected */}
             {selectedSessionId && (
                 <div className="form-container"> {/* Use form-container for card styling */}
-                    <h3>Participants Attendance - {selectedSession?.sessionName || 'Selected Session'}</h3>
+                    <h3>Participants Attendance - {selectedSession?.sessionName || 'Selected Session'}</h3> {/* Display selected session name */}
 
                     {/* Export Button */}
-                    {participantAttendanceList.length > 0 && (
+                    {attendanceRecords?.numberOfElements || 0 > 0 && (
                         <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
                             <button className="button-secondary" onClick={handleExportAttendance}>
                                 Export Attendance (CSV)
@@ -761,59 +694,22 @@ export default function EventAttendancePage() {
                         </div>
                     )}
 
-
-                    {/* Table or List */}
-                    {participantsRegistered ? (
-                        // Table requires styling
-                        <table className={styles["attendance-table"]}>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Faculty</th>
-                                    <th>Course</th>
-                                    <th>Year</th>
-                                    <th>Attended</th>
-                                    <th>Time</th>
-                                    <th>Method</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {participantAttendanceList.length > 0 ? (
-                                    participantAttendanceList.map(participant => (
-                                        <tr key={participant.id}>
-                                            <td>{participant.name}</td>
-                                            <td>{participant.email}</td>
-                                            <td>{participant.faculty}</td>
-                                            <td>{participant.course}</td>
-                                            <td>{participant.year}</td>
-                                            <td className={participant.attended ? styles.attended : styles.notAttended}>
-                                                {participant.attended ? 'Yes' : 'No'}
-                                            </td>
-                                            <td>{participant.attendanceTime ? formatDateTime(participant.attendanceTime) : '-'}</td>
-                                            <td>{participant.attendanceMethod || '-'}</td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={8} style={{ textAlign: 'center' }}>
-                                            No attendance records found for this session yet.
-                                        </td>
-                                    </tr>
-                                )}
-
-                            </tbody>
-                        </table>
-
-                    ) : (
-                        // Message if no participants are registered for the event
-                        <p className="no-participants-message">No participants registered for this event.</p>
-                    )}
-
+                    {/* Render the new ParticipantAttendanceTable component */}
+                    <AttendanceTable
+                    participants={participants}
+                    onManualAttendanceChange={handleManualAttendanceChange}
+                    currentPage={currentPage}
+                    pageSize={pageSize}
+                    totalItems={totalItems}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    onPageSizeChange={handlePageSizeChange}
+                />
                 </div>
             )}
 
-
-        </div> // End page-content-wrapper
-    );
+        </div>
+    )
 }
+
+

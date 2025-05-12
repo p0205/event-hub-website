@@ -37,7 +37,7 @@ export default function AddParticipantModal({ open, onCancel, onConfirm }: AddPa
 
         const fetchData = async () => {
             try {
-            const data = await userService.getUserByName(searchText);
+            const data = await userService.getUserByNameOrEmail(searchText);
             setSearchResults(data);
             } catch (error) {
               console.error('Error fetching search results:', error);
@@ -52,7 +52,7 @@ export default function AddParticipantModal({ open, onCancel, onConfirm }: AddPa
       else {
         setSearchResults([]);
       }
-    }, 500); // 500ms typing delay
+    }, 1000); // 500ms typing delay
 
     return () => clearTimeout(delayDebounce);
   }, [searchText]);

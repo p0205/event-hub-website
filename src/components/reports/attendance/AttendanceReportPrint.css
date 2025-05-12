@@ -1,0 +1,84 @@
+/* src/components/reports/attendance/AttendanceReportPrint.css */
+
+@media print {
+    :global(body),
+    :global(html) {
+        margin: 0;
+        padding: 0;
+        background-color: #fff !important;
+        color: #000 !important;
+    }
+
+    .reportContainer {
+        box-shadow: none;
+        margin: 0;
+        padding: 0;
+        max-width: none;
+        background-color: transparent !important;
+    }
+
+    .section {
+        border: none;
+        padding: 0;
+        background-color: transparent !important;
+        margin-bottom: 20px;
+    }
+
+    .sectionTitle {
+        border-bottom: 1px solid #000;
+        color: #000 !important;
+        padding-bottom: 3px;
+        margin-bottom: 10px;
+    }
+
+    .overviewItem,
+    .summaryItem {
+        margin-bottom: 5px;
+        color: #000 !important;
+    }
+
+    .overviewItem strong,
+    .summaryItem strong {
+        color: #000 !important;
+    }
+
+    .summaryMetricsTable,
+    .sessionTable,
+    .demographicsTable {
+        border: 1px solid #000;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+    }
+
+    .summaryMetricsTable th,
+    .summaryMetricsTable td,
+    .sessionTable th,
+    .sessionTable td,
+    .demographicsTable th,
+    .demographicsTable td {
+        border: 1px solid #000;
+        padding: 8px;
+        color: #000 !important;
+    }
+
+    .summaryMetricsTable th,
+    .sessionTable th,
+    .demographicsTable th {
+        background-color: #ddd !important;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+        color: #000 !important;
+    }
+
+    .summaryMetricsTable tr:nth-child(even),
+    .sessionTable tr:nth-child(even),
+    .demographicsTable tr:nth-child(even) {
+        background-color: #f2f2f2 !important;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+    }
+
+    .exportButton {
+        display: none;
+    }
+}

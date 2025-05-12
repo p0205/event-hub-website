@@ -18,6 +18,19 @@
     --foreground: #000000;
   }
 }
+/* --- Print Specific Styles --- */
+@media print {
+  body {
+      margin: 0;
+      padding: 0;
+      background-color: #fff !important;
+      color: #000 !important;
+  }
+
+  html {
+      background-color: #fff !important;
+  }
+}
 
 @keyframes slideInRight {
   from {
@@ -240,6 +253,11 @@ body {
   display: flex;
   justify-content: flex-end; /* Align buttons to the right */
   gap: 10px; /* Space between buttons */
+}
+.button-group {
+  display: flex;
+  gap: 12px; /* Adjust as needed */
+  margin-top: 16px; /* Add space above the buttons */
 }
 
 /* Primary Button (e.g., Create Event) */

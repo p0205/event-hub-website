@@ -178,13 +178,16 @@ export interface Participant {
 /**
  * Interface for an Attendance Record for a specific Participant and Session.
  */
-export interface AttendanceRecord {
-    id: string; // ID of the attendance record itself
-    participantId: string; // ID of the participant
-    sessionId: string; // ID of the session
-    timestamp: string; // When attendance was recorded (ISO string)
-    method: 'QR' | 'Manual'; // How attendance was recorded
-    // Add other relevant attendance details
+export interface Attendee {
+    userId: string;
+    name: string;
+    email: string;
+    faculty?: string; // Include faculty for context in the list
+    course?: string; // Include course
+    year?: number; // Include year
+    // Attendance status for the selected session
+    checkinDateTime: string; // Timestamp if attended
+    phoneNo: string;
 }
 
 

@@ -225,7 +225,7 @@ export default function EventParticipantsPage() {
 
 
     const handleAddParticipant = async (participant: User | null) => {
-        if (!participant) return; // 如果没选到人，就不做事
+        if (!participant) return;
         setIsModalOpen(false);
         setIsSaving(true); // Start saving state
         setSaveError(null); // Clear previous save errors
