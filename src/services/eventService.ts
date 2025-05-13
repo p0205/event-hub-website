@@ -3,6 +3,7 @@ import { HttpStatusCode } from 'axios';
 import api from './api'; // Import the central API client
 import { CalendarEvent, Event, EventList, SimpleEvent } from '@/types/event';
 import { User } from '@/types/user';
+import { PageData } from '@/types/api';
 
 /**
  * Represents the expected successful response structure from the create event API.
@@ -44,7 +45,20 @@ interface ApiErrorResponse {
 * @throws {Error} Throws an error if the API call fails, containing details from the API response if possible.
 */
 
-const eventService = {
+interface EventService {
+  getEventById: (id: number) => Promise<Event>;
+  getEventNameById: (id: number) => Promise<string>;
+  createEventService: (eventFormData: FormData) => Promise<Event>;
+  fetchEvents: (organizerId: number) => Promise<EventList>;
+  getEventsByStatus: (organizerId: number, status: string) => Promise<SimpleEvent[]>;
+  importParticipantsInfo: (eventId: number, file: File) => Promise<User[]>;
+  getParticipantsByEventId: (eventId: number, pageNumber?: number, pageSize?: number, sortBy?: string) => Promise<PageData<User>>;
+  saveParticipants: (eventId: number, participantList: User[]) => Promise<User[]>;
+  deleteParticipants: (eventId: number, participantId: number) => Promise<void>;
+  getCalendarEvents: (userId: number) => Promise<CalendarEvent[]>;
+}
+
+const eventService: EventService = {
 
   // ... (other service functions like createEvent, getAllEvents, etc.) ...
 
@@ -201,9 +215,13 @@ const eventService = {
     return response.data;
   },
 
-  getParticipantsByEventId: async (eventId: number): Promise<User[]> => {
-    const response = await api.get<User[]>(`/events/${eventId}/participants`, {
-      params: { eventId }
+  getParticipantsByEventId: async (eventId: number,  pageNumber?:number, pageSize?:number,sortBy?:string): Promise<PageData<User>> => {
+    const response = await api.get(`/events/${eventId}/participants`, {
+      params: { 
+        pageNumber,
+        pageSize,
+        sortBy
+      }
     });
 
     if (response.status !== HttpStatusCode.Ok) {

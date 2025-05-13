@@ -18,10 +18,17 @@ export default function EventTeamPage() {
     const eventId = params.id as string;
 
     // --- State for data and loading ---
-    const [eventTeam, setEventTeam] = useState<TeamMember[]>([]);
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     const [teamRoles, setTeamRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // --- State for team members pagination
+    const [currentPageNo, setCurrentPageNo] = useState(0);
+    const [pageSize, setPageSize] = useState(5);
+    const [sortBy, setSortBy] = useState<string>("user.name");
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalMembers, setTotalMembers] = useState(0);
 
     // --- State for the Add Member Modal ---
     const [showAddMemberModal, setShowAddMemberModal] = useState(false); // Controls modal visibility
@@ -45,8 +52,13 @@ export default function EventTeamPage() {
             setLoading(true);
             setError(null);
             try {
-                const teamMembers = await teamService.getTeamMembers(Number(eventId));
-                setEventTeam(teamMembers);
+                const response = await teamService.getTeamMembers(Number(eventId), currentPageNo, pageSize, sortBy);
+                setTeamMembers(response.content);
+                setPageSize(response.size);
+                setCurrentPageNo(response.pageable.pageNumber);
+                setTotalPages(response.totalPages);
+                setTotalMembers(response.totalElements);
+
             } catch (e: any) {
                 console.error("Error loading team data:", e);
                 setError(`Failed to load team data: ${e.message || 'Unknown error'}`);
@@ -55,7 +67,7 @@ export default function EventTeamPage() {
             }
         };
         loadTeamData();
-    }, [eventId, refreshTeamTrigger]); // Rerun if eventId or trigger changes
+    }, [eventId, refreshTeamTrigger, currentPageNo, pageSize, sortBy]); // Rerun if eventId or trigger changes
 
     // --- Data Loading (fetch roles - triggered when modal is shown) ---
     useEffect(() => {
@@ -95,6 +107,27 @@ export default function EventTeamPage() {
 
 
     // --- Handlers ---
+    // Handle pagination
+    const handlePageChange = (newPage: number) => {
+        setCurrentPageNo(newPage);
+    };
+
+    // const goToFirstPage = () => {
+    //     if (currentPageNo > 0) {
+    //         setCurrentPageNo(0);
+    //     }
+    // }
+
+    // const goToLastPage = () => {
+    //     if (currentPageNo > 0) {
+    //         setCurrentPageNo(totalPages - 1);
+    //     }
+    // }
+
+    const onPageSizeChange = (newPageSize: number) => {
+        setPageSize(newPageSize);
+    }
+
 
     // Handle search input change
     const handleSearchEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,7 +185,7 @@ export default function EventTeamPage() {
             if (isSelected) {
                 return prevSelected.filter(u => u.id !== user.id);
             } else {
-                const isAlreadyMember = eventTeam.some(member => member.userId === user.id);
+                const isAlreadyMember = teamMembers.some(member => member.userId === user.id);
                 if (isAlreadyMember) {
                     setAddUsersError(`User ${user.name} is already a team member.`); // Provide feedback
                     return prevSelected; // Don't add
@@ -198,11 +231,11 @@ export default function EventTeamPage() {
             setAddUsersError(`Failed to add users: ${apiErrorMessage}`);
             setAddUsersSuccess(false);
         } finally {
-             // Set addingUsers back to false *unless* closing modal immediately
-             // If closing modal, useEffect cleanup will handle it.
-             // If *not* closing modal automatically, uncomment the next line:
-             // setAddingUsers(false);
-             // If closing modal *with delay*, keep addingUsers=true until modal closes
+            // Set addingUsers back to false *unless* closing modal immediately
+            // If closing modal, useEffect cleanup will handle it.
+            // If *not* closing modal automatically, uncomment the next line:
+            // setAddingUsers(false);
+            // If closing modal *with delay*, keep addingUsers=true until modal closes
         }
     };
 
@@ -222,8 +255,8 @@ export default function EventTeamPage() {
             console.error("Delete team member error:", e);
             const apiErrorMessage = e.response?.data?.message || e.message || 'Unknown error';
             setError(`Failed to delete team member: ${apiErrorMessage}`);
-             // Optional: Trigger refetch even on error to ensure consistency
-             // setRefreshTeamTrigger(prev => prev + 1);
+            // Optional: Trigger refetch even on error to ensure consistency
+            // setRefreshTeamTrigger(prev => prev + 1);
         } finally {
             setLoading(false);
         }
@@ -231,7 +264,7 @@ export default function EventTeamPage() {
 
     // --- Render Logic ---
 
-    if (loading && eventTeam.length === 0) {
+    if (loading && teamMembers.length === 0) {
         return (
             <div className="page-content-wrapper">
                 <h2 className="page-title">Team</h2>
@@ -240,17 +273,21 @@ export default function EventTeamPage() {
         );
     }
 
-    if (error && eventTeam.length === 0) {
-         return (
+    if (error && teamMembers.length === 0) {
+        return (
             <div className="page-content-wrapper">
                 <h2 className="page-title">Team</h2>
                 <p className="error-message">Error: {error}</p>
             </div>
-         );
+        );
     }
 
-    const hasTeamMembers = eventTeam && eventTeam.length > 0;
+    const hasTeamMembers = teamMembers && teamMembers.length > 0;
     const hasRoles = teamRoles && teamRoles.length > 0;
+    const startIndex = (currentPageNo * pageSize) + 1;
+    const endIndex = Math.min((currentPageNo + 1) * pageSize, totalMembers); // Ensure end index doesn't exceed total items
+
+
 
     // --- Modal Close Handler ---
     const closeModal = () => {
@@ -260,9 +297,9 @@ export default function EventTeamPage() {
 
     // Handler for closing modal when clicking overlay background
     const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-         if (e.target === e.currentTarget) { // Only close if click is directly on the overlay
+        if (e.target === e.currentTarget) { // Only close if click is directly on the overlay
             closeModal();
-         }
+        }
     };
 
 
@@ -272,9 +309,9 @@ export default function EventTeamPage() {
 
             {/* --- Event Team Members List --- */}
             <div className="form-container">
-                 {/* Heading with Add Button */}
+                {/* Heading with Add Button */}
                 <div className={styles["teamListHeader"]}>
-                    <h3>Event Team Members ({eventTeam.length})</h3>
+                    <h3>Event Team Members ({teamMembers.length})</h3>
                     <button
                         className="add-button"
                         onClick={() => setShowAddMemberModal(true)}
@@ -285,14 +322,35 @@ export default function EventTeamPage() {
                     </button>
                 </div>
 
-                {error && eventTeam.length > 0 && <p className="error-message">{error}</p>}
+                {error && teamMembers.length > 0 && <p className="error-message">{error}</p>}
 
                 {hasTeamMembers ? (
+
                     <div className={styles["team-members-list-container"]}>
+                        {/* Display current range and total */}
+                        {totalMembers > 0 && (
+                            <div className="pagination-container">
+                                <div className="pagination-info">
+                                    Showing {startIndex} - {endIndex} of {totalMembers} participants
+                                </div>
+                                {/* Page Size Selector */}
+                                <div className="page-size-selector">
+                                    Participants per page:
+                                    <select value={pageSize} onChange={(e) => onPageSizeChange(Number(e.target.value))}>
+                                        <option value={5}>5</option>
+                                        <option value={10}>10</option> {/* Default */}
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                        {/* Add more options as needed */}
+                                    </select>
+                                </div>
+                            </div>
+                        )}
+
                         <ul>
-                            {eventTeam.map(member => (
+                            {teamMembers.map(member => (
                                 <li key={member.userId} className={styles["team-member-item"]}>
-                                    <img src={'/default-avatar.png'} alt={member.name} className={styles["profile-image"]} width={40} height={40}/>
+                                    <img src={'/default-avatar.png'} alt={member.name} className={styles["profile-image"]} width={40} height={40} />
                                     <div className={styles["user-info"]}>
                                         <div className={styles["user-name"]}>{member.name}</div>
                                         <div className={styles["user-email"]}>{member.email}</div>
@@ -308,13 +366,48 @@ export default function EventTeamPage() {
                                 </li>
                             ))}
                         </ul>
+
+
+
+                        {/* --- Pagination Controls --- */}
+                        {totalMembers > 0 && totalPages > 1 && ( // Only show controls if there's more than one page
+                            <div className="pagination-button-group">
+
+                                {/* Page Buttons */}
+                                <div className="page-buttons">
+                                    <button
+                                        onClick={() => handlePageChange(currentPageNo - 1)}
+                                        disabled={currentPageNo === 0} // Disable if on the first page
+                                        className="button-secondary" // Reuse button style
+                                    >
+                                        Previous
+                                    </button>
+
+                                    {/* Simple Page Number Display (can be enhanced) */}
+                                    <span className="page-number">
+                                        Page {currentPageNo+1} of {totalPages}
+                                    </span>
+
+                                    <button
+                                        onClick={() => handlePageChange(currentPageNo + 1)}
+                                        disabled={currentPageNo === totalPages - 1} // Disable if on the last page
+                                        className="button-secondary" // Reuse button style
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+
+
                     </div>
                 ) : (
                     !loading && <p className="no-events-message">No team members added to this event yet.</p>
                 )}
             </div>
 
-             {/* --- Add Team Member Modal --- */}
+            {/* --- Add Team Member Modal --- */}
             {showAddMemberModal && (
                 <div className={styles.modalOverlay} onClick={handleOverlayClick}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}> {/* Prevent clicks inside modal from closing it */}
@@ -324,10 +417,10 @@ export default function EventTeamPage() {
                         {/* --- Role Selection --- */}
                         <div className="form-group">
                             <label htmlFor="teamRole">Assign Role:</label>
-                             {/* Show loading state for roles if needed */}
-                             {searching && teamRoles.length === 0 && <p className="loading-message">Loading roles...</p>}
-                             {/* Show error if roles failed to load */}
-                             {!searching && !hasRoles && searchError && <p className="error-message">{searchError}</p>}
+                            {/* Show loading state for roles if needed */}
+                            {searching && teamRoles.length === 0 && <p className="loading-message">Loading roles...</p>}
+                            {/* Show error if roles failed to load */}
+                            {!searching && !hasRoles && searchError && <p className="error-message">{searchError}</p>}
                             <select
                                 id="teamRole"
                                 value={selectedRoleForAdd?.name || ''}
@@ -357,7 +450,7 @@ export default function EventTeamPage() {
                                             className={styles.searchInput}
                                         />
                                         <button
-                                             className={`button-secondary ${styles.searchButton}`}
+                                            className={`button-secondary ${styles.searchButton}`}
                                             onClick={handleSearchUsers}
                                             disabled={searching || !searchQuery.trim() || addingUsers}
                                         >
@@ -376,7 +469,7 @@ export default function EventTeamPage() {
                                         <ul className={styles.resultsList}> {/* Add class for potential styling/scrolling */}
                                             {searchResults.map(user => {
                                                 const isSelected = selectedUsersForAdd.some(u => u.id === user.id);
-                                                const isAlreadyMember = eventTeam.some(member => member.userId === user.id);
+                                                const isAlreadyMember = teamMembers.some(member => member.userId === user.id);
 
                                                 return (
                                                     <li key={user.id} className={`${styles["search-result-item"]} ${isSelected ? styles["selected"] : ''} ${isAlreadyMember ? styles["already-member"] : ''}`}>
@@ -405,7 +498,7 @@ export default function EventTeamPage() {
                             </>
                         )}
 
-                         {/* --- Selected Users List --- */}
+                        {/* --- Selected Users List --- */}
                         {selectedUsersForAdd.length > 0 && (
                             <div className={styles["selected-users-list"]} style={{ marginTop: '20px' }}>
                                 <h4>Selected Users ({selectedUsersForAdd.length}):</h4>
@@ -432,7 +525,7 @@ export default function EventTeamPage() {
 
                         {/* --- Add All Selected Users Button & Messages --- */}
                         <div className={styles.modalActions} style={{ marginTop: '20px' }}>
-                             {/* Add/Error/Success Messages */}
+                            {/* Add/Error/Success Messages */}
                             <div className={styles.modalMessages}>
                                 {addUsersError && <p className="error-message">{addUsersError}</p>}
                                 {addUsersSuccess && <p className="success-message">Users added successfully!</p>}

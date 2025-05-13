@@ -98,7 +98,6 @@ export default function EventParticipantsPage() {
     // --- State for "Add Participant" Modal ---
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-
     // --- State for Sorting ---
     const [sortKey, setSortKey] = useState<SortKey>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -107,7 +106,13 @@ export default function EventParticipantsPage() {
     const [filterType, setFilterType] = useState<FilterType>('all');
     const [filterValue, setFilterValue] = useState<string | number | null>(null);
 
-    // --- Confirm dialog for deleting participants --- 
+    // --- State for team members pagination
+    const [currentPageNo, setCurrentPageNo] = useState(0);
+    const [pageSize, setPageSize] = useState(5);
+    const [sortBy, setSortBy] = useState<string>("participant.name");
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalParticipants, setTotalParticipants] = useState(0);
+
 
     // --- Component Mount State (for Hydration/Recharts) ---
     const [isMounted, setIsMounted] = useState(false);
@@ -123,30 +128,8 @@ export default function EventParticipantsPage() {
             setInitialLoadError("Event ID is missing.");
             return;
         }
-
-        const fetchSavedParticipants = async () => {
-            setIsLoadingInitial(true);
-            setInitialLoadError(null);
-            // Clear other status messages on initial load
-            setImportError(null);
-            setImportSuccess(null);
-            setSaveError(null);
-            try {
-                // Call your service to get participants already saved for this event
-                const savedParticipants = await eventService.getParticipantsByEventId(Number(eventId));
-                setParticipants(savedParticipants); // Set the main participants state
-
-            } catch (err: any) {
-                console.error("Failed to fetch initially saved participants:", err);
-                setInitialLoadError(`Failed to load existing participants: ${err.message || 'Unknown error'}`);
-                setParticipants([]); // Display empty list on error
-            } finally {
-                setIsLoadingInitial(false);
-            }
-        };
-
         fetchSavedParticipants();
-    }, [eventId]); // Re-run effect if eventId changes
+    }, [eventId, currentPageNo, pageSize, sortBy]); // Re-run effect if eventId changes
 
 
     // --- Recalculate Demographics whenever participants list changes ---
@@ -172,6 +155,45 @@ export default function EventParticipantsPage() {
 
 
     }, [uploadedParticipants]); // Run the effect when uploadedParticipants changes
+
+    // Fetch data
+    const fetchSavedParticipants = async () => {
+        setIsLoadingInitial(true);
+        setInitialLoadError(null);
+        // Clear other status messages on initial load
+        setImportError(null);
+        setImportSuccess(null);
+        setSaveError(null);
+        try {
+            // Call your service to get participants already saved for this event
+            const response = await eventService.getParticipantsByEventId(Number(eventId),currentPageNo, pageSize, sortBy);
+            setParticipants(response.content); // Set the main participants state
+            setCurrentPageNo(response.pageable.pageNumber);
+            setTotalPages(response.totalPages);
+            setTotalParticipants(response.totalElements);
+          
+        } catch (err: any) {
+            console.error("Failed to fetch initially saved participants:", err);
+            setInitialLoadError(`Failed to load existing participants: ${err.message || 'Unknown error'}`);
+            setParticipants([]); // Display empty list on error
+        } finally {
+            setIsLoadingInitial(false);
+        }
+    };
+
+
+
+    // Handle pagination
+    const handlePageChange = (newPage: number) => {
+        setCurrentPageNo(newPage);
+    };
+
+    const handlePageSizeChange = (newPageSize: number) => {
+        setPageSize(newPageSize);
+    }
+
+
+
 
     // --- Handle CSV File Import ---
     const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -245,21 +267,21 @@ export default function EventParticipantsPage() {
             let addedParticipants: User[] = [];
             let skippedCount = 0;
 
-          
-                const emailKey = participant.email.toLowerCase();
-                const namePhoneKey = `${participant.name.trim().toLowerCase()}_${(participant.phoneNo ?? '').replace(/\D/g, '')}`;
 
-                const isDuplicate = existingEmails.has(emailKey) || existingNamePhonePairs.has(namePhoneKey);
+            const emailKey = participant.email.toLowerCase();
+            const namePhoneKey = `${participant.name.trim().toLowerCase()}_${(participant.phoneNo ?? '').replace(/\D/g, '')}`;
 
-                if (!isDuplicate) {
-                    updatedParticipants.push(participant);
-                    addedParticipants.push(participant);
-                    existingEmails.add(emailKey);
-                    existingNamePhonePairs.add(namePhoneKey);
-                } else {
-                    skippedCount++;
-                }
-       
+            const isDuplicate = existingEmails.has(emailKey) || existingNamePhonePairs.has(namePhoneKey);
+
+            if (!isDuplicate) {
+                updatedParticipants.push(participant);
+                addedParticipants.push(participant);
+                existingEmails.add(emailKey);
+                existingNamePhonePairs.add(namePhoneKey);
+            } else {
+                skippedCount++;
+            }
+
 
             if (addedParticipants.length > 0) {
                 console.log("Saving newly added participants:", addedParticipants);
@@ -292,10 +314,8 @@ export default function EventParticipantsPage() {
         } finally {
             setIsSaving(false); // End saving state
         }
+    };
 
-
-      };
-      
 
     // --- Handle Deleting a Participant by ID ---
     const handleDeleteParticipant = (id: number | string) => {
@@ -316,10 +336,10 @@ export default function EventParticipantsPage() {
     const handleDeleteUploaded = (id: string) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this participant?");
         if (!confirmDelete) return;
-    
+
         setUploadedParticipants(uploadedParticipants.filter(p => String(p.id) !== id));
     };
-        
+
 
 
 
@@ -738,6 +758,13 @@ export default function EventParticipantsPage() {
                         <ParticipantsTable
                             participants={sortedParticipants} // Pass the sorted and filtered list
                             onDeleteParticipant={handleDeleteParticipant} // Pass delete handler
+                            currentPage={currentPageNo}
+                            pageSize={pageSize}
+                            totalParticipants={totalParticipants}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                            onPageSizeChange={handlePageSizeChange}
+
                         />
                     </div>
                 )}
@@ -823,4 +850,3 @@ export default function EventParticipantsPage() {
         </div> // End page-content-wrapper
     );
 }
-

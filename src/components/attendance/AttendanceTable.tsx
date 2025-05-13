@@ -47,10 +47,24 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
 
             {/* Display current range and total */}
             {totalItems > 0 && (
-                <div className={styles.paginationInfo}>
-                    Showing {startIndex} - {endIndex} of {totalItems} participants
+                <div className="pagination-container">
+                    <div className="pagination-info">
+                        Showing {startIndex} - {endIndex} of {totalItems} attendees
+                    </div>
+
+                    <div className="page-size-selector">
+                        Attendees per page:
+                        <select value={pageSize} onChange={(e) => onPageSizeChange(Number(e.target.value))}>
+                            <option value={5}>5</option>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                        </select>
+                    </div>
                 </div>
+
             )}
+
 
 
             <table className={styles.attendanceTable}>
@@ -95,21 +109,9 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
 
             {/* --- Pagination Controls --- */}
             {totalItems > 0 && totalPages > 1 && ( // Only show controls if there's more than one page
-                <div className={styles.paginationControls}>
-                    {/* Page Size Selector */}
-                    <div className={styles.pageSizeSelector}>
-                        Participants per page:
-                        <select value={pageSize} onChange={(e) => onPageSizeChange(Number(e.target.value))}>
-                            <option value={5}>5</option>
-                            <option value={10}>10</option> {/* Default */}
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                            {/* Add more options as needed */}
-                        </select>
-                    </div>
-
+                <div className="pagination-button-group">
                     {/* Page Buttons */}
-                    <div className={styles.pageButtons}>
+                    <div className="page-buttons">
                         <button
                             onClick={() => onPageChange(currentPage - 1)}
                             disabled={currentPage === 1} // Disable if on the first page
@@ -119,7 +121,7 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
                         </button>
 
                         {/* Simple Page Number Display (can be enhanced) */}
-                        <span className={styles.pageNumber}>
+                        <span className="page-number">
                             Page {currentPage} of {totalPages}
                         </span>
 

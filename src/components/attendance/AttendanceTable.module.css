@@ -64,44 +64,6 @@
 }
 
 
-/* --- Pagination Styles --- */
-.paginationInfo {
-    margin-top: 20px;
-    text-align: center;
-    color: #555;
-    font-size: 0.9em;
-}
-
-.paginationControls {
-    display: flex; /* Use flexbox for layout */
-    justify-content: space-between; /* Space out items */
-    align-items: center; /* Vertically align items */
-    margin-top: 20px;
-}
-
-.pageSizeSelector select {
-    margin-left: 5px;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.pageButtons button {
-    /* Inherits button-secondary styles from global/other CSS */
-    margin: 0 5px; /* Space between buttons and span */
-}
-
-.pageButtons button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.pageNumber {
-    font-weight: bold;
-    color: #333;
-}
-
-
 /* Responsive adjustments (optional) */
 @media (max-width: 768px) {
     .attendanceTable th,

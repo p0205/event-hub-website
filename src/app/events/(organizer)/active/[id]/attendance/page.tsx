@@ -32,7 +32,6 @@ export default function EventAttendancePage() {
 
     // --- State for data and loading ---
     const [sessions, setSessions] = useState<Session[] | null>(null); // State to hold session details
-    const [attendanceRecords, setAttendanceRecords] = useState<PageData<Attendee>>(); // State for raw attendance records
     const [loading, setLoading] = useState(true); // Loading for initial page data
     const [error, setError] = useState<string | null>(null); // Error for initial page data
 
@@ -52,7 +51,7 @@ export default function EventAttendancePage() {
     // State for participant table
     const [participants, setParticipants] = useState<Attendee[]>([]);
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(5);
     const [totalItems, setTotalItems] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
 
@@ -686,7 +685,7 @@ export default function EventAttendancePage() {
                     <h3>Participants Attendance - {selectedSession?.sessionName || 'Selected Session'}</h3> {/* Display selected session name */}
 
                     {/* Export Button */}
-                    {attendanceRecords?.numberOfElements || 0 > 0 && (
+                    {participants && (
                         <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
                             <button className="button-secondary" onClick={handleExportAttendance}>
                                 Export Attendance (CSV)

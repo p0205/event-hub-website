@@ -1084,7 +1084,6 @@ list-style: none;
    padding-left: 12px; /* Adjust padding to account for border */
 }
 
-/* 这个是 layout.tsx 中包裹活动侧边栏和主内容区的新 div */
 
 
 
@@ -1104,12 +1103,6 @@ list-style: none;
   color: #333; /* Title color */
 }
 
-
-/* src/app/globals.css */
-
-/* ... (your existing global styles like page-content-wrapper, form-container, buttons, etc.) ... */
-
-/* --- Global Progress Bar Styles --- */
 
 /* Container for the entire progress bar */
 .progressBarContainer {
@@ -1160,8 +1153,6 @@ list-style: none;
    /* min-width: 30px; */
    /* text-align: center; */
 }
-
-/* ... (rest of your existing global styles) ... */
 
 
 .success-overlay {
@@ -1338,3 +1329,60 @@ list-style: none;
   background-color: #ccc;
   cursor: not-allowed;
 }
+
+
+/* --- Pagination Styles --- */
+
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.pagination-info {
+  margin-top: 20px;
+  text-align: center;
+  color: #555;
+  font-size: 0.9em;
+}
+
+.pagination-controls {
+  display: flex; /* Use flexbox for layout */
+  justify-content: space-between; /* Space out items */
+  align-items: center; /* Vertically align items */
+  margin-top: 20px;
+}
+
+.page-size-selector select {
+  margin-left: 5px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.pagination-button-group{
+  display: flex; /* Use flexbox for layout */
+
+justify-content:flex-end;
+margin-top: 20px;
+
+}
+
+.page-buttons button {
+  /* Inherits button-secondary styles from global/other CSS */
+  margin: 0 5px; /* Space between buttons and span */
+}
+
+.page-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-number {
+  font-weight: bold;
+  color: #333;
+}
+

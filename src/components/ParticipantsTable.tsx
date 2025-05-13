@@ -9,9 +9,28 @@ import ConfirmationModal from './ConfirmationModal';
 interface ParticipantsTableProps {
     participants: User[];
     onDeleteParticipant: (id: number | string) => void; // ID can be number or string
+    // --- Pagination Props ---
+    currentPage: number;
+    pageSize: number;
+    totalParticipants: number; // Total items across ALL pages
+    totalPages: number; // Total number of pages
+    onPageChange: (page: number) => void; // Handler for page change
+    onPageSizeChange: (size: number) => void; // Handler for page size change
+    // --- End Pagination Props ---
+
 }
 
-const ParticipantsTable: React.FC<ParticipantsTableProps> = ({ participants, onDeleteParticipant }) => {
+const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
+    participants,
+    onDeleteParticipant,
+    currentPage,
+    pageSize,
+    totalParticipants,
+    totalPages,
+    onPageChange,
+    onPageSizeChange,
+
+}) => {
     // State to handle confirmation modal
     const [showConfirm, setShowConfirm] = useState(false);
     const [toDeleteId, setToDeleteId] = useState<number | string | null>(null);
@@ -38,8 +57,32 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({ participants, onD
         return <p style={{ marginTop: '20px', fontStyle: 'italic' }}>No participants available. Add participants manually or check import results.</p>;
     }
 
+    const startIndex = (currentPage * pageSize) + 1;
+    const endIndex = Math.min((currentPage + 1) * pageSize, totalParticipants); // Ensure end index doesn't exceed total items
+
+
     return (
         <>
+
+            {totalParticipants > 0 && (
+                <div className="pagination-container">
+                    <div className="pagination-info">
+                        Showing {startIndex} - {endIndex} of {totalParticipants} participants
+                    </div>
+
+                    <div className="page-size-selector">
+                        Participants per page:
+                        <select value={pageSize} onChange={(e) => onPageSizeChange(Number(e.target.value))}>
+                            <option value={5}>5</option>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                        </select>
+                    </div>
+                </div>
+
+            )}
+
             <div style={{ overflowX: 'auto', marginTop: '20px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #ddd' }}>
                     <thead>
@@ -86,6 +129,39 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({ participants, onD
                         ))}
                     </tbody>
                 </table>
+
+                {/* --- Pagination Controls --- */}
+                {totalParticipants > 0 && totalPages > 1 && ( // Only show controls if there's more than one page
+                    <div className="pagination-button-group">
+               
+
+                        {/* Page Buttons */}
+                        <div className="page-buttons">
+                            <button
+                                onClick={() => onPageChange(currentPage - 1)}
+                                disabled={currentPage === 0} // Disable if on the first page
+                                className="button-secondary" // Reuse button style
+                            >
+                                Previous
+                            </button>
+
+                            {/* Simple Page Number Display (can be enhanced) */}
+                            <span className="page-number">
+                                Page {currentPage+1} of {totalPages}
+                            </span>
+
+                            <button
+                                onClick={() => onPageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages-1} // Disable if on the last page
+                                className="button-secondary" // Reuse button style
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+
             </div>
 
             {/* Confirmation Modal */}

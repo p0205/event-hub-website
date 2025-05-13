@@ -2,6 +2,8 @@
 import { Role, TeamMember } from '@/types/event';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
+import { pages } from 'next/dist/build/templates/app-page';
+import { PageData } from '@/types/api';
 
 const teamService = {
 
@@ -49,8 +51,14 @@ const teamService = {
     },
 
 
-    getTeamMembers: async (eventId: number): Promise<TeamMember[]> => { // Replace 'any' with actual types
-        const response = await api.get(`/events/${eventId}/teams`);
+    getTeamMembers: async (eventId: number, pageNumber?:number, pageSize?:number,sortBy?:string): Promise<PageData<TeamMember>> => { // Replace 'any' with actual types
+        const response = await api.get(`/events/${eventId}/teams`,{
+            params :{
+                pageNumber,
+                pageSize,
+                sortBy
+            }
+        });
         if (response.status !== HttpStatusCode.Ok) {
             throw new Error('Failed to fetch team members');
         }
