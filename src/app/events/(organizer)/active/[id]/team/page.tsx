@@ -355,7 +355,7 @@ export default function EventTeamPage() {
                                         <div className={styles["user-name"]}>{member.name}</div>
                                         <div className={styles["user-email"]}>{member.email}</div>
                                     </div>
-                                    <span className={styles["team-member-role"]}>{member.role}</span>
+                                    <span className={styles["team-member-role"]}>{member.roles}</span>
                                     <button
                                         className="button-secondary"
                                         onClick={() => handleDeleteTeamMember(member.userId, member.name)}
