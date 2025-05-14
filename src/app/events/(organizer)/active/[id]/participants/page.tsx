@@ -22,17 +22,10 @@ import { toast } from 'sonner';
 // Import styles (ensure path is correct)
 import styles from './participantsPage.module.css';
 import { Save } from 'lucide-react';
+import { DemographicsSummary } from '@/types/event';
 
 // --- Define Helper Types ---
 // These types were in your original code, keeping them here
-interface DemographicsSummary {
-    total: number;
-    byFaculty: { [key: string]: number };
-    byCourse: { [key: string]: number };
-    byYear: { [key: number]: number }; // Assuming year might be treated as number for grouping
-    byGender: { [key: string]: number }; // Added gender demographics
-    byRole: { [key: string]: number }; // Added role demographics
-}
 
 type SortKey = keyof User | null;
 type SortDirection = 'asc' | 'desc';
@@ -42,34 +35,6 @@ type FilterType = 'all' | 'faculty' | 'course' | 'year' | 'gender' | 'role'; // 
 
 // --- Helper function to calculate demographics ---
 // Move demographics calculation out to a function for clarity
-const calculateDemographics = (data: User[]): DemographicsSummary => {
-    const summary: DemographicsSummary = {
-        total: data.length,
-        byFaculty: {},
-        byCourse: {},
-        byYear: {},
-        byGender: {},
-        byRole: {}
-    };
-
-    data.forEach(p => {
-        if (p.faculty) summary.byFaculty[p.faculty] = (summary.byFaculty[p.faculty] || 0) + 1;
-        if (p.course) summary.byCourse[p.course] = (summary.byCourse[p.course] || 0) + 1;
-
-        // Handle year which can be string, number, or null
-        const yearValue = p.year;
-        if (yearValue !== null && yearValue !== undefined) {
-            // Use string representation as key if years are mixed types or strings
-            const yearKey: string = String(yearValue);
-            (summary.byYear as any)[yearKey] = ((summary.byYear as any)[yearKey] || 0) + 1;
-        }
-
-        if (p.gender) summary.byGender[p.gender] = (summary.byGender[p.gender] || 0) + 1;
-        if (p.role) summary.byRole[p.role] = (summary.byRole[p.role] || 0) + 1;
-    });
-    return summary;
-};
-
 
 // --- Main Page Component ---
 export default function EventParticipantsPage() {
@@ -112,7 +77,7 @@ export default function EventParticipantsPage() {
     const [sortBy, setSortBy] = useState<string>("participant.name");
     const [totalPages, setTotalPages] = useState(0);
     const [totalParticipants, setTotalParticipants] = useState(0);
-
+    const [offset, setOffset] = useState(0);
 
     // --- Component Mount State (for Hydration/Recharts) ---
     const [isMounted, setIsMounted] = useState(false);
@@ -135,7 +100,7 @@ export default function EventParticipantsPage() {
     // --- Recalculate Demographics whenever participants list changes ---
     useEffect(() => {
         if (participants) {
-            setDemographics(calculateDemographics(participants));
+            fetchDemographics();
         } else {
             setDemographics(null); // Or an empty summary
         }
@@ -156,6 +121,18 @@ export default function EventParticipantsPage() {
 
     }, [uploadedParticipants]); // Run the effect when uploadedParticipants changes
 
+    const fetchDemographics = async () => {
+        try {
+            const demographic = await eventService.getParticipantsDemographicsByEventId(Number(eventId));
+            setDemographics(demographic);
+        } catch (error) {
+            console.error("Failed to fetch initially saved participants:", error);
+            setDemographics(null);
+        }
+    };
+
+
+
     // Fetch data
     const fetchSavedParticipants = async () => {
         setIsLoadingInitial(true);
@@ -166,12 +143,12 @@ export default function EventParticipantsPage() {
         setSaveError(null);
         try {
             // Call your service to get participants already saved for this event
-            const response = await eventService.getParticipantsByEventId(Number(eventId),currentPageNo, pageSize, sortBy);
+            const response = await eventService.getParticipantsByEventId(Number(eventId), currentPageNo, pageSize, sortBy);
             setParticipants(response.content); // Set the main participants state
             setCurrentPageNo(response.pageable.pageNumber);
             setTotalPages(response.totalPages);
             setTotalParticipants(response.totalElements);
-          
+            setOffset(response.pageable.offset + 1);
         } catch (err: any) {
             console.error("Failed to fetch initially saved participants:", err);
             setInitialLoadError(`Failed to load existing participants: ${err.message || 'Unknown error'}`);
@@ -762,6 +739,7 @@ export default function EventParticipantsPage() {
                             pageSize={pageSize}
                             totalParticipants={totalParticipants}
                             totalPages={totalPages}
+                            offset={offset}
                             onPageChange={handlePageChange}
                             onPageSizeChange={handlePageSizeChange}
 
@@ -785,9 +763,9 @@ export default function EventParticipantsPage() {
             {!isLoadingInitial && participants.length > 0 && demographics && (
                 <div className="form-container" style={{ padding: '15px', border: '1px solid #ccc', borderRadius: '8px', background: '#fff' }}>
                     <h3>Participants Demographics</h3>
-                    {demographics.total > 0 ? (
+                    {demographics.totalNumber > 0 ? (
                         <div className={styles["demographics-summary"]}>
-                            <p><strong>Total Participants:</strong> {demographics.total}</p>
+                            <p><strong>Total Participants:</strong> {demographics.totalNumber}</p>
 
                             {/* --- Conditionally render charts only after mounted --- */}
                             {isMounted ? ( // <-- Render charts only if isMounted is true (for hydration safety)

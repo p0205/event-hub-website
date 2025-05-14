@@ -17,6 +17,7 @@ interface ParticipantAttendanceTableProps {
     pageSize: number;
     totalItems: number; // Total items across ALL pages
     totalPages: number; // Total number of pages
+    offset: number;
     onPageChange: (page: number) => void; // Handler for page change
     onPageSizeChange: (size: number) => void; // Handler for page size change
     // --- End Pagination Props ---
@@ -30,6 +31,7 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
     pageSize,
     totalItems,
     totalPages,
+    offset,
     onPageChange,
     onPageSizeChange,
 }) => {
@@ -70,6 +72,7 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
             <table className={styles.attendanceTable}>
                 <thead>
                     <tr>
+                        <th>No</th>
                         <th>Name</th>
                         <th>Email</th>
                         <th>Contact Number</th>
@@ -82,8 +85,10 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
                 <tbody>
                     {/* Render only the participants for the current page */}
                     {participants.length > 0 ? (
-                        participants.map(participant => (
+                        participants.map((participant,index) => (
+                            
                             <tr key={participant.userId}>
+                                <td>{offset+index}</td>
                                 <td>{participant.name}</td>
                                 <td>{participant.email}</td>
                                 <td>{participant.phoneNo}</td>

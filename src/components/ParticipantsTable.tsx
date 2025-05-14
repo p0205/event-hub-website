@@ -14,6 +14,7 @@ interface ParticipantsTableProps {
     pageSize: number;
     totalParticipants: number; // Total items across ALL pages
     totalPages: number; // Total number of pages
+    offset: number;
     onPageChange: (page: number) => void; // Handler for page change
     onPageSizeChange: (size: number) => void; // Handler for page size change
     // --- End Pagination Props ---
@@ -27,6 +28,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
     pageSize,
     totalParticipants,
     totalPages,
+    offset,
     onPageChange,
     onPageSizeChange,
 
@@ -101,7 +103,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                     <tbody>
                         {participants.map((participant, index) => (
                             <tr key={participant.id} style={{ borderBottom: '1px solid #ddd' }}>
-                                <td style={{ border: '1px solid #ddd', padding: '10px' }}>{index + 1}</td>
+                                <td style={{ border: '1px solid #ddd', padding: '10px' }}>{offset + index}</td>
                                 <td style={{ border: '1px solid #ddd', padding: '10px' }}>{participant.name}</td>
                                 <td style={{ border: '1px solid #ddd', padding: '10px' }}>{participant.email}</td>
                                 <td style={{ border: '1px solid #ddd', padding: '10px' }}>{participant.phoneNo || '-'}</td>

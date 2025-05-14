@@ -1,7 +1,7 @@
 // --- eventService.ts ---
 import { HttpStatusCode } from 'axios';
 import api from './api'; // Import the central API client
-import { CalendarEvent, Event, EventList, SimpleEvent } from '@/types/event';
+import { CalendarEvent, DemographicsSummary, Event, EventList, SimpleEvent } from '@/types/event';
 import { User } from '@/types/user';
 import { PageData } from '@/types/api';
 
@@ -53,6 +53,7 @@ interface EventService {
   getEventsByStatus: (organizerId: number, status: string) => Promise<SimpleEvent[]>;
   importParticipantsInfo: (eventId: number, file: File) => Promise<User[]>;
   getParticipantsByEventId: (eventId: number, pageNumber?: number, pageSize?: number, sortBy?: string) => Promise<PageData<User>>;
+  getParticipantsDemographicsByEventId: (eventId: number)=> Promise<DemographicsSummary>;
   saveParticipants: (eventId: number, participantList: User[]) => Promise<User[]>;
   deleteParticipants: (eventId: number, participantId: number) => Promise<void>;
   getCalendarEvents: (userId: number) => Promise<CalendarEvent[]>;
@@ -223,6 +224,16 @@ const eventService: EventService = {
         sortBy
       }
     });
+
+    if (response.status !== HttpStatusCode.Ok) {
+      throw new Error('Failed to fetch participants list');
+    }
+    // Axios puts the actual data payload from the backend response body into the .data property.
+    return response.data;
+  },
+
+  getParticipantsDemographicsByEventId: async (eventId: number): Promise<DemographicsSummary> => {
+    const response = await api.get(`/events/${eventId}/participants/demographics`);
 
     if (response.status !== HttpStatusCode.Ok) {
       throw new Error('Failed to fetch participants list');

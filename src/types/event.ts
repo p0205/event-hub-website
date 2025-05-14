@@ -11,7 +11,7 @@ export enum EventStatus {
     // Add other statuses if your backend supports them
 }
 
-export interface CalendarEvent{
+export interface CalendarEvent {
     eventId: number;
     eventName: string;
     sessionId: number;
@@ -89,8 +89,8 @@ export interface Session {
     qrCodeImage?: Blob; // Separate date field for form input control
 }
 
-export interface EventMedia{
-    id:number;
+export interface EventMedia {
+    id: number;
     filename: string;
     fileUrl: string;
     uploadedAt: string;
@@ -142,24 +142,14 @@ export interface UpdateEventData extends Partial<CreateEventData> {
     status?: Event['status']; // Allow updating status
 }
 
-
-/**
- * Interface for a Session within an Event.
- */
-// export interface Session {
-//     id: string; // Unique ID for managing the session in the UI (not backend ID)
-//     eventId: string; // Link back to the event
-//     name: string;
-//     date: string; // Session date (can be different from event date)
-//     startTime: string; // Session start time
-//     endTime?: string; // Optional session end time
-//     venueId: string; // Link to session venue
-//     // Add other session properties
-//     description?: string;
-//     speaker?: string;
-//     qrCodeUrl?: string; // URL for the attendance QR code (if backend generates)
-// }
-
+export interface DemographicsSummary {
+    totalNumber: number;
+    byFaculty: Record<string, number>;
+    byCourse: Record<string, number>;
+    byYear: Record<string, number>; // Assuming year might be treated as number for grouping
+    byGender: Record<string, number>; // Added gender demographics
+    byRole: Record<string, number>; // Added role demographics
+}
 
 /**
  * Interface for a Participant registered for an Event.

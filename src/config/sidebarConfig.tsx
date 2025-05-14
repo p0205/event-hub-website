@@ -18,11 +18,10 @@ const navigationItems: SidebarNavItem[] = [
     // Using the imported components as JSX elements (values)
     { label: 'Home', href: '/', icon: <FaHome />, roles: ['Admin', 'Event Organizer', 'Participant'] },
     { label: 'Events', href: '/events', icon: <FaCalendarAlt />, roles: ['Admin', 'Event Organizer', 'Participant'] },
-    { label: 'Notifications', href: '/notifications', icon: <FaBell />, roles: ['Admin', 'Event Organizer', 'Participant'] },
-    { label: 'Settings', href: '/settings', icon: <FaCog />, roles: ['Admin', 'Event Organizer', 'Participant'] },
+    // { label: 'Notifications', href: '/notifications', icon: <FaBell />, roles: ['Admin', 'Event Organizer', 'Participant'] },
     { label: 'Users', href: '/users', icon: <FaUsers />, roles: ['Admin'] },
     { label: 'Reports', href: '/reports', icon: <FaChartBar />, roles: ['Admin', 'Event Organizer'] },
-
+    { label: 'Settings', href: '/settings', icon: <FaCog />, roles: ['Admin', 'Event Organizer', 'Participant'] },
     // Add back the Participant and Guest specific items
 ];
 

@@ -54,6 +54,7 @@ export default function EventAttendancePage() {
     const [pageSize, setPageSize] = useState(5);
     const [totalItems, setTotalItems] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
+    const [offset, setOffset] = useState(0);
 
     // --- Data Fetching (Initial Page Load) ---
     useEffect(() => {
@@ -192,6 +193,7 @@ export default function EventAttendancePage() {
             setParticipants(data.content);
             setTotalItems(data.totalElements);
             setTotalPages(data.totalPages);
+            setOffset(data.pageable.offset+1);
         } catch (error) {
             console.error("Error fetching participants:", error);
         } finally {
@@ -701,6 +703,7 @@ export default function EventAttendancePage() {
                     pageSize={pageSize}
                     totalItems={totalItems}
                     totalPages={totalPages}
+                    offset={offset}
                     onPageChange={handlePageChange}
                     onPageSizeChange={handlePageSizeChange}
                 />

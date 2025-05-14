@@ -8,12 +8,13 @@ import React from 'react';
 // Define the submenu items for an individual event
 const eventManagementItems = [
     { name: 'Overview', hrefSegment: '' }, // Segment for the URL
+    { name: 'Team', hrefSegment: 'team' },
+    { name: 'Budget', hrefSegment: 'budget' },
     { name: 'Participants', hrefSegment: 'participants' },
     { name: 'Attendance', hrefSegment: 'attendance' },
-    { name: 'Budget', hrefSegment: 'budget' },
-    { name: 'Reports', hrefSegment: 'reports' },
-    { name: 'Team', hrefSegment: 'team' },
     { name: 'Media', hrefSegment: 'media' },
+    { name: 'Reports', hrefSegment: 'reports' },
+
 ];
 
 export default function EventSubmenuSidebar() {
