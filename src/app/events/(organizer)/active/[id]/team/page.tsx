@@ -3,14 +3,13 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
 
 // Assuming a CSS Module for team page specific styles
 import styles from './team.module.css'; // Create this CSS module
 import userService from '@/services/userService';
 import { User } from '@/types/user';
 import teamService from '@/services/teamService';
-import { Role, TeamMember } from '@/types/event'; // Ensure TeamMember type includes userId, name, email, role
+import { Role, SearchUserInTeam, TeamMember } from '@/types/event'; // Ensure TeamMember type includes userId, name, email, role
 import { toast } from 'sonner';
 
 export default function EventTeamPage() {
@@ -35,7 +34,7 @@ export default function EventTeamPage() {
 
     // --- State for adding team members (inside modal) ---
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<User[]>([]);
+    const [searchResults, setSearchResults] = useState<SearchUserInTeam[]>([]);
     const [searching, setSearching] = useState(false);
     const [searchError, setSearchError] = useState<string | null>(null);
     const [selectedRoleForAdd, setSelectedRoleForAdd] = useState<Role | null>(null); // Role selected for the bulk add
@@ -149,7 +148,10 @@ export default function EventTeamPage() {
         setSearchError(null);
         setSearchResults([]);
         try {
-            const data = await userService.getUserByNameOrEmail(searchQuery.trim());
+            if (selectedRoleForAdd?.id === undefined) {
+                throw new Error("Role ID is undefined.");
+            }
+            const data = await teamService.searchUserInTeam(Number(eventId), searchQuery.trim(), selectedRoleForAdd.id);
             setSearchResults(data);
             if (data.length === 0) {
                 setSearchError('No users found matching the email/name.');
@@ -287,8 +289,6 @@ export default function EventTeamPage() {
     const startIndex = (currentPageNo * pageSize) + 1;
     const endIndex = Math.min((currentPageNo + 1) * pageSize, totalMembers); // Ensure end index doesn't exceed total items
 
-
-
     // --- Modal Close Handler ---
     const closeModal = () => {
         setShowAddMemberModal(false);
@@ -301,7 +301,6 @@ export default function EventTeamPage() {
             closeModal();
         }
     };
-
 
     return (
         <div className="page-content-wrapper">
@@ -367,8 +366,6 @@ export default function EventTeamPage() {
                             ))}
                         </ul>
 
-
-
                         {/* --- Pagination Controls --- */}
                         {totalMembers > 0 && totalPages > 1 && ( // Only show controls if there's more than one page
                             <div className="pagination-button-group">
@@ -398,8 +395,6 @@ export default function EventTeamPage() {
                                 </div>
                             </div>
                         )}
-
-
 
                     </div>
                 ) : (
@@ -469,17 +464,17 @@ export default function EventTeamPage() {
                                         <ul className={styles.resultsList}> {/* Add class for potential styling/scrolling */}
                                             {searchResults.map(user => {
                                                 const isSelected = selectedUsersForAdd.some(u => u.id === user.id);
-                                                const isAlreadyMember = teamMembers.some(member => member.userId === user.id);
+                                                const isRoleAssigned = teamMembers.some(member => member.userId === user.id);
 
                                                 return (
-                                                    <li key={user.id} className={`${styles["search-result-item"]} ${isSelected ? styles["selected"] : ''} ${isAlreadyMember ? styles["already-member"] : ''}`}>
+                                                    <li key={user.id} className={`${styles["search-result-item"]} ${isSelected ? styles["selected"] : ''} ${isRoleAssigned ? styles["already-member"] : ''}`}>
                                                         <img src={'/default-avatar.png'} alt={user.name} className={styles["profile-image"]} width={35} height={35} />
                                                         <div className={styles["user-info"]}>
                                                             <div className={styles["user-name"]}>{user.name}</div>
                                                             <div className={styles["user-email"]}>{user.email}</div>
                                                         </div>
-                                                        {isAlreadyMember ? (
-                                                            <span className={styles["already-member-tag"]}>Member</span>
+                                                        {isRoleAssigned ? (
+                                                            <span className={styles["already-member-tag"]}>Role Assigned</span>
                                                         ) : (
                                                             <button
                                                                 className={`${isSelected ? "button-secondary" : "button-primary"} ${styles.selectUserButton}`} // Add common class

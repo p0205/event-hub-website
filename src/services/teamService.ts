@@ -1,5 +1,5 @@
 // src/services/budgetService.ts
-import { Role, TeamMember } from '@/types/event';
+import { Role, SearchUserInTeam, TeamMember } from '@/types/event';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
 import { pages } from 'next/dist/build/templates/app-page';
@@ -22,11 +22,11 @@ const teamService = {
         console.log("roleId", roleId);
         const response = await api.post(`/events/${eventId}/teams`, null, {
             params: {
-              userId: userId,
-              roleId: roleId
+                userId: userId,
+                roleId: roleId
             }
-          });
-                  
+        });
+
         if (response.status !== HttpStatusCode.Created) {
             return response.data;
         }
@@ -39,11 +39,11 @@ const teamService = {
         console.log("roleId", roleId);
         const response = await api.post(`/events/${eventId}/teams`, null, {
             params: {
-              userIds: userIds,
-              roleId: roleId
+                userIds: userIds,
+                roleId: roleId
             }
-          });
-                  
+        });
+
         if (response.status !== HttpStatusCode.Created) {
             return response.data;
         }
@@ -51,9 +51,9 @@ const teamService = {
     },
 
 
-    getTeamMembers: async (eventId: number, pageNumber?:number, pageSize?:number,sortBy?:string): Promise<PageData<TeamMember>> => { // Replace 'any' with actual types
-        const response = await api.get(`/events/${eventId}/teams`,{
-            params :{
+    getTeamMembers: async (eventId: number, pageNumber?: number, pageSize?: number, sortBy?: string): Promise<PageData<TeamMember>> => { // Replace 'any' with actual types
+        const response = await api.get(`/events/${eventId}/teams`, {
+            params: {
                 pageNumber,
                 pageSize,
                 sortBy
@@ -71,7 +71,23 @@ const teamService = {
             throw new Error('Failed to delete team member');
         }
         return;
+    },
+
+    searchUserInTeam: async(eventId: number, query: string, roleId:number): Promise<SearchUserInTeam[]> => { // Replace 'any' with actual types
+    const response = await api.get(`/events/${eventId}/teams/search`,
+        {
+            params:
+            {
+                query,
+                roleId
+            }
+        }
+    );
+    if (response.status !== HttpStatusCode.Ok) {
+        throw new Error('Failed to search team member');
     }
+    return response.data;
+}
 };
 
 export default teamService;

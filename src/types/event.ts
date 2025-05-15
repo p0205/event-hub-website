@@ -205,3 +205,10 @@ export interface TeamMember {
     email: string;
     roles: string; // Role assigned in this event's team
 }
+
+export interface SearchUserInTeam{
+    id:number;
+    name: string;
+    email: string;
+    hasRole: number;
+}
