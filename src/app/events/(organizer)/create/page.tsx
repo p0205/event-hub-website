@@ -66,7 +66,7 @@ export default function CreateEventPage() {
     const [budgetCategoriesError, setBudgetCategoriesError] = useState<string | null>(null);
     const [resetEndTimeInputs, setResetEndTimeInputs] = useState<Record<string, boolean>>({});
 
-    
+
     const toggleShowAllVenues = (venueIndex: number) => {
         setShowAllVenues((prev) => {
             const updated = [...prev];
@@ -600,63 +600,62 @@ export default function CreateEventPage() {
         // router.back(); // Optional: Navigate back
     };
 
-    const handleSessionTimeChange = (sessionId: string, fieldName: string, time: Time) => {
+    const handleSessionTimeChange = (sessionId: string, fieldName: 'startTimeOnly' | 'endTimeOnly', time: Time) => {
         const timeString = `${time.hour.toString().padStart(2, '0')}:${time.minute.toString().padStart(2, '0')}`;
-
         setFormData((prevData) => ({
             ...prevData,
             sessions: prevData.sessions.map((session) =>
-                session.id === sessionId ? {
-                    ...session,
-                    [fieldName]: timeString,
-                } : session
+                session.id === sessionId ? { ...session, [fieldName]: timeString } : session
             ),
         }));
     };
 
     const handleTimeValidation = (sessionId: string) => {
-        setFormData((prevData) => {
-            const updatedSessions = prevData.sessions.map((session) => {
-                if (session.id !== sessionId) return session;
+        const sessionToValidate = formData.sessions.find(s => s.id === sessionId);
 
-                const { startTimeOnly, endTimeOnly } = session;
+        if (!sessionToValidate) return;
 
-                // Validate only if both start and end times are fully entered
-                if (startTimeOnly && endTimeOnly) {
-                    const startTime = parseTimeString(startTimeOnly);
-                    const endTime = parseTimeString(endTimeOnly);
+        const { startTimeOnly, endTimeOnly } = sessionToValidate;
+        let needsReset = false;
 
-                    if (endTime && startTime) {
-                        const durationMinutes = (endTime.hour - startTime.hour) * 60 + (endTime.minute - startTime.minute);
+        if (startTimeOnly && endTimeOnly) {
+            const startTime = parseTimeString(startTimeOnly);
+            const endTime = parseTimeString(endTimeOnly);
 
-                        // Case 1: Less than 30 minutes (Error)
-                        if (durationMinutes < 30) {
-                            alert("❗ End time should be at least 30 minutes after the start time.");
-                            setResetEndTimeInputs((prev) => ({ ...prev, [sessionId]: true }));
-                            return { ...session, endTimeOnly: "" }; // Clear the end time
-                        }
+            if (endTime && startTime) {
+                const durationMinutes = (endTime.hour - startTime.hour) * 60 + (endTime.minute - startTime.minute);
 
-                        // Case 2: 30 minutes to 1 hour (Confirmation)
-                        if (durationMinutes < 60) {
-                            const confirmed = window.confirm("⚠️ This session is less than 1 hour. Are you sure this is correct?");
-                            if (!confirmed) {
-                                setResetEndTimeInputs((prev) => ({ ...prev, [sessionId]: true }));
-                                return { ...session, endTimeOnly: "" }; // Clear the end time if not confirmed
-                            }
-                        }
+                if (durationMinutes < 30) {
+                    alert("❗ End time should be at least 30 minutes after the start time.");
+                    needsReset = true;
+                } else if (durationMinutes < 60) { // Corrected to else if
+                    const confirmed = window.confirm("⚠️ This session is less than 1 hour. Are you sure this is correct?");
+                    if (!confirmed) {
+                        needsReset = true;
                     }
                 }
+            }
+        }
 
-                return session;
-            });
+        if (needsReset) {
+            // Trigger the key change for TimeInput remount
+            setResetEndTimeInputs((prev) => ({ ...prev, [sessionId]: true }));
 
-            return {
+            // Clear the actual data
+            setFormData((prevData) => ({
                 ...prevData,
-                sessions: updatedSessions,
-            };
-        });
-    };
+                sessions: prevData.sessions.map((s) =>
+                    s.id === sessionId ? { ...s, endTimeOnly: "" } : s
+                ),
+            }));
 
+            // Reset the flag so the key change doesn't persist and cause remounts on every render.
+            // This ensures the input is forcefully reset only once per invalid entry.
+            setTimeout(() => {
+                setResetEndTimeInputs((prev) => ({ ...prev, [sessionId]: false }));
+            }, 0);
+        }
+    };
     return (
         // Using class names from globals.css
         <div className="page-container">
@@ -901,25 +900,29 @@ export default function CreateEventPage() {
                                     <div className="form-group-item">
                                         <label htmlFor={`startTimeOnly-${session.id}`} className="form-label">Start Time:</label>
                                         <TimeInput
-                                            defaultValue={session.startTimeOnly ? parseTimeString(session.startTimeOnly) : undefined}
+                                            aria-label={`Start time for session ${session.sessionName}`}
+                                            value={session.startTimeOnly ? parseTimeString(session.startTimeOnly) : null}
                                             onChange={(time) => {
-                                                if (time) {
-                                                    handleSessionTimeChange(session.id, 'startTimeOnly', time);
-                                                }
-                                            }}
+                                                if(time) handleSessionTimeChange(session.id, 'startTimeOnly', time)}
+                                            }
+                                            hourCycle={24}
+                                            granularity="minute"
+                                            shouldForceLeadingZeros
+                                            className="form-input-time" // Ensure this class provides adequate styling
                                         />
                                     </div>
                                     <div className="form-group-item">
                                         <label htmlFor={`endTimeOnly-${session.id}`} className="form-label">End Time:</label>
                                         <TimeInput
-                                            key={resetEndTimeInputs[session.id] ? Math.random() : session.id}  // Reset the input on invalid time
-                                            defaultValue={session.endTimeOnly ? parseTimeString(session.endTimeOnly) : undefined}
-                                            onChange={(time) => {
-                                                // Clear the reset flag on valid input
-                                                setResetEndTimeInputs((prev) => ({ ...prev, [session.id]: false }));
-                                                if(time) {handleSessionTimeChange(session.id, 'endTimeOnly', time);}
-                                            }}
-                                            onBlur={() => handleTimeValidation(session.id)}
+                                            aria-label={`End time for session ${session.sessionName}`}
+                                            value={session.endTimeOnly ? parseTimeString(session.endTimeOnly) : null}
+                                            onChange={(time) => { if (time) handleSessionTimeChange(session.id, 'endTimeOnly', time)}}
+                                            onBlur={() => handleTimeValidation(session.id)} // Validation on blur
+                                            hourCycle={24}
+                                            granularity="minute"
+                                            shouldForceLeadingZeros
+                                            className="form-input-time"
+                                            key={resetEndTimeInputs[session.id] ? `reset-endTime-${session.id}-${Date.now()}` : `endTime-${session.id}`}
                                         />
                                     </div>
                                 </div> {/* End Inline Group */}
