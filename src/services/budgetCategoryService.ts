@@ -4,8 +4,8 @@ import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
 
 const budgetCategoryService = {
-    addBudgetCategory: async (budget: BudgetCategory): Promise<BudgetCategory> => { // Replace 'any' with actual types
-        const response = await api.post(`/budgetCategory`, budget);
+    addBudgetCategory: async (name: string): Promise<BudgetCategory> => { // Replace 'any' with actual types
+        const response = await api.post(`/budgetCategory`, name);
         if(response.status !== HttpStatusCode.Created) {
             throw new Error('Failed to add new budget category');
         }
@@ -14,6 +14,18 @@ const budgetCategoryService = {
 
     fetchBudgetCategory: async (id: number): Promise<BudgetCategory> => { // Replace 'any' with actual types
         const response = await api.get<BudgetCategory>(`/budgetCategory/${id}`);
+        if(response.status !== HttpStatusCode.Ok) {
+            throw new Error('Failed to fetch budget category');
+        }
+        return response.data;
+    },
+
+    fetchBudgetCategoryByName: async (name: string): Promise<BudgetCategory[]> => { // Replace 'any' with actual types
+        const response = await api.get<BudgetCategory[]>(`/budgetCategory/byName`,{
+            params: {
+                name
+            }
+        });
         if(response.status !== HttpStatusCode.Ok) {
             throw new Error('Failed to fetch budget category');
         }
