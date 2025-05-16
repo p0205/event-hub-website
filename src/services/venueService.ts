@@ -28,6 +28,16 @@ const venueService = {
         return response.data;
     },
 
+    fetchVenuesByCapacity: async (capacity:number): Promise<Venue[]> => { 
+        const response = await api.get<Venue[]>(`/venue/capacity`,{
+            params:{capacity}
+        });
+        if(response.status !== HttpStatusCode.Ok) {
+            throw new Error('Failed to fetch venues');
+        }
+        return response.data;
+    },
+
     // Function to check if the user is currently authenticated (e.g., validates token/session)
     deleteVenue: async (id: number): Promise<void> => { // Returns user data or null
         const response = await api.delete(`/venue/${id}`);

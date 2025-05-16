@@ -37,14 +37,24 @@ export default function CreateEventPage() {
         name: '',
         description: '',
         organizerId: 1, // Replace with actual organizer ID logic
-    
+
         participantsNo: '',
         sessions: [],
         eventBudgets: [],
     });
 
+    const [recommendedVenues, setRecommendedVenues] = useState<Venue[]>([]);
+    const [approvalFile, setApprovalFile] = useState<File | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
+
+
+
     const [venues, setVenues] = useState<Venue[]>([]);
     const [venuesLoading, setVenuesLoading] = useState(true);
+    // Correct way to initialize showAllVenues as an array of booleans
+    const [showAllVenues, setShowAllVenues] = useState<boolean[]>([false]);
+
     // State variable to hold any error message if fetching fails
     const [venuesError, setVenuesError] = useState<string | null>(null);
     const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
@@ -52,6 +62,13 @@ export default function CreateEventPage() {
     // State variable to hold any error message if fetching fails
     const [budgetCategoriesError, setBudgetCategoriesError] = useState<string | null>(null);
 
+    const toggleShowAllVenues = (venueIndex: number) => {
+        setShowAllVenues((prev) => {
+            const updated = [...prev];
+            updated[venueIndex] = !updated[venueIndex];
+            return updated;
+        });
+    };
 
     useEffect(() => {
         console.log("Fetching venues...");
@@ -120,7 +137,7 @@ export default function CreateEventPage() {
 
 
 
-    }, []); // Empty dependency array []. This ensures the effect runs only once after the initial render.
+    }, []);
 
     // --- Initialize with one default session on client mount ---
     useEffect(() => {
@@ -180,18 +197,18 @@ export default function CreateEventPage() {
         });
     }, []);
 
-    const [recommendedVenues, setRecommendedVenues] = useState<Venue[]>([]);
-    const [approvalFile, setApprovalFile] = useState<File | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [formError, setFormError] = useState<string | null>(null);
-
     useEffect(() => {
-        if (typeof formData.participantsNo === 'number' && formData.participantsNo > 0) {
-            const filtered = venues.filter(venue => venue.capacity >= (formData.participantsNo as number));
-            setRecommendedVenues(filtered);
-        } else {
-            setRecommendedVenues([]);
-        }
+        const debounceTimeout = 300; // Adjust the delay as needed (e.g., 300ms to 1000ms)
+        const timeoutId = setTimeout(async () => {
+            if (typeof formData.participantsNo === 'number' && formData.participantsNo > 0) {
+                const filtered = await venueService.fetchVenuesByCapacity(formData.participantsNo);
+                setRecommendedVenues(filtered);
+            } else {
+                setRecommendedVenues([]);
+            }
+        }, debounceTimeout);
+
+        return () => clearTimeout(timeoutId); // Cleanup to avoid memory leaks
     }, [formData.participantsNo]);
 
 
@@ -410,36 +427,36 @@ export default function CreateEventPage() {
         try {
             // *** MODIFIED: Process sessions to match backend SessionDTO structure ***
             const processedSessionsForBackend = formData.sessions.map((session) => {
-                 // Combine date and time strings
-                 session.startDateTime = `${session.date}T${session.startTimeOnly}`;
-                 session.endDateTime = `${session.date}T${session.endTimeOnly}`;
+                // Combine date and time strings
+                session.startDateTime = `${session.date}T${session.startTimeOnly}`;
+                session.endDateTime = `${session.date}T${session.endTimeOnly}`;
 
                 // Validation
                 if (!session.sessionName || session.sessionName.trim() === '') {
                     throw new Error(`Session Name is required for session (Client ID ${session.id}).`); // Use client ID for error clarity
                 }
                 if (!session.date || !session.startTimeOnly) {
-                     throw new Error(`Start Date & Time is required for session "${session.sessionName}".`);
-                 }
-                 if (!session.endTimeOnly) {
+                    throw new Error(`Start Date & Time is required for session "${session.sessionName}".`);
+                }
+                if (!session.endTimeOnly) {
                     throw new Error(`End Time is required for session "${session.sessionName}".`);
-                 }
+                }
 
-                 // Validate combined date/time (basic check)
+                // Validate combined date/time (basic check)
                 if (session.endDateTime <= session.startDateTime) {
                     throw new Error(`End time must be after start time for session "${session.sessionName}".`);
                 }
 
                 // Filter out empty/unselected venue IDs and parse them
                 const validVenueIds = (session.venueIds || [])
-                                        .filter(vid => vid && vid.trim() !== '')
-                                        .map(vid => parseInt(vid, 10));
+                    .filter(vid => vid && vid.trim() !== '')
+                    .map(vid => parseInt(vid, 10));
 
                 if (validVenueIds.some(isNaN)) {
                     throw new Error(`Invalid Venue ID selected for Session "${session.sessionName}". Please ensure all selected venues are valid.`);
                 }
 
-                 if (validVenueIds.length === 0) {
+                if (validVenueIds.length === 0) {
                     throw new Error(`At least one venue must be selected for session "${session.sessionName}".`);
                 }
 
@@ -542,10 +559,10 @@ export default function CreateEventPage() {
             console.error("Submission Error:", error);
             // Provide more specific feedback if possible
             if (error.response && error.response.data && error.response.data.message) {
-                 // Error from backend API
+                // Error from backend API
                 setFormError(`Submission Failed: ${error.response.data.message}`);
             } else if (error instanceof Error) {
-                 // Error generated during frontend processing (validation, etc.)
+                // Error generated during frontend processing (validation, etc.)
                 setFormError(`Submission Failed: ${error.message}`);
             } else {
                 // Generic fallback error
@@ -559,7 +576,7 @@ export default function CreateEventPage() {
 
     const handleCancel = () => {
         // ... (keep existing cancel logic)
-         console.log('Form cancelled');
+        console.log('Form cancelled');
         // Optionally add confirmation
         // Reset form state using the helper function for default session
         setFormData({
@@ -578,6 +595,8 @@ export default function CreateEventPage() {
         // router.back(); // Optional: Navigate back
     };
 
+
+    
     // --- Render JSX ---
     return (
         // Using class names from globals.css
@@ -856,23 +875,36 @@ export default function CreateEventPage() {
                                         <div key={venueIndex} className="form-group-item form-group-inline" style={{ marginBottom: '10px' }}> {/* Use inline for select and remove button */}
                                             <div className="flex items-center justify-between gap-4 mb-2">
                                                 <select
-                                                    id={`venue-${session.id}-${venueIndex}`} // Unique ID for each select
-                                                    name={`venue-${session.id}-${venueIndex}`} // Unique name
-                                                    value={venueId} // The selected venue ID for this specific select
-                                                    onChange={(e) => handleVenueSelectChange(session.id, venueIndex, e.target.value)} // Use specific handler
+                                                    id={`venue-${session.id}-${venueIndex}`}
+                                                    name={`venue-${session.id}-${venueIndex}`}
+                                                    value={venueId}
+                                                    onChange={(e) => handleVenueSelectChange(session.id, venueIndex, e.target.value)}
                                                     required
                                                     className="form-input"
-                                                    // disabled={isSubmitting || venuesLoading || venuesError || venues.length === 0}
-                                                    style={{ flexGrow: 1 }} // Allow select to take available space
+                                                    style={{ flexGrow: 1 }}
                                                 >
-                                                    <option value="">Select a Venue</option>
-                                                    {venues.map((venue: Venue) => ( // Use fetched venues
-                                                        // Use venue.id (number) converted to string for the option value
+                                                    <option value="">Select a Venue ({showAllVenues[venueIndex] ? 'All' : 'Recommended'})</option>
+                                                    {showAllVenues[venueIndex] ? venues.map((venue) => (
                                                         <option key={venue.id} value={String(venue.id)}>
                                                             {venue.name} (Capacity: {venue.capacity})
                                                         </option>
-                                                    ))}
+                                                    )):
+                                                    recommendedVenues.map((venue) => (
+                                                        <option key={venue.id} value={String(venue.id)}>
+                                                            {venue.name} (Capacity: {venue.capacity})
+                                                        </option>
+                                                    ))
+                                                    }
                                                 </select>
+                                                <div className="flex items-center gap-2 mb-2" style={{ flexShrink: 0 }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={showAllVenues[venueIndex] ?? false}
+                                                        onChange={() => toggleShowAllVenues(venueIndex)}
+                                                        disabled={isLoading || venues.length === 0}
+                                                    />
+                                                    <label>Show all venues</label>
+                                                </div>
                                                 {/* Remove button for this specific venue select */}
                                                 {(session.venueIds || []).length > 1 && ( // Only show remove if there's more than one venue select
                                                     <button
