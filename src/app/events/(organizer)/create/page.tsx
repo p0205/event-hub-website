@@ -2,7 +2,7 @@
 'use client'; // Mark this component as a Client Component
 
 import eventService from '@/services/eventService';
-import { BudgetCategory, CreateEventData, EventBudget, CreateSessionData, Venue } from '@/types/event';
+import { BudgetCategory, CreateEventData, EventBudget, CreateSessionData, Venue, Session } from '@/types/event';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useState, useEffect } from 'react';
@@ -11,6 +11,9 @@ import { FaTrash } from 'react-icons/fa';
 import venueService from '@/services/venueService';
 import eventBudgetService from '@/services/eventBudgetService';
 import budgetCategoryService from '@/services/budgetCategoryService';
+import { Time } from "@internationalized/date";
+import { TimeInput } from "@heroui/react";
+import { formatDateTime, parseTimeString } from '@/helpers/eventHelpers';
 // import { useRouter } from 'next/navigation'; // Import if using router for navigation
 
 
@@ -61,7 +64,9 @@ export default function CreateEventPage() {
     const [budgetCategoriesLoading, setBudgetCategoriesLoading] = useState(true);
     // State variable to hold any error message if fetching fails
     const [budgetCategoriesError, setBudgetCategoriesError] = useState<string | null>(null);
+    const [resetEndTimeInputs, setResetEndTimeInputs] = useState<Record<string, boolean>>({});
 
+    
     const toggleShowAllVenues = (venueIndex: number) => {
         setShowAllVenues((prev) => {
             const updated = [...prev];
@@ -425,7 +430,6 @@ export default function CreateEventPage() {
         }
 
         try {
-            // *** MODIFIED: Process sessions to match backend SessionDTO structure ***
             const processedSessionsForBackend = formData.sessions.map((session) => {
                 // Combine date and time strings
                 session.startDateTime = `${session.date}T${session.startTimeOnly}`;
@@ -441,6 +445,7 @@ export default function CreateEventPage() {
                 if (!session.endTimeOnly) {
                     throw new Error(`End Time is required for session "${session.sessionName}".`);
                 }
+
 
                 // Validate combined date/time (basic check)
                 if (session.endDateTime <= session.startDateTime) {
@@ -595,9 +600,63 @@ export default function CreateEventPage() {
         // router.back(); // Optional: Navigate back
     };
 
+    const handleSessionTimeChange = (sessionId: string, fieldName: string, time: Time) => {
+        const timeString = `${time.hour.toString().padStart(2, '0')}:${time.minute.toString().padStart(2, '0')}`;
 
-    
-    // --- Render JSX ---
+        setFormData((prevData) => ({
+            ...prevData,
+            sessions: prevData.sessions.map((session) =>
+                session.id === sessionId ? {
+                    ...session,
+                    [fieldName]: timeString,
+                } : session
+            ),
+        }));
+    };
+
+    const handleTimeValidation = (sessionId: string) => {
+        setFormData((prevData) => {
+            const updatedSessions = prevData.sessions.map((session) => {
+                if (session.id !== sessionId) return session;
+
+                const { startTimeOnly, endTimeOnly } = session;
+
+                // Validate only if both start and end times are fully entered
+                if (startTimeOnly && endTimeOnly) {
+                    const startTime = parseTimeString(startTimeOnly);
+                    const endTime = parseTimeString(endTimeOnly);
+
+                    if (endTime && startTime) {
+                        const durationMinutes = (endTime.hour - startTime.hour) * 60 + (endTime.minute - startTime.minute);
+
+                        // Case 1: Less than 30 minutes (Error)
+                        if (durationMinutes < 30) {
+                            alert("❗ End time should be at least 30 minutes after the start time.");
+                            setResetEndTimeInputs((prev) => ({ ...prev, [sessionId]: true }));
+                            return { ...session, endTimeOnly: "" }; // Clear the end time
+                        }
+
+                        // Case 2: 30 minutes to 1 hour (Confirmation)
+                        if (durationMinutes < 60) {
+                            const confirmed = window.confirm("⚠️ This session is less than 1 hour. Are you sure this is correct?");
+                            if (!confirmed) {
+                                setResetEndTimeInputs((prev) => ({ ...prev, [sessionId]: true }));
+                                return { ...session, endTimeOnly: "" }; // Clear the end time if not confirmed
+                            }
+                        }
+                    }
+                }
+
+                return session;
+            });
+
+            return {
+                ...prevData,
+                sessions: updatedSessions,
+            };
+        });
+    };
+
     return (
         // Using class names from globals.css
         <div className="page-container">
@@ -606,7 +665,6 @@ export default function CreateEventPage() {
             <div className="form-container">
                 <form onSubmit={handleSubmit}>
 
-                    {formError && <p className="error-message">{formError}</p>} {/* Use error-message class */}
 
                     {/* --- Event Details Section --- */}
                     <div className="form-section">
@@ -842,25 +900,26 @@ export default function CreateEventPage() {
                                     </div>
                                     <div className="form-group-item">
                                         <label htmlFor={`startTimeOnly-${session.id}`} className="form-label">Start Time:</label>
-                                        <input
-                                            type="time"
-                                            id={`startTimeOnly-${session.id}`}
-                                            name="startTimeOnly"
-                                            value={session.startTimeOnly}
-                                            onChange={(e) => handleSessionInputChange(session.id, e)}
-                                            required
-                                            className="form-input"
+                                        <TimeInput
+                                            defaultValue={session.startTimeOnly ? parseTimeString(session.startTimeOnly) : undefined}
+                                            onChange={(time) => {
+                                                if (time) {
+                                                    handleSessionTimeChange(session.id, 'startTimeOnly', time);
+                                                }
+                                            }}
                                         />
                                     </div>
                                     <div className="form-group-item">
                                         <label htmlFor={`endTimeOnly-${session.id}`} className="form-label">End Time:</label>
-                                        <input
-                                            type="time"
-                                            id={`endTimeOnly-${session.id}`}
-                                            name="endTimeOnly"
-                                            value={session.endTimeOnly}
-                                            onChange={(e) => handleSessionInputChange(session.id, e)}
-                                            className="form-input"
+                                        <TimeInput
+                                            key={resetEndTimeInputs[session.id] ? Math.random() : session.id}  // Reset the input on invalid time
+                                            defaultValue={session.endTimeOnly ? parseTimeString(session.endTimeOnly) : undefined}
+                                            onChange={(time) => {
+                                                // Clear the reset flag on valid input
+                                                setResetEndTimeInputs((prev) => ({ ...prev, [session.id]: false }));
+                                                if(time) {handleSessionTimeChange(session.id, 'endTimeOnly', time);}
+                                            }}
+                                            onBlur={() => handleTimeValidation(session.id)}
                                         />
                                     </div>
                                 </div> {/* End Inline Group */}
@@ -888,12 +947,12 @@ export default function CreateEventPage() {
                                                         <option key={venue.id} value={String(venue.id)}>
                                                             {venue.name} (Capacity: {venue.capacity})
                                                         </option>
-                                                    )):
-                                                    recommendedVenues.map((venue) => (
-                                                        <option key={venue.id} value={String(venue.id)}>
-                                                            {venue.name} (Capacity: {venue.capacity})
-                                                        </option>
-                                                    ))
+                                                    )) :
+                                                        recommendedVenues.map((venue) => (
+                                                            <option key={venue.id} value={String(venue.id)}>
+                                                                {venue.name} (Capacity: {venue.capacity})
+                                                            </option>
+                                                        ))
                                                     }
                                                 </select>
                                                 <div className="flex items-center gap-2 mb-2" style={{ flexShrink: 0 }}>
@@ -978,6 +1037,9 @@ export default function CreateEventPage() {
                         </div>
                     </div>
                 )}
+
+                {formError && <p className="error-message">{formError}</p>} {/* Use error-message class */}
+
             </div>
         </div>
     );

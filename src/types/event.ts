@@ -127,8 +127,10 @@ export interface CreateSessionData {
     venueIds?: string[]; // allow multiple venues for a session
     qr_code_path?: string;
     date?: string; // Separate date field for form input control
-    startTimeOnly?: string; // Separate start time field for form input control
-    endTimeOnly?: string; // Separate end time field for form input control
+    startTimeOnly: string; // Separate start time field for form input control
+    endTimeOnly: string; // Separate end time field for form input control
+    durationError?: string;   // For duration error messages
+    durationWarning?: string  // For duration warning messages
 }
 
 /**
@@ -206,8 +208,8 @@ export interface TeamMember {
     roles: string; // Role assigned in this event's team
 }
 
-export interface SearchUserInTeam{
-    id:number;
+export interface SearchUserInTeam {
+    id: number;
     name: string;
     email: string;
     hasRole: number;

@@ -1,5 +1,6 @@
 import venueService from "@/services/venueService";
 import { CreateSessionData, Venue } from "@/types/event";
+import { Time } from "@internationalized/date";
 
 // Helper function to format date and time
 export const formatDateTime = (dateTimeString: string | null | undefined): string => {
@@ -44,5 +45,15 @@ export const formatDate = (dateString: string | null | undefined): string => {
         return 'Error Formatting Date';
     }
 };
+
+// Utility function to parse a time string (e.g., "14:30") into a Time object
+export const parseTimeString = (timeString: string): Time | undefined => {
+    const [hour, minute] = timeString.split(':').map(Number);
+    if (!isNaN(hour) && !isNaN(minute)) {
+        return new Time(hour, minute);
+    }
+    return undefined;
+};
+
 
   
