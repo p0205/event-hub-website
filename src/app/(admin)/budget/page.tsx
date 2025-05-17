@@ -3,6 +3,7 @@ import budgetCategoryService from "@/services/budgetCategoryService";
 import { BudgetCategory } from "@/types/event";
 import { useEffect, useState } from "react";
 import { FaPlus, FaTrash, FaSearch, FaSpinner } from "react-icons/fa";
+import BudgetCategoriesTable from "./BudgetCategoriesTable";
 
 export default function ManageBudgetPage() {
     const [budgets, setBudgets] = useState<BudgetCategory[]>([]);
@@ -12,16 +13,36 @@ export default function ManageBudgetPage() {
     const [isAdding, setIsAdding] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
 
+    // Paging state
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [totalItems, setTotalItems] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [offset, setOffset] = useState(0);
+
     // Fetch budgets on initial load
     useEffect(() => {
         fetchBudgets();
-    }, []);
+    }, [currentPage, pageSize]);
 
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+    };
+
+    const handlePageSizeChange = (newSize: number) => {
+        setPageSize(newSize);
+        setCurrentPage(0); // Reset to the first page on page size change
+    };
+
+    
     const fetchBudgets = async () => {
         try {
             setLoading(true);
-            const data = await budgetCategoryService.fetchBudgetCategories();
-            setBudgets(data);
+            const data = await budgetCategoryService.fetchBudgetCategories(currentPage, pageSize);
+            setBudgets(data.content);
+            setTotalItems(data.totalElements);
+            setTotalPages(data.totalPages);
+            setOffset(data.pageable.offset+1);
         } catch (error: any) {
             alert(error.message || "Failed to fetch budgets");
         } finally {
@@ -140,56 +161,18 @@ export default function ManageBudgetPage() {
                 </div>
             </div>
 
-            {loading ? (
-                <div className="flex justify-center items-center h-32">
-                    <FaSpinner className="animate-spin text-2xl text-blue-600" />
-                </div>
-            ) : (
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    No
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Budget Name
-                                </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {budgets.map((budget, index) => (
-                                <tr key={budget.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {index + 1}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {budget.name}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            onClick={() => handleDeleteBudget(budget.id)}
-                                            className="text-red-600 hover:text-red-900"
-                                            title="Delete budget"
-                                        >
-                                            <FaTrash />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            <BudgetCategoriesTable       
+                budgetCategories={budgets}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                totalItems={totalItems}
+                totalPages={totalPages}
+                offset={offset}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}   
+                handleDeleteBudget={handleDeleteBudget}
+                />
 
-                    {budgets.length === 0 && (
-                        <div className="text-center py-8 text-gray-500">
-                            No budgets found
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 }

@@ -2,6 +2,7 @@
 import { Role } from '@/types/event';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
+import { PageData } from '@/types/api';
 
 const roleService = {
     addRole: async (name: string): Promise<void> => { // Replace 'any' with actual types
@@ -23,8 +24,13 @@ const roleService = {
         return response.data;
     },
 
-    fetchRoles: async (): Promise<Role[]> => { 
-        const response = await api.get<Role[]>(`/role`);
+    fetchRoles: async (pageNumber?:number, pageSize?:number): Promise<PageData<Role>> => { 
+        const response = await api.get<PageData<Role>>(`/role`,{
+            params:{
+                pageNumber,
+                pageSize
+            }
+        });
         if(response.status !== HttpStatusCode.Ok) {
             throw new Error('Failed to fetch role');
         }

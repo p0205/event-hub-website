@@ -55,7 +55,7 @@ export interface EventBudget {
     amountAllocated: number; // Allow empty string for input control
     amountSpent: number; // Typically starts at 0 for creation
     budgetCategoryId?: number; // ID from backend
-    budgetCategoryName?: string; // Store category name used in select
+    budgetCategoryName: string; // Store category name used in select
 }
 
 /**

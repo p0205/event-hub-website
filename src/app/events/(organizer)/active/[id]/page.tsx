@@ -8,7 +8,7 @@ import Link from 'next/link'; // For any internal links
 import eventService from '@/services/eventService';
 import { Event, Session, TeamMember, Venue } from '@/types/event'; // Ensure Venue is imported
 import venueService from '@/services/venueService';
-import { formatDate, formatDateTime, groupSessions } from '@/helpers/eventHelpers'; // Assuming this path is correct
+import { formatDate, formatDateTime } from '@/helpers/eventHelpers'; // Assuming this path is correct
 import BudgetTable from '@/components/BudgetTable';
 
 
@@ -39,14 +39,8 @@ export default function ActiveEventDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  // State for Team Member Search
-  const [teamSearchTerm, setTeamSearchTerm] = useState('');
-  const [userSearchResults, setUserSearchResults] = useState<UserSearchResult[]>([]);
-  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
-
   // State for QR Code display
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  const [isGeneratingQr, setIsGeneratingQr] = useState(false);
   // const [team, setTeam] = useState<TeamMember[]>([]); // Not used directly, event.team is used
 
   // --- State for grouped sessions ---
@@ -90,6 +84,9 @@ export default function ActiveEventDetailsPage() {
 
     fetchEventDetails();
 
+    console.log("BUDGET");
+    console.log(event?.eventBudgets[0].budgetCategoryName);
+
   }, [eventId]); // Refetch if eventId changes
 
   // // Effect 2: Process sessions AFTER event data is loaded
@@ -128,46 +125,6 @@ export default function ActiveEventDetailsPage() {
     console.log('Edit Event clicked');
   };
 
-  const handleAddTeamMember = (userId: string) => {
-    console.log(`Adding user ${userId} to team (placeholder)`);
-    // API call to add member...
-  };
-
-  const handleGenerateQrCode = async () => {
-     setIsGeneratingQr(true);
-     setQrCodeUrl(null);
-     try {
-       // Simulate API call
-       await new Promise(resolve => setTimeout(resolve, 1000));
-       const generatedUrl = `/api/qrcode/event-${eventId}.png`;
-       setQrCodeUrl(generatedUrl);
-     } catch (e) {
-       console.error("Failed to generate QR code:", e);
-     } finally {
-       setIsGeneratingQr(false);
-     }
-  };
-
-  const handleDownloadQrCode = () => {
-     if (qrCodeUrl) {
-       const link = document.createElement('a');
-       link.href = qrCodeUrl;
-       link.download = `event-${eventId}-qrcode.png`;
-       document.body.appendChild(link);
-       link.click();
-       document.body.removeChild(link);
-     }
-  };
-
-   const handleUploadPoster = (e: React.ChangeEvent<HTMLInputElement>) => {
-     console.log('Poster upload triggered:', e.target.files);
-     // API call to upload...
-   };
-
-   const handleUploadPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-     console.log('Photo upload triggered:', e.target.files);
-     // API call to upload...
-   };
 
   // --- Rendering Logic ---
   if (loading) {

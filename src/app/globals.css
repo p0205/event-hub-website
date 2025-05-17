@@ -1386,3 +1386,70 @@ margin-top: 20px;
   color: #333;
 }
 
+
+
+/* paging table style*/
+.paging-table {
+  width: 100%;
+  border-collapse: collapse; /* Remove space between borders */
+  margin-top: 15px; /* Add some space above the table */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  background-color: #fff; /* White background */
+}
+
+.paging-table th,
+.paging-table td {
+  border: 1px solid #ddd; /* Light grey border */
+  padding: 10px; /* Padding inside cells */
+  text-align: left; /* Align text to the left */
+}
+
+.paging-table th {
+  background-color: #f2f2f2; /* Light grey background for headers */
+  font-weight: bold; /* Bold header text */
+  color: #333; /* Darker text color for headers */
+  position: sticky; /* Make headers sticky */
+  top: 0; /* Stick to the top */
+  z-index: 1; /* Ensure headers are above table content */
+}
+
+/* Style for alternate rows */
+.paging-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* Slightly different background for even rows */
+}
+
+/* Hover effect on rows */
+.paging-table tbody tr:hover {
+  background-color: #e9e9e9; /* Highlight on hover */
+}
+
+/* Style for the Attended cell to make it clickable */
+.paging-table .attendedCell {
+  cursor: pointer; /* Indicate clickable */
+  text-align: center; /* Center content */
+  font-weight: bold;
+}
+
+/* Style for Attended status text */
+.paging-table .statusAttended {
+  color: green; /* Green for attended */
+}
+
+.paging-table .statusNotAttended {
+  color: red; /* Red for not attended */
+}
+
+/* Style for attendance time/method column */
+.paging-table .timeMethodCell {
+  font-size: 0.9em; /* Smaller text */
+  color: #555; /* Slightly lighter color */
+}
+
+/* Message when current page is empty */
+.paging-table-tableable td[colspan="8"] {
+  text-align: center;
+  font-style: italic;
+  color: #777;
+}
+
+

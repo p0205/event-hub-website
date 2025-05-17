@@ -3,9 +3,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { createBudgetCategoryMap, EventBudget } from '@/types/event'; // adjust if needed
-import eventBudgetService from '@/services/eventBudgetService';
-import budgetCategoryService from '@/services/budgetCategoryService';
+import { EventBudget } from '@/types/event'; // adjust if needed
 
 interface BudgetTableProps {
     budgets: EventBudget[];
@@ -13,29 +11,7 @@ interface BudgetTableProps {
 }
 
 const BudgetTable: React.FC<BudgetTableProps> = ({ budgets }) => {
-    const [loading, setLoading] = useState(true);
-    const [budgetCategoryMap, setBudgetCategoryMap] = useState<Map<number, string>>(new Map());
     const hasAmountSpent = budgets.some((budget) => budget.amountSpent !== null && budget.amountSpent !== undefined);
-
-    useEffect(() => {
-        const fetchBudgetCategories = async () => {
-            try {
-                const budgetCategories = await budgetCategoryService.fetchBudgetCategories();       
-                setBudgetCategoryMap(createBudgetCategoryMap(budgetCategories));
-            } catch (error) {
-                console.error('Failed to fetch budget categories:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchBudgetCategories();
-    }, []);
-
-    if (loading) {
-        return <div>Loading budget categories...</div>;
-      }
-
       
       return (
         <div style={{ overflowX: 'auto', marginTop: '20px' }}>
@@ -53,7 +29,7 @@ const BudgetTable: React.FC<BudgetTableProps> = ({ budgets }) => {
               {budgets.map((budget, index) => (
                 <tr key={index} className="border-t">
                   <td style={{ border: '1px solid #ddd', padding: '10px' }}>
-                    {budgetCategoryMap.get(Number(budget.budgetCategoryId)) || 'Unknown Category'}
+                    {budget.budgetCategoryName || 'Unknown Category'}
                   </td>
                   <td style={{ border: '1px solid #ddd', padding: '10px' }}>
                     {budget.amountAllocated}

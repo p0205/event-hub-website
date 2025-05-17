@@ -1,16 +1,14 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { formatDate, formatDateTime } from '@/helpers/eventHelpers'; // Import formatting helper
-import { Attendee } from '@/types/event';
+import { Role } from '@/types/event';
+import { FaTrash } from 'react-icons/fa';
 
 
 
-interface ParticipantAttendanceTableProps {
-    participants: Attendee[]; // This is now the list for the CURRENT page
-    onManualAttendanceChange: (participantId: string, currentlyAttended: boolean) => void;
-    selectedSessionName?: string | null;
-
+interface RolesTableProps {
+    roles: Role[]; // This is now the list for the CURRENT page
+    handleDeleteRole: (roleId: number) => void;
     // --- Pagination Props ---
     currentPage: number;
     pageSize: number;
@@ -19,13 +17,13 @@ interface ParticipantAttendanceTableProps {
     offset: number;
     onPageChange: (page: number) => void; // Handler for page change
     onPageSizeChange: (size: number) => void; // Handler for page size change
+
     // --- End Pagination Props ---
 }
 
-const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
-    participants,
-    onManualAttendanceChange,
-    // Pagination Props
+const RoleTable: React.FC<RolesTableProps> = ({
+    roles,
+    handleDeleteRole,
     currentPage,
     pageSize,
     totalItems,
@@ -35,26 +33,20 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
     onPageSizeChange,
 }) => {
 
-    const startIndex = (currentPage - 1) * pageSize + 1;
-    const endIndex = Math.min(startIndex + pageSize - 1, totalItems); // Ensure end index doesn't exceed total items
+    const startIndex = (currentPage * pageSize) + 1;
+    const endIndex = Math.min((currentPage + 1) * pageSize, totalItems); // Ensure end index doesn't exceed total items
 
 
     return (
         <div>
-            {/* Optional Title for the Table */}
-            {/* {selectedSessionName && (
-                <h3>Participants Attendance - {selectedSessionName}</h3>
-             )} */}
-
-            {/* Display current range and total */}
             {totalItems > 0 && (
                 <div className="pagination-container">
                     <div className="pagination-info">
-                        Showing {startIndex} - {endIndex} of {totalItems} attendees
+                        Showing {startIndex} - {endIndex} of {totalItems} roles
                     </div>
 
                     <div className="page-size-selector">
-                        Attendees per page:
+                        Roles per page:
                         <select value={pageSize} onChange={(e) => onPageSizeChange(Number(e.target.value))}>
                             <option value={5}>5</option>
                             <option value={10}>10</option>
@@ -73,39 +65,33 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
                     <tr>
                         <th>No</th>
                         <th>Name</th>
-                        <th>Email</th>
-                        <th>Contact Number</th>
-                        <th>Faculty</th>
-                        <th>Course</th>
-                        <th>Year</th>
-                        <th>Check In Time</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {/* Render only the participants for the current page */}
-                    {participants.length > 0 ? (
-                        participants.map((participant,index) => (
-                            
-                            <tr key={participant.userId}>
-                                <td>{offset+index}</td>
-                                <td>{participant.name}</td>
-                                <td>{participant.email}</td>
-                                <td>{participant.phoneNo}</td>
-                                <td>{participant.faculty || "-"}</td>
-                                <td>{participant.course || "-"}</td>
-                                <td>{participant.year || "-"}</td>
-                                <td>
-                                    {participant.checkinDateTime
-                                        ? `${formatDate(participant.checkinDateTime)}, ${formatDateTime(participant.checkinDateTime)}`
-                                        : '-'}
+                    {roles.length > 0 ? (
+                        roles.map((roles, index) => (
 
+                            <tr key={roles.id}>
+                                <td>{offset + index + 1}</td>
+                                <td>{roles.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button
+                                        onClick={() => handleDeleteRole(roles.id)}
+                                        className="text-red-600 hover:text-red-900"
+                                        title="Delete budget"
+                                    >
+                                        <FaTrash />
+                                    </button>
                                 </td>
+
                             </tr>
                         ))
                     ) : (
                         // Message when the current page is empty (e.g., last page has no items)
                         <tr>
-                            <td colSpan={8} style={{ textAlign: 'center' }}>No attendee found for this section.</td>
+                            <td colSpan={8} style={{ textAlign: 'center' }}>No role found.</td>
                         </tr>
                     )}
                 </tbody>
@@ -118,7 +104,7 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
                     <div className="page-buttons">
                         <button
                             onClick={() => onPageChange(currentPage - 1)}
-                            disabled={currentPage === 1} // Disable if on the first page
+                            disabled={currentPage === 0} // Disable if on the first page
                             className="button-secondary" // Reuse button style
                         >
                             Previous
@@ -126,12 +112,12 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
 
                         {/* Simple Page Number Display (can be enhanced) */}
                         <span className="page-number">
-                            Page {currentPage} of {totalPages}
+                            Page {currentPage + 1} of {totalPages}
                         </span>
 
                         <button
                             onClick={() => onPageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages} // Disable if on the last page
+                            disabled={currentPage === totalPages - 1} // Disable if on the last page
                             className="button-secondary" // Reuse button style
                         >
                             Next
@@ -150,4 +136,4 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
     );
 };
 
-export default ParticipantAttendanceTable;
+export default RoleTable;

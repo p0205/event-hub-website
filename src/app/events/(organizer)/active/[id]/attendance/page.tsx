@@ -51,7 +51,7 @@ export default function EventAttendancePage() {
     // State for participant table
     const [participants, setParticipants] = useState<Attendee[]>([]);
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [offset, setOffset] = useState(0);
