@@ -7,10 +7,9 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://local
 
 const api = axios.create({
   baseURL: BACKEND_API_URL,
-  // You can add a timeout here
-  // timeout: 10000,
-  paramsSerializer: params =>
-    qs.stringify(params, { arrayFormat: 'repeat' })
+  withCredentials: true, // IMPORTANT: send cookies with every request
+  paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' }),
+
 });
 
 // Optional: Add a request interceptor to include auth tokens
