@@ -1,5 +1,4 @@
-import Topbar from "@/components/Topbar";
-import Sidebar from "@/components/Sidebar";
+
 import StatsCards from "@/components/StatsCards";
 import SummaryCards from "@/components/SummaryCards";
 import OrganizerCalendar from "@/components/OrganizerCalendar";

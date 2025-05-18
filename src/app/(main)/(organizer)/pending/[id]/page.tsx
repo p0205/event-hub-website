@@ -9,7 +9,7 @@ import eventService from '@/services/eventService';
 // Make sure this path is correct and the file src/types/event.ts exists and is saved
 import { Event, EventStatus, SupportingDocument, CreateSessionData, Venue, createBudgetCategoryMap } from '@/types/event'; // <-- Ensure correct import
 import venueService from '@/services/venueService';
-import { formatDate, formatDateTime, groupSessions } from '@/helpers/eventHelpers';
+import { formatDate, formatDateTime } from '@/helpers/eventHelpers';
 import eventBudgetService from '@/services/eventBudgetService';
 import BudgetTable from '@/components/BudgetTable';
 

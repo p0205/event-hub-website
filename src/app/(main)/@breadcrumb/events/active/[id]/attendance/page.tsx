@@ -6,7 +6,7 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-} from "../../../../../../components/Breadcrumbs"; // Adjust path!
+} from "@/components/Breadcrumbs"; // Adjust path!
 
 import eventService from '@/services/eventService'; // Adjust path!
 import { notFound } from 'next/navigation';

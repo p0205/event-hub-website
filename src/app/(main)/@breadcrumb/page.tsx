@@ -1,10 +1,6 @@
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-} from "../../components/Breadcrumbs";
- 
+import { Breadcrumb, BreadcrumbList, BreadcrumbLink } from "@/components/Breadcrumbs";
+import { BreadcrumbItem } from "@heroui/react";
+
 export default function BreadcrumbSlot() {
 	return (
 		<Breadcrumb>

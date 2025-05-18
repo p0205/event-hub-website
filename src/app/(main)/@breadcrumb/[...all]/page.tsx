@@ -3,15 +3,9 @@
 // It's a catch-all route within a Parallel Route (@breadcrumb)
 // designed to generate breadcrumbs based on the URL segments.
 
-import {
-    Breadcrumb, // Assuming this is the main container component
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "../../../components/Breadcrumbs"; // Adjust path as needed
 
+import { BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator, Breadcrumb, BreadcrumbList } from "@/components/Breadcrumbs";
+import { BreadcrumbItem } from "@heroui/react";
 import React from "react";
 import type { ReactElement } from "react";
 

@@ -1452,4 +1452,157 @@ margin-top: 20px;
   color: #777;
 }
 
+.auth-page-container {
+  min-height: 100vh; /* Full viewport height */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px; /* Add some padding for smaller screens */
+  /* background: var(--background); /* Inherits from body */
+  /* font-family: Arial, Helvetica, sans-serif; /* Inherits from body */
+}
+
+.auth-content-wrapper {
+  width: 100%;
+  max-width: 480px; /* Max width for the auth form area, adjust as needed */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.auth-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px; /* 1.5rem */
+  /* Style your logo (text or image) further here if needed */
+}
+
+.auth-logo h1 { /* If your logo is text */
+  font-size: 2.5rem; /* Adjust as needed */
+  font-weight: bold;
+  color: #007bff; /* Example: Primary button color, adjust to your theme */
+}
+
+.auth-main-title {
+  margin-top: 12px; /* 0.75rem */
+  text-align: center;
+  font-size: 1.875rem; /* 30px */
+  line-height: 2.25rem; /* 36px */
+  font-weight: 800; /* Corresponds to font-extrabold */
+  color: var(--foreground); /* Or a specific title color */
+}
+
+/* .form-container can be used for the auth card.
+   If you need a specific auth card style that differs from form-container, define .auth-card here.
+   For example:
+.auth-card {
+  background-color: #ffffff;
+  padding: 32px 40px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+}
+*/
+
+/* .form-label, .form-input, .button-primary, .error-message will be reused from your existing styles */
+
+.auth-link {
+  font-weight: 500; /* medium */
+  color: #007bff; /* Example: Primary button color */
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  color: #0056b3; /* Darker shade on hover */
+  text-decoration: underline;
+}
+
+/* For the "Show password" checkbox area */
+.auth-checkbox-container {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.auth-checkbox-input {
+  height: 16px; /* 1rem */
+  width: 16px; /* 1rem */
+  border-radius: 4px; /* rounded */
+  border: 1px solid #ccc;
+  /* Add accent color if desired, or it will use browser default */
+  /* accent-color: #007bff; */
+}
+
+.auth-checkbox-label {
+  margin-left: 8px; /* ml-2 */
+  font-size: 0.875rem; /* text-sm */
+  color: var(--foreground); /* Or a specific label color */
+}
+
+
+/* For the divider with "Or" text */
+.auth-divider-container {
+  margin-top: 24px; /* mt-6 */
+  position: relative;
+}
+
+.auth-divider-line {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+}
+
+.auth-divider-line div {
+  width: 100%;
+  border-top: 1px solid #d1d5db; /* border-gray-300 */
+}
+
+.auth-divider-text-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  font-size: 0.875rem; /* text-sm */
+}
+
+.auth-divider-text {
+  padding-left: 8px; /* px-2 */
+  padding-right: 8px; /* px-2 */
+  background-color: var(--background); /* Match page background to "punch out" the line */
+  color: #6b7280; /* text-gray-500 */
+}
+
+.auth-alternative-action {
+  margin-top: 24px; /* mt-6 */
+  text-align: center;
+  font-size: 0.875rem; /* text-sm */
+  color: #4b5563; /* text-gray-600 */
+}
+
+/* Styles for loading spinner (SVG) - if not using Tailwind animate-spin */
+.auth-spinner {
+  animation: spin 1s linear infinite;
+  margin-right: 12px; /* mr-3 */
+  height: 20px; /* h-5 */
+  width: 20px; /* w-5 */
+  color: white; /* Assuming button text is white */
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Ensure button takes full width if needed and centers content */
+.button-primary.full-width-button {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
 
