@@ -13,8 +13,11 @@ const SignUpPage: React.FC = () => {
   const [name, setName] = useState(searchParams.get('name') || '');
   const [email, setEmail] = useState(searchParams.get('email') || '');
   const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +33,12 @@ const SignUpPage: React.FC = () => {
     }
     if (password.length < 8) {
       setError('Password must be at least 8 characters long.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
       setIsLoading(false);
       return;
     }
@@ -87,7 +96,7 @@ const SignUpPage: React.FC = () => {
                   disabled
                   required
                   value={email}
-       
+
                   placeholder="Enter email"
                   className="form-input"
                 />
@@ -112,6 +121,26 @@ const SignUpPage: React.FC = () => {
                   className="form-input"
                 />
               </div>
+
+              <div className='form-group'>
+                <label htmlFor="confirm-password" className="form-label">
+                  Confirm Password
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="confirm-password"
+                    name="confirm-password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password"
+                    className="form-input"
+                  />
+                </div>
+              </div>
+
 
             </div>
             <div className="auth-checkbox-container"> {/* New class */}
@@ -150,19 +179,28 @@ const SignUpPage: React.FC = () => {
 
 
             {error && (
-              <div className="error-message p-4 flex items-center rounded-md"> {/* Reusing .error-message */}
+              <div className="error-message flex items-center rounded-lg bg-red-100 p-3 shadow-lg border border-red-300">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style={{ color: '#721c24' }}>
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L10 8.586 7.707 6.293a1 1 0 00-1.414 1.414L8.586 10l-2.293 2.293a1 1 0 001.414 1.414L10 11.414l2.293 2.293a1 1 0 001.414-1.414L11.414 10l2.293-2.293z" clipRule="evenodd" />
+                  <svg
+                    className="h-6 w-6 text-red-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L10 8.586 7.707 6.293a1 1 0 00-1.414 1.414L8.586 10l-2.293 2.293a1 1 0 001.414 1.414L10 11.414l2.293 2.293a1 1 0 001.414-1.414L11.414 10l2.293-2.293z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium" style={{ color: '#721c24' }}>{error}</p>
+                  <p className="text-sm font-semibold text-red-800 leading-tight">{error}</p>
                 </div>
               </div>
             )}
 
-            <div>
+            <div className='mt-4'>
               <button
                 type="submit"
                 disabled={isLoading}

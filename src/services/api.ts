@@ -15,15 +15,7 @@ const api = axios.create({
 // Optional: Add a request interceptor to include auth tokens
 api.interceptors.request.use(
   config => {
-    // Get your auth token (e.g., from localStorage, a cookie, or AuthContext)
-    // Note: Accessing localStorage directly requires 'use client' or checking typeof window
-    // A more secure approach for tokens is often using HTTP-only cookies managed by your backend/API routes
-    // const token = localStorage.getItem('authToken'); // Less secure client-side storage example
 
-    // If you have a token, add it to the Authorization header
-    // if (token) {
-    //   config.headers['Authorization'] = `Bearer ${token}`;
-    // }
     return config;
   },
   error => {

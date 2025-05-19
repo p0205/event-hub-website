@@ -4,6 +4,8 @@
 import React, { useState, FormEvent } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import { authService } from '@/services';
+import { useRouter } from 'next/navigation';
 
 
 // import Image from 'next/image'; // If you have a logo
@@ -16,6 +18,7 @@ const LoginPage: React.FC = () => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -29,9 +32,8 @@ const LoginPage: React.FC = () => {
         }
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            alert('Login successful! (This is a simulation)');
-            // router.push('/dashboard');
+            await authService.signIn(email, password);
+            router.push('/');
         } catch (err: any) {
             setError(err.message || 'An unexpected error occurred.');
         } finally {
@@ -139,7 +141,7 @@ const LoginPage: React.FC = () => {
                     </form>
 
                     <div className="signup-link">
-                    Don't have an account?
+                        Don't have an account?
                         <Link href="/sign-up/check-email">
                             Sign up
                         </Link>

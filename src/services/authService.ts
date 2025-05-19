@@ -6,14 +6,15 @@ import { User } from '@/types/user';
 // import { User, LoginCredentials, RegistrationData } from '@/types/user'; // Assuming types
 
 const authService = {
-  login: async (credentials: LoginCredentials): Promise<string> => { // Replace 'any' with actual types
+  signIn: async (email: string, rawPassword: string): Promise<string> => { // Replace 'any' with actual types
 
     try {
       // Assuming your backend login endpoint is POST /auth/login
-      const response = await api.post('/auth/sign-in', { credentials });
+      const response = await api.post('/auth/sign-in', {
+        email: email,
+        rawPassword: rawPassword
+      });
 
-      // Backend should set HttpOnly cookie with JWT in response headers
-      // You don't get the token here, but you can return success or user info from response
       return response.data; // e.g., user info or success message
     } catch (error: any) {
       // Handle login error (wrong credentials, server error, etc.)
