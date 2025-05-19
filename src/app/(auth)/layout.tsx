@@ -1,5 +1,6 @@
 // src/app/(auth)/layout.tsx
 import React from 'react';
+import "./auth.css";
 
 // This layout will wrap all pages within the (auth) route group,
 // such as /signup and /login.

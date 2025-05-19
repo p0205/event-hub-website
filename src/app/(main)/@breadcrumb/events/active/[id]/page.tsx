@@ -1,11 +1,4 @@
-import {
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "../../../../../components/Breadcrumbs";
-
+import { BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/Breadcrumbs';
 import eventService from '@/services/eventService'; // Adjust path as needed
 
 // Import the Event type for type safety

@@ -1,14 +1,8 @@
 // src/app/@breadcrumb/events/active/[id]/participants/page.tsx
 
-import {
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "../../../../../../components/Breadcrumbs"; // Adjust path!
-
+import { BreadcrumbList, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/Breadcrumbs';
 import eventService from '@/services/eventService'; // Adjust path!
+import { BreadcrumbItem } from '@heroui/react';
 import { notFound } from 'next/navigation';
 
 export default async function BreadcrumbSlot({ params }: { params: Promise<{ id: string }> }) {
