@@ -4,10 +4,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation'; // To get route parameters (the event ID)
-import Link from 'next/link'; // For any internal links
 import eventService from '@/services/eventService';
 import { Event, Session, TeamMember, Venue } from '@/types/event'; // Ensure Venue is imported
-import venueService from '@/services/venueService';
 import { formatDate, formatDateTime } from '@/helpers/eventHelpers'; // Assuming this path is correct
 import BudgetTable from '@/components/BudgetTable';
 

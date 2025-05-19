@@ -33,13 +33,21 @@ const budgetCategoryService = {
         return response.data;
     },
 
-    fetchBudgetCategories: async ( pageNumber?: number, pageSize?: number): Promise<PageData<BudgetCategory>> => { 
+    fetchBudgetCategoriesByPage: async ( pageNumber?: number, pageSize?: number): Promise<PageData<BudgetCategory>> => { 
         const response = await api.get<PageData<BudgetCategory>>(`/budgetCategory`,{
             params:{
                 pageNumber,
                 pageSize
             }
         });
+        if(response.status !== HttpStatusCode.Ok) {
+            throw new Error('Failed to fetch budget categories');
+        }
+        return response.data;
+    },
+
+    fetchBudgetCategories: async (): Promise<BudgetCategory[]> => { 
+        const response = await api.get<BudgetCategory[]>(`/budgetCategory/all`);
         if(response.status !== HttpStatusCode.Ok) {
             throw new Error('Failed to fetch budget categories');
         }

@@ -13,8 +13,10 @@ import Sidebar from '@/components/Sidebar';
 // For simplicity, we'll remove it as a prop here.
 
 export default function MainLayout({
+  breadcrumb,
   children,
 }: Readonly<{
+  breadcrumb: React.ReactNode;
   children: React.ReactNode;
 }>) {
   return (
@@ -34,6 +36,7 @@ export default function MainLayout({
         {/* The main content area for pages within the (main) group */}
         <main className="flex-1 bg-gray-100 p-6 space-y-6 overflow-y-auto">
           {/* Remove {breadcrumb} unless you implement a way to provide it here */}
+          {breadcrumb}
           <div>
             {children} {/* The content of your page files within (main) */}
           </div>

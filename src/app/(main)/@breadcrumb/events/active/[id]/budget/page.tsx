@@ -1,41 +1,75 @@
 // src/app/@breadcrumb/events/active/[id]/participants/page.tsx
+"use client"; // <--- Add this directive
 
+import { useEffect, useState } from 'react'; // <--- Import React hooks
+import { useParams, notFound } from 'next/navigation'; // <--- Import useParams for client-side param access
 import {
-    BreadcrumbItem,
+    BreadcrumbItem, // <--- Assuming this comes from your local components
     BreadcrumbLink,
     BreadcrumbList,
     BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/components/Breadcrumbs"; // Adjust path!
+    BreadcrumbSeparator
+} from '@/components/Breadcrumbs'; // Adjust path as needed
+import eventService from '@/services/eventService'; // Adjust path as needed
 
-import eventService from '@/services/eventService'; // Adjust path!
-import { notFound } from 'next/navigation';
+export default function ParticipantsBreadcrumbSlot() {
+    const params = useParams<{ id: string }>(); // <--- Get params using the hook
 
-export default async function BreadcrumbSlot({ params }: { params: Promise<{ id: string }> }) {
-    const awaitedParams = await params;
-    const eventIdString = awaitedParams.id;
+    const [eventName, setEventName] = useState<string>('Loading Event...'); // Default loading state
+    const [eventId, setEventId] = useState<number | null>(null); // State for the numeric event ID
+    const [error, setError] = useState<string | null>(null); // State for error handling
+    const [isLoading, setIsLoading] = useState<boolean>(true); // State for loading status
 
-    if (!eventIdString || isNaN(parseInt(eventIdString, 10))) {
-         notFound();
-    }
+    useEffect(() => {
+        const eventIdString = params.id;
 
-    const eventId = parseInt(eventIdString, 10);
+        if (!eventIdString || isNaN(parseInt(eventIdString, 10))) {
+            console.error("Invalid event ID for participants breadcrumb:", eventIdString);
+            setError("Invalid event ID.");
+            setIsLoading(false);
+            // As before, notFound() here is tricky; parent page should handle full 404.
+            return;
+        }
 
-    let eventName: string = 'Loading Event...';
+        const numericEventId = parseInt(eventIdString, 10);
+        setEventId(numericEventId); // Store the numeric ID for use in links
 
-    try {
-        eventName = await eventService.getEventNameById(eventId);
-    } catch (err: any) {
-        console.error(`Failed to fetch event name for breadcrumb ${eventId}/participants:`, err);
-         if (err.response?.status === 404) {
-              notFound();
-         }
-        eventName = 'Error Loading Event Name';
+        const fetchEventNameForBreadcrumb = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                console.log("Fetching event name for participants breadcrumb (Client Component), ID:", numericEventId);
+                const name = await eventService.getEventNameById(numericEventId);
+                setEventName(name);
+            } catch (err: any) {
+                console.error(`Failed to fetch event name for breadcrumb ${numericEventId}/participants:`, err);
+                if (err.isAxiosError && err.response?.status === 404) {
+                    setError("Event name not found.");
+                } else if (err.isAxiosError && err.response?.status === 403) {
+                    setError("Access Denied (403).");
+                } else {
+                    setError('Error Loading Event Name');
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchEventNameForBreadcrumb();
+
+    }, [params.id]); // <--- Dependency array, re-run if id changes
+
+    // Display for loading or error states
+    let displayEventName: string = eventName;
+    if (isLoading) {
+        displayEventName = 'Loading...';
+    } else if (error) {
+        displayEventName = error; // Show the error message in place of the event name
     }
 
     return (
         <BreadcrumbList>
-             {/* Add the Home link if desired */}
+            {/* Add the Home link if desired */}
             {/* Example:
             <BreadcrumbItem>
                 <BreadcrumbLink href="/">Home</BreadcrumbLink>
@@ -55,13 +89,13 @@ export default async function BreadcrumbSlot({ params }: { params: Promise<{ id:
 
             {/* Link to the specific event page, using the fetched name */}
             <BreadcrumbItem>
-                 <BreadcrumbLink href={`/events/active/${eventId}`}>
+                <BreadcrumbLink href={`/events/active/${eventId}`}>
                     {eventName} {/* Use the fetched name */}
-                 </BreadcrumbLink>
+                </BreadcrumbLink>
             </BreadcrumbItem>
-             <BreadcrumbSeparator />
+            <BreadcrumbSeparator />
 
-          
+
             <BreadcrumbItem>
                 <BreadcrumbPage>Budget</BreadcrumbPage> {/* Hardcoded page name */}
             </BreadcrumbItem>

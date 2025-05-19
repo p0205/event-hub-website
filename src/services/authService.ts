@@ -8,6 +8,7 @@ import { User } from '@/types/user';
 const authService = {
   signIn: async (email: string, rawPassword: string): Promise<string> => { // Replace 'any' with actual types
 
+    
     try {
       // Assuming your backend login endpoint is POST /auth/login
       const response = await api.post('/auth/sign-in', {
@@ -15,6 +16,7 @@ const authService = {
         rawPassword: rawPassword
       });
 
+        console.log(response.headers);
       return response.data; // e.g., user info or success message
     } catch (error: any) {
       // Handle login error (wrong credentials, server error, etc.)

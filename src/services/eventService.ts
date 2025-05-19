@@ -97,15 +97,16 @@ const eventService: EventService = {
  * @throws An error if the event is not found (e.g., 404) or another API error occurs.
  */
   getEventNameById: async (id: number): Promise<string> => {
-    console.log("API Call: GET /events/", id, "/name");
+    console.log("API Call: GET" , `/events/${id}/name`);
     // Makes a GET request to the backend endpoint /events/:id
-    const response = await api.get<string>(`/events/${id}/name`);
 
-    if (response.status !== HttpStatusCode.Ok) {
-      throw new Error('Failed to fetch event name');
+    try {
+      const response = await api.get<string>(`/events/${id}/name`);
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to fetch event name: ${error}`);
     }
-    // Axios puts the actual data payload from the backend response body into the .data property.
-    return response.data;
+        // Axios puts the actual data payload from the backend response body into the .data property.
 
   },
 

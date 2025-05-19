@@ -77,6 +77,7 @@ export default function CreateEventPage() {
 
     useEffect(() => {
         console.log("Fetching venues...");
+      
         // Define the asynchronous function that will perform the fetch
         const fetchVenues = async () => {
             console.log("Inside fetchVenues");

@@ -38,7 +38,7 @@ export default function ManageBudgetPage() {
     const fetchBudgets = async () => {
         try {
             setLoading(true);
-            const data = await budgetCategoryService.fetchBudgetCategories(currentPage, pageSize);
+            const data = await budgetCategoryService.fetchBudgetCategoriesByPage(currentPage, pageSize);
             setBudgets(data.content);
             setTotalItems(data.totalElements);
             setTotalPages(data.totalPages);

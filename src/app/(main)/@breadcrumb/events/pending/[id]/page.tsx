@@ -1,3 +1,5 @@
+"use client";
+
 import {
     BreadcrumbItem,
     BreadcrumbLink,
@@ -6,52 +8,55 @@ import {
     BreadcrumbSeparator,
 } from "@/components/Breadcrumbs";
 
-import eventService from '@/services/eventService'; // Adjust path as needed
+import eventService from '@/services/eventService';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
 
-// Import the Event type for type safety
-import { Event } from '@/types/event'; // Adjust path as needed
+export default function BreadcrumbSlot() {
+    const params = useParams<{ id: string }>();
+    const router = useRouter();
+    const [eventName, setEventName] = useState<string>('Loading Event...');
+    const [error, setError] = useState<string | null>(null);
 
-// Import notFound for handling cases where the event ID is invalid or not found
-import { notFound } from 'next/navigation';
+    useEffect(() => {
+        const eventIdString = params.id;
 
-export default async function BreadcrumbSlot({ params }: { params: Promise<{ id: string }> }) {
-    const awaitedParams = await params;
-    const eventIdString = awaitedParams.id;
-
-    // Handle case where ID is missing or not a valid number
-    if (!eventIdString || isNaN(parseInt(eventIdString, 10))) {
-        // If the ID is missing or not a number, it's a malformed request, render Next.js's 404 page
-        notFound();
-    }
-
-    const eventId = parseInt(eventIdString, 10);
-
-    let eventName: string = 'Loading Event...'; // Default loading state
-
-    try {
-        // --- Call the API to fetch the event details ---
-        // Use your eventService to get the event by ID.
-        // This happens on the server side.
-        eventName = await eventService.getEventNameById(eventId);
-
-        // If the event is found, use its name
-
-    } catch (err: any) {
-        console.error(`Failed to fetch event name for breadcrumb ${eventId}:`, err);
-        // If fetching fails (e.g., 404, 500), display an error message or fallback text
-        // If it's a 404, calling notFound() is generally better than just showing text.
-        if (err.response?.status === 404) {
-            notFound(); // Render Next.js 404 page if the API returned 404
+        if (!eventIdString || isNaN(parseInt(eventIdString, 10))) {
+            console.error("Invalid event ID for breadcrumb:", eventIdString);
+            setError("Invalid event ID.");
+            return;
         }
-        eventName = 'Error Loading Event Name'; // Fallback text for other errors
-    }
 
+        const eventId = parseInt(eventIdString, 10);
+
+        const fetchEventName = async () => {
+            try {
+                const name = await eventService.getEventNameById(eventId);
+                setEventName(name);
+            } catch (err: any) {
+                console.error(`Failed to fetch event name for breadcrumb ${eventId}:`, err);
+                if (err.isAxiosError && err.response?.status === 404) {
+                    setError("Event name not found.");
+                    router.push("/404"); // Optional, navigate to a 404 page if needed
+                } else if (err.isAxiosError && err.response?.status === 403) {
+                    setError("Access Denied (403).");
+                } else {
+                    setError("Error Loading Event Name");
+                }
+            }
+        };
+
+        fetchEventName();
+
+    }, [params.id]);
+
+    // Render Error State
+    if (error) {
+        return <BreadcrumbList><BreadcrumbPage>{error}</BreadcrumbPage></BreadcrumbList>;
+    }
 
     return (
         <BreadcrumbList>
-            {" "}
-
-
             <BreadcrumbItem>
                 <BreadcrumbLink href="/events">Events</BreadcrumbLink>
             </BreadcrumbItem>
