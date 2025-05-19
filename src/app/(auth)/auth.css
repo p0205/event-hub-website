@@ -153,18 +153,6 @@
     color: var(--foreground); /* Or a specific title color */
   }
   
-  /* .form-container can be used for the auth card.
-     If you need a specific auth card style that differs from form-container, define .auth-card here.
-     For example:
-  .auth-card {
-    background-color: #ffffff;
-    padding: 32px 40px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
-  }
-  */
-  
-  /* .form-label, .form-input, .button-primary, .error-message will be reused from your existing styles */
   
   .auth-link {
     font-weight: 500; /* medium */
@@ -181,7 +169,7 @@
   .auth-checkbox-container {
     display: flex;
     align-items: center;
-    margin-top: 8px;
+    margin-bottom: 13px;
   }
   
   .auth-checkbox-input {
@@ -189,13 +177,14 @@
     width: 16px; /* 1rem */
     border-radius: 4px; /* rounded */
     border: 1px solid #ccc;
+    margin-left: 5px; /* ml-2 */
     /* Add accent color if desired, or it will use browser default */
     /* accent-color: #007bff; */
   }
   
   .auth-checkbox-label {
     margin-left: 8px; /* ml-2 */
-    font-size: 0.875rem; /* text-sm */
+    font-size: 0.8rem; /* text-sm */
     color: var(--foreground); /* Or a specific label color */
   }
   

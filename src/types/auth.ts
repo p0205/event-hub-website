@@ -12,7 +12,7 @@ interface LoginCredentials {
 
 // Interface for the data expected when a user registers
 interface RegistrationData {
-    userDTO: User;
+    email: string;
     phoneNo: string;
     rawPassword: string;
     // Add other required/optional fields for registration (e.g., faculty, course, year)
@@ -22,5 +22,12 @@ interface RegistrationData {
 }
 
 
+interface UserSignUpDTO {
+    id: number;
+    name: string;
+    email: string;
+
+}
+
 // Export the interfaces so they can be used in other files
-export type { LoginCredentials, RegistrationData };
+export type { LoginCredentials, RegistrationData , UserSignUpDTO};

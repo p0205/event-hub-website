@@ -1,5 +1,5 @@
 // src/services/authService.ts
-import { LoginCredentials, RegistrationData } from '@/types/auth';
+import { LoginCredentials, RegistrationData, UserSignUpDTO } from '@/types/auth';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
 import { User } from '@/types/user';
@@ -10,8 +10,8 @@ const authService = {
 
     try {
       // Assuming your backend login endpoint is POST /auth/login
-      const response = await api.post('/auth/login', {credentials });
-  
+      const response = await api.post('/auth/sign-in', { credentials });
+
       // Backend should set HttpOnly cookie with JWT in response headers
       // You don't get the token here, but you can return success or user info from response
       return response.data; // e.g., user info or success message
@@ -25,13 +25,13 @@ const authService = {
     try {
       const response = await api.get('/auth/check-email', { params: { email } });
       // If valid email found, backend returns userDTO
-      return response.data as User;
+      return response.data as UserSignUpDTO;
     } catch (error: any) {
       if (error.response) {
-        if (error.response.status === 409) {
+        if (error.response.status === HttpStatusCode.Conflict) {
           // User already registered
           throw new Error('UserAlreadyRegistered');
-        } else if (error.response.status === 404) {
+        } else if (error.response.status === HttpStatusCode.NotFound) {
           // Email not found in university database
           throw new Error('EmailNotFound');
         }
@@ -41,9 +41,13 @@ const authService = {
   },
 
 
-  signUp: async (userData: RegistrationData): Promise<void> => { // Replace 'any' with actual types
+  signUp: async (email: string, phoneNo: string, rawPassword: string): Promise<void> => { // Replace 'any' with actual types
     try {
-      const response = await api.post('/auth/sign-up', userData);
+      const response = await api.post('/auth/sign-up', {
+        email: email,
+        phoneNo: phoneNo,
+        rawPassword: rawPassword
+      });
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Sign up failed');

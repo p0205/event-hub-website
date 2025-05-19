@@ -28,9 +28,7 @@ const LoginPage: React.FC = () => {
             return;
         }
 
-        console.log('Login attempt:', { email, password });
         try {
-            // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1500));
             alert('Login successful! (This is a simulation)');
             // router.push('/dashboard');
@@ -43,10 +41,6 @@ const LoginPage: React.FC = () => {
 
     return (
         <>
-            <Head>
-                <title>Login - FTMK</title>
-                <meta name="description" content="Sign In to your account" />
-            </Head>
 
             <div className="auth-background-container">
                 <div className='auth-background-overlay'></div>
@@ -98,21 +92,21 @@ const LoginPage: React.FC = () => {
                                     className="form-input" // Reusing .form-input
                                 />
                             </div>
-                            
+
                         </div>
                         <div className="auth-checkbox-container"> {/* New class */}
-                                <input
-                                    id="show-password"
-                                    name="show-password"
-                                    type="checkbox"
-                                    className="auth-checkbox-input" // New class
-                                    checked={showPassword}
-                                    onChange={() => setShowPassword(!showPassword)}
-                                />
-                                <label htmlFor="show-password"className='auth-checkbox-label' > {/* New class */}
-                                    Show password
-                                </label>
-                            </div>
+                            <input
+                                id="show-password"
+                                name="show-password"
+                                type="checkbox"
+                                className="auth-checkbox-input" // New class
+                                checked={showPassword}
+                                onChange={() => setShowPassword(!showPassword)}
+                            />
+                            <label htmlFor="show-password" className='auth-checkbox-label' > {/* New class */}
+                                Show password
+                            </label>
+                        </div>
 
                         {error && (
                             <div className="error-message p-4 flex items-center rounded-md"> {/* Reusing .error-message, added padding and flex for icon */}
@@ -145,8 +139,9 @@ const LoginPage: React.FC = () => {
                     </form>
 
                     <div className="signup-link">
-                        <Link href="/sign-up">
-                            Don't have an account? Sign up
+                    Don't have an account?
+                        <Link href="/sign-up/check-email">
+                            Sign up
                         </Link>
                     </div>
                 </div>
