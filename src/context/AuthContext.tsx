@@ -5,6 +5,15 @@ import api from '@/services/api'
 import authService from '@/services/authService'
 import { useRouter, usePathname } from 'next/navigation'
 
+/**
+ * AuthContext Type Definition
+ * Defines the shape of our authentication context with:
+ * - isAuthenticated: boolean flag for auth state
+ * - user: current user data
+ * - loading: loading state during auth checks
+ * - checkAuth: function to verify authentication
+ * - signOut: function to handle user logout
+ */
 interface AuthContextType {
   isAuthenticated: boolean
   user: any
@@ -13,21 +22,41 @@ interface AuthContextType {
   signOut: () => Promise<void>
 }
 
+// Create the context with undefined as initial value
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+/**
+ * AuthProvider Component
+ * 
+ * This is the main authentication provider that:
+ * 1. Manages authentication state
+ * 2. Provides authentication methods
+ * 3. Handles automatic auth checks
+ * 4. Manages user session
+ */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
 
+  // Helper function to identify authentication-related pages
   const isAuthPage = (path: string) => {
     return path?.includes('/sign-in') || 
            path?.includes('/sign-up') || 
            path?.includes('/check-email');
   }
 
+  /**
+   * checkAuth Function
+   * Verifies the user's authentication status by:
+   * 1. Making an API call to /auth/me
+   * 2. Setting user data if authenticated
+   * 3. Clearing auth state if not authenticated
+   * 4. Managing loading state
+   */
   const checkAuth = async () => {
     try {
       const response = await api.get('/auth/me')
@@ -45,6 +74,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  /**
+   * signOut Function
+   * Handles user logout by:
+   * 1. Calling backend logout endpoint
+   * 2. Clearing local auth state
+   * 3. Removing JWT cookie
+   * 4. Redirecting to sign-in page
+   */
   const signOut = async () => {
     try {
       await authService.signOut()
@@ -58,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
  
+  // Effect: Check authentication status on mount and route changes
   useEffect(() => {
     // Only check auth if we're not on an auth page
     if (!isAuthPage(pathname)) {
@@ -67,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [pathname])
 
+  // Provide authentication context to children
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, loading, checkAuth, signOut }}>
       {children}
@@ -74,6 +113,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+/**
+ * useAuth Hook
+ * Custom hook to access authentication context
+ * Throws error if used outside of AuthProvider
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) throw new Error('useAuth must be used within AuthProvider')

@@ -1,5 +1,5 @@
 // src/services/authService.ts
-import { LoginCredentials, RegistrationData, UserSignUpDTO } from '@/types/auth';
+import {UserSignUpDTO } from '@/types/auth';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
 import { User } from '@/types/user';
