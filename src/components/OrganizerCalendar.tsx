@@ -7,8 +7,12 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import { CalendarEvent } from '@/types/event';
 import { eventService } from '@/services';
 import { formatDateTime } from '@/helpers/eventHelpers';
+import { useAuth } from '@/context/AuthContext';
 
 export default function OrganizerCalendar() {
+  const { user } = useAuth();
+
+  
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +22,7 @@ export default function OrganizerCalendar() {
       setLoading(true);
       setError(null);
       try {
-        const response = await eventService.getCalendarEvents(1);
+        const response = await eventService.getCalendarEvents(user.id);
         setEvents(response);
       } catch (e: any) {
         setError(`Failed to load events: ${e.message || 'Unknown error'}`);

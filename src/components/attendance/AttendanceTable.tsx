@@ -41,10 +41,6 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
 
     return (
         <div>
-            {/* Optional Title for the Table */}
-            {/* {selectedSessionName && (
-                <h3>Participants Attendance - {selectedSessionName}</h3>
-             )} */}
 
             {/* Display current range and total */}
             {totalItems > 0 && (

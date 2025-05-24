@@ -57,21 +57,6 @@ const authService = {
     }
   },
 
-  // // Function to check if the user is currently authenticated (e.g., validates token/session)
-  // checkAuthStatus: async (): Promise<AuthSuccessResponse | null> => { // Returns user data or null
-  //   try {
-  //     const response = await api.get('/auth/status');
-  //     if (response.status === 200) {
-  //       return response.data as AuthSuccessResponse; // Return user data
-  //     }
-  //     return null;
-  //   } catch (error) {
-  //     console.error('Auth status check failed:', error);
-  //     // Handle specific errors like 401 if interceptor doesn't cover it
-  //     return null;
-  //   }
-  // },
-
   signOut: async (): Promise<void> => {
     try {
       // Call backend logout endpoint to clear the cookie

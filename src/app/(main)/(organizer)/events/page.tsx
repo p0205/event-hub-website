@@ -6,8 +6,10 @@ import Link from 'next/link'; // Import Link for navigation
 import EventCard from '@/components/organizers/events/EventCard'; // Import the reusable card component
 import { EventStatus, SimpleEvent } from '@/types/event';
 import { eventService } from '@/services';
+import { useAuth } from '@/context/AuthContext';
 
 export default function EventsLandingPage() {
+  const { user } = useAuth();
   const [activeEvents, setActiveEvents] = useState<SimpleEvent[]>([]);
   const [pendingEvents, setPendingEvents] = useState<SimpleEvent[]>([]);
   const [completedEvents, setCompletedEvents] = useState<SimpleEvent[]>([]);
@@ -65,7 +67,7 @@ export default function EventsLandingPage() {
       setLoading(true);
       setError(null);
       try {
-        const eventList = await eventService.fetchEvents(1); // Pass the organizerId if needed
+        const eventList = await eventService.fetchEvents(user.id); // Pass the organizerId if needed
         setActiveEvents(eventList.activeEvents);
         setPendingEvents(eventList.pendingEvents);
         setCompletedEvents(eventList.completedEvents);

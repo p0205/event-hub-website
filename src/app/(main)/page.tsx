@@ -1,18 +1,15 @@
+'use client';
 
 import StatsCards from "@/components/StatsCards";
 import SummaryCards from "@/components/SummaryCards";
 import OrganizerCalendar from "@/components/OrganizerCalendar";
-// import { getUserFromCookie } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { useAuth } from '@/context/AuthContext';
 
-export default async function Home() {
-  // const user = await getUserFromCookie();
+export default function Home() {
+  const { user } = useAuth();
+  console.log(user.id);
   
-  //   if (!user) {
-  //     redirect('/sign-in'); // this will not render anything before redirect
-  //   }
   return (
-
     <div>
       {/* Topbar */}
   
