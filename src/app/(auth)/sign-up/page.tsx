@@ -2,22 +2,21 @@
 'use client';
 
 import { authService } from '@/services';
-import { useSearchParams } from 'next/navigation';
-
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import React, { useState, FormEvent } from 'react';
 
 const SignUpPage: React.FC = () => {
   const searchParams = useSearchParams();
-  // const router = useRouter();
+  const router = useRouter();
+  const { checkAuth } = useAuth();
 
   const [name, setName] = useState(searchParams.get('name') || '');
   const [email, setEmail] = useState(searchParams.get('email') || '');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,13 +42,12 @@ const SignUpPage: React.FC = () => {
       return;
     }
 
-    console.log('Form submitted:', { name, email, password, phoneNumber });
     try {
-      authService.signUp(email, phoneNumber, password);
-      alert('Account created successfully!');
+      await authService.signUp(email, phoneNumber, password);
+      await checkAuth(); // Check auth status after successful sign-up
+      router.replace('/'); // Redirect to home page
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
-
     } finally {
       setIsLoading(false);
     }

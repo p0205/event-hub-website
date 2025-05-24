@@ -3,39 +3,24 @@ import axios from 'axios';
 import qs from 'qs';
 
 // Use an environment variable for the backend API URL
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8080';
+const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: BACKEND_API_URL,
   withCredentials: true, // IMPORTANT: send cookies with every request
   paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' }),
-
 });
 
 // Optional: Add a request interceptor to include auth tokens
 api.interceptors.request.use(
   config => {
-
     return config;
   },
   error => {
-    // Do something with request error
     return Promise.reject(error);
   }
 );
 
-// Optional: Add a response interceptor for global error handling or token refresh
-// api.interceptors.response.use(
-//   response => response,
-//   error => {
-//     // Handle global API errors (e.g., log out user on 401 Unauthorized)
-//     if (error.response && error.response.status === 401) {
-//       // Redirect to login page, clear auth state, etc.
-//       console.error('Unauthorized request, redirecting to login...');
-//       // window.location.href = '/login'; // Client-side redirect example
-//     }
-//     return Promise.reject(error);
-//   }
-// );
+
 
 export default api;

@@ -6,6 +6,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { authService } from '@/services';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 
 // import Image from 'next/image'; // If you have a logo
@@ -19,6 +20,7 @@ const LoginPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
+    const { checkAuth } = useAuth();
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -33,7 +35,8 @@ const LoginPage: React.FC = () => {
 
         try {
             await authService.signIn(email, password);
-            router.push('/');
+            await checkAuth(); // Check auth status after successful login
+            router.replace('/');
         } catch (err: any) {
             setError(err.message || 'An unexpected error occurred.');
         } finally {

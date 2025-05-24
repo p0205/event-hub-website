@@ -72,13 +72,12 @@ const authService = {
   //   }
   // },
 
-  logout: async (): Promise<void> => {
+  signOut: async (): Promise<void> => {
     try {
       // Call backend logout endpoint to clear the cookie
-      const response = await api.post('/auth/logout');
-      return response.data; // e.g., logout success message
+      await api.post('/auth/sign-out');
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Logout failed');
+      throw new Error(error.response?.data?.message || 'Sign Out failed');
     }
   },
 };

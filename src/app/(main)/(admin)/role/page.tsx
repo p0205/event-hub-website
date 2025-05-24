@@ -28,7 +28,7 @@ export default function ManageRolePage() {
     const fetchRoles = async () => {
         try {
             setLoading(true);
-            const data = await roleService.fetchRoles(currentPage,pageSize);
+            const data = await roleService.fetchRolesInPages(currentPage,pageSize);
             setRoles(data.content);
             setTotalItems(data.totalElements);
             setTotalPages(data.totalPages);

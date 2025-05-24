@@ -24,8 +24,8 @@ const roleService = {
         return response.data;
     },
 
-    fetchRoles: async (pageNumber?:number, pageSize?:number): Promise<PageData<Role>> => { 
-        const response = await api.get<PageData<Role>>(`/role`,{
+    fetchRolesInPages: async (pageNumber?:number, pageSize?:number): Promise<PageData<Role>> => { 
+        const response = await api.get<PageData<Role>>(`/role/inPages`,{
             params:{
                 pageNumber,
                 pageSize
@@ -36,6 +36,17 @@ const roleService = {
         }
         return response.data;
     },
+
+    fetchRoles: async (): Promise<Role[]> => { 
+        const response = await api.get<Role[]>(`/role`);
+        if(response.status !== HttpStatusCode.Ok) {
+            throw new Error('Failed to fetch role');
+        }
+        return response.data;
+    },
+
+
+
 
     // Function to check if the user is currently authenticated (e.g., validates token/session)
     deleteRole: async (id: number): Promise<void> => { // Returns user data or null

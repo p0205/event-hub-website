@@ -1,4 +1,5 @@
 // src/app/layout.tsx
+import AuthGuard from '@/components/AuthGuard';
 import './globals.css'; // Make sure your global styles are imported here
 
 import { AuthProvider } from '@/context/AuthContext';
@@ -18,12 +19,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          {/*
-            The children prop here will be the content of either:
-            - The layout.tsx within a route group (e.g., app/(main)/layout.tsx)
-            - A page.tsx directly under app/ or another route group without a layout.tsx (e.g., app/signup/page.tsx)
-          */}
-          {children}
+        <AuthGuard>
+            {children}
+          </AuthGuard>
         </AuthProvider>
         <Toaster richColors position="bottom-center" /> {/* Global Toaster */}
       </body>

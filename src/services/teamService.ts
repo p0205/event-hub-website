@@ -2,36 +2,18 @@
 import { Role, SearchUserInTeam, TeamMember } from '@/types/event';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
-import { pages } from 'next/dist/build/templates/app-page';
 import { PageData } from '@/types/api';
 
 const teamService = {
 
     getRoles: async (): Promise<Role[]> => {
-        const response = await api.get('/roles');
+        const response = await api.get('/role');
         if (response.status !== HttpStatusCode.Ok) {
             throw new Error('Failed to fetch roles');
         }
         return response.data; // axios puts the response body in .data
 
     },// Replace 'any' with actual types
-
-    addTeamMember: async (eventId: number, userId: number, roleId: number): Promise<string> => { // Replace 'any' with actual types
-        console.log("eventId", eventId);
-        console.log("userId", userId);
-        console.log("roleId", roleId);
-        const response = await api.post(`/events/${eventId}/teams`, null, {
-            params: {
-                userId: userId,
-                roleId: roleId
-            }
-        });
-
-        if (response.status !== HttpStatusCode.Created) {
-            return response.data;
-        }
-        return "Add team member successfully."; // axios puts the response body in .data
-    },
 
     addTeamMembers: async (eventId: number, userIds: number[], roleId: number): Promise<string> => { // Replace 'any' with actual types
         console.log("eventId", eventId);

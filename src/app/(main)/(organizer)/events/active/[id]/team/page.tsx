@@ -187,11 +187,7 @@ export default function EventTeamPage() {
             if (isSelected) {
                 return prevSelected.filter(u => u.id !== user.id);
             } else {
-                const isAlreadyMember = teamMembers.some(member => member.userId === user.id);
-                if (isAlreadyMember) {
-                    setAddUsersError(`User ${user.name} is already a team member.`); // Provide feedback
-                    return prevSelected; // Don't add
-                }
+               
                 return [...prevSelected, user];
             }
         });
@@ -464,16 +460,16 @@ export default function EventTeamPage() {
                                         <ul className={styles.resultsList}> {/* Add class for potential styling/scrolling */}
                                             {searchResults.map(user => {
                                                 const isSelected = selectedUsersForAdd.some(u => u.id === user.id);
-                                                const isRoleAssigned = teamMembers.some(member => member.userId === user.id);
+
 
                                                 return (
-                                                    <li key={user.id} className={`${styles["search-result-item"]} ${isSelected ? styles["selected"] : ''} ${isRoleAssigned ? styles["already-member"] : ''}`}>
+                                                    <li key={user.id} className={`${styles["search-result-item"]} ${isSelected ? styles["selected"] : ''} ${user.hasRole ? styles["already-member"] : ''}`}>
                                                         <img src={'/default-avatar.png'} alt={user.name} className={styles["profile-image"]} width={35} height={35} />
                                                         <div className={styles["user-info"]}>
                                                             <div className={styles["user-name"]}>{user.name}</div>
                                                             <div className={styles["user-email"]}>{user.email}</div>
                                                         </div>
-                                                        {isRoleAssigned ? (
+                                                        {user.hasRole ? (
                                                             <span className={styles["already-member-tag"]}>Role Assigned</span>
                                                         ) : (
                                                             <button

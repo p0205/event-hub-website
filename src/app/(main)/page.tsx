@@ -2,9 +2,17 @@
 import StatsCards from "@/components/StatsCards";
 import SummaryCards from "@/components/SummaryCards";
 import OrganizerCalendar from "@/components/OrganizerCalendar";
+// import { getUserFromCookie } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function Home() {
+  // const user = await getUserFromCookie();
+  
+  //   if (!user) {
+  //     redirect('/sign-in'); // this will not render anything before redirect
+  //   }
   return (
+
     <div>
       {/* Topbar */}
   
