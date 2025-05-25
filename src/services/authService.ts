@@ -24,15 +24,12 @@ const authService = {
 
 
   signIn: async (email: string, rawPassword: string): Promise<User | null> => { // Replace 'any' with actual types
-
-
     try {
       // Assuming your backend login endpoint is POST /auth/login
       const response = await api.post('/auth/sign-in', {
         email: email,
         rawPassword: rawPassword
       });
-
       console.log(response.headers);
       return response.data as User; // e.g., user info or success message
     } catch (error: any) {

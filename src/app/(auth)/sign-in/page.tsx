@@ -13,7 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 
 // const LOGO_URL = '/ftmk-logo.png'; // Path to your logo
 
-const LoginPage: React.FC = () => {
+const SignInPage: React.FC = () => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -34,10 +34,10 @@ const LoginPage: React.FC = () => {
         }
 
         try {
-            console.log('Login form: Attempting sign in...');
+            console.log("Before signIn");
             await signIn(email, password);
-            console.log('Login form: Sign in successful');
-            // The AuthGuard component will handle the redirect after successful sign in
+            console.log("After signIn");
+            
         } catch (err: any) {
             console.log('Login form: Sign in failed', err);
             
@@ -58,7 +58,6 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <>
 
             <div className="auth-background-container">
                 <div className='auth-background-overlay'></div>
@@ -145,12 +144,7 @@ const LoginPage: React.FC = () => {
                                 disabled={isLoading}
                                 className="button-primary full-width-button"
                             >
-                                {isLoading && (
-                                    <svg className="auth-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                )}
+                               
                                 {isLoading ? 'Signing In...' : 'Sign In'}
                             </button>
                         </div>
@@ -165,8 +159,8 @@ const LoginPage: React.FC = () => {
                 </div>
             </div>
 
-        </>
+      
     );
 };
 
-export default LoginPage;
+export default SignInPage;

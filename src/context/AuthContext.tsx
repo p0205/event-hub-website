@@ -92,14 +92,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(true)
         setInitialized(true)
         console.log(`Login successful - User: ${response.email}`)
-        
+        router.replace('/'); // Navigate immediately
         // Redirect to home page after successful sign-in
-        router.replace('/')
+        // router.replace('/')
       } else {
         throw new Error('No user data received from login')
       }
     } catch (error) {
-      console.error('Error during sign in:', error)
+      console.error(error)
       throw error
     } finally {
       setLoading(false)
@@ -142,11 +142,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [checkAuth, initialized])
 
   // Handle pathname changes for authenticated users
-  useEffect(() => {
-    if (initialized && isAuthenticated && isAuthPage(pathname)) {
-      router.replace('/')
-    }
-  }, [pathname, isAuthenticated, initialized, router, isAuthPage])
+  // useEffect(() => {
+  //   if (initialized && isAuthenticated && isAuthPage(pathname)) {
+  //     router.replace('/')
+  //   }
+  // }, [pathname, isAuthenticated, initialized, router, isAuthPage])
 
   // Debug logging
   useEffect(() => {
