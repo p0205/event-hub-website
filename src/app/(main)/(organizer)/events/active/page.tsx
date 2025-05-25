@@ -23,6 +23,7 @@ import {
     formatDateTime, // Helper to format date and time (for created at)
 } from '@/helpers/eventHelpers';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 
 // The page component is defined as an async function.
@@ -32,8 +33,7 @@ export default function ActiveEventsPage() {
     const [activeEvents, setActiveEvents] = useState<SimpleEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
-    const currentUserId = 1; // TODO: Replace with actual logged-in user ID
+    const {user} = useAuth();
 
     // Effect 1: Fetch main event details
     useEffect(() => {
@@ -44,7 +44,7 @@ export default function ActiveEventsPage() {
         setActiveEvents([]); // Reset event data on new fetch
   
         try {
-          const activeEvents = await eventService.getEventsByStatus(currentUserId,EventStatus.ACTIVE);
+          const activeEvents = await eventService.getEventsByStatus(user.id,EventStatus.ACTIVE);
           if (!activeEvents) {
             throw new Error('Failed to fetch active events');
           }

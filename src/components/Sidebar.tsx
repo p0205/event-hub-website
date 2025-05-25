@@ -24,8 +24,8 @@ export default function Sidebar() {
       try {
         await authService.signOut();
         // Clear auth state and redirect
-        router.replace('/sign-in');
-        checkAuth();
+        // router.replace('/sign-in');
+        await checkAuth();
         // Or redirect to login page
 
       } catch (error) {

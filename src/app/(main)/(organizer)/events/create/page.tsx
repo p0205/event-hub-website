@@ -14,6 +14,7 @@ import budgetCategoryService from '@/services/budgetCategoryService';
 import { Time } from "@internationalized/date";
 import { TimeInput } from "@heroui/react";
 import { formatDateTime, parseTimeString } from '@/helpers/eventHelpers';
+import { useAuth } from '@/context/AuthContext';
 // import { useRouter } from 'next/navigation'; // Import if using router for navigation
 
 
@@ -36,10 +37,11 @@ const createDefaultSession = (): CreateSessionData => ({
 export default function CreateEventPage() {
     const router = useRouter(); // Initialize router for navigation
     // const router = useRouter(); // Initialize router if needed for navigation
+    const { user } = useAuth();
     const [formData, setFormData] = useState<CreateEventData>({
         name: '',
         description: '',
-        organizerId: 1, // Replace with actual organizer ID logic
+        organizerId: user.id, // Replace with actual organizer ID logic
 
         participantsNo: '',
         sessions: [],
@@ -77,7 +79,7 @@ export default function CreateEventPage() {
 
     useEffect(() => {
         console.log("Fetching venues...");
-      
+
         // Define the asynchronous function that will perform the fetch
         const fetchVenues = async () => {
             console.log("Inside fetchVenues");
@@ -904,7 +906,8 @@ export default function CreateEventPage() {
                                             aria-label={`Start time for session ${session.sessionName}`}
                                             value={session.startTimeOnly ? parseTimeString(session.startTimeOnly) : null}
                                             onChange={(time) => {
-                                                if(time) handleSessionTimeChange(session.id, 'startTimeOnly', time)}
+                                                if (time) handleSessionTimeChange(session.id, 'startTimeOnly', time)
+                                            }
                                             }
                                             hourCycle={24}
                                             granularity="minute"
@@ -917,7 +920,7 @@ export default function CreateEventPage() {
                                         <TimeInput
                                             aria-label={`End time for session ${session.sessionName}`}
                                             value={session.endTimeOnly ? parseTimeString(session.endTimeOnly) : null}
-                                            onChange={(time) => { if (time) handleSessionTimeChange(session.id, 'endTimeOnly', time)}}
+                                            onChange={(time) => { if (time) handleSessionTimeChange(session.id, 'endTimeOnly', time) }}
                                             onBlur={() => handleTimeValidation(session.id)} // Validation on blur
                                             hourCycle={24}
                                             granularity="minute"

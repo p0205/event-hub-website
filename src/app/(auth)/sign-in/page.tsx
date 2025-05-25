@@ -144,7 +144,7 @@ const LoginPage: React.FC = () => {
                     </form>
 
                     <div className="signup-link">
-                        Don't have an account?
+                        Don't have an account? {' '}
                         <Link href="/sign-up/check-email">
                             Sign up
                         </Link>

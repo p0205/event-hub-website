@@ -104,7 +104,7 @@ export default function BreadcrumbSlot() {
                     <BreadcrumbLink href="/events/pending">Pending</BreadcrumbLink>
                     For now, using "Active" as per your original code.
                 */}
-                <BreadcrumbLink href="/events/active">Active Events</BreadcrumbLink>
+                <BreadcrumbLink href="/events/active">Active</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

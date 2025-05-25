@@ -73,11 +73,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   // Show loading spinner while checking authentication
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    )
+    return ;
+    // (
+    //   <div className="flex items-center justify-center min-h-screen">
+    //     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    //   </div>
+    // )
   }
 
   // Show redirect message for unauthenticated users
@@ -85,8 +86,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center p-8 bg-white rounded-lg shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Authentication Required</h2>
-          <p className="text-gray-600 mb-4">You need to be signed in to access this page.</p>
           <p className="text-gray-500">Redirecting to sign-in page in {countdown} seconds...</p>
         </div>
       </div>

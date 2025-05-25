@@ -23,6 +23,7 @@ import {
     formatDateTime, // Helper to format date and time (for created at)
 } from '@/helpers/eventHelpers';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 
 // The page component is defined as an async function.
@@ -32,54 +33,53 @@ export default function PendingEventsPage() {
     const [pendingEvents, setPendingEvents] = useState<SimpleEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
-    const currentUserId = 1; // TODO: Replace with actual logged-in user ID
 
+    const { user } = useAuth();
     // Effect 1: Fetch main event details
     useEffect(() => {
-      // Only fetch if eventId is a valid number
-      const fetchPendingEvents = async () => {
-        setLoading(true);
-        setError(null);
-        setPendingEvents([]); // Reset event data on new fetch
-  
-        try {
-          const pendingEvents = await eventService.getEventsByStatus(currentUserId,EventStatus.PENDING);
-          if (!pendingEvents) {
-            throw new Error('Failed to fetch active events');
-          }
-          console.log('Fetched Event:', pendingEvents); // Debug log
-          setPendingEvents(pendingEvents);
-        } catch (e: any) {
-          console.error("Failed to fetch active events:", e);
-          setError(e.message || "Failed to fetch active events. Please try again.");
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchPendingEvents();
-    }, []); 
-  
+        // Only fetch if eventId is a valid number
+        const fetchPendingEvents = async () => {
+            setLoading(true);
+            setError(null);
+            setPendingEvents([]); // Reset event data on new fetch
+
+            try {
+                const pendingEvents = await eventService.getEventsByStatus(user.id, EventStatus.PENDING);
+                if (!pendingEvents) {
+                    throw new Error('Failed to fetch active events');
+                }
+                console.log('Fetched Event:', pendingEvents); // Debug log
+                setPendingEvents(pendingEvents);
+            } catch (e: any) {
+                console.error("Failed to fetch active events:", e);
+                setError(e.message || "Failed to fetch active events. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPendingEvents();
+    }, []);
+
     // --- Conditional Rendering based on Fetch Result ---
 
     // If there was an error during fetching, display an error message page.
     if (error) {
-         return (
-              <div className="page-container"> {/* Use global page container style */}
-                  <h1>Pending Events</h1>
-                  <p className="error-message">{error}</p> {/* Display the specific error message */}
-              </div>
-         );
+        return (
+            <div className="page-container"> {/* Use global page container style */}
+                <h1>Pending Events</h1>
+                <p className="error-message">{error}</p> {/* Display the specific error message */}
+            </div>
+        );
     }
 
     // If no active events were found after fetching, display a message.
     if (pendingEvents.length === 0) {
-         return (
-              <div className="page-container"> {/* Use global page container style */}
-                  <h1>Pending Events</h1>
-                  <p className="info-message">No pending events found at this time.</p> {/* Use info-message class */}
-              </div>
-         );
+        return (
+            <div className="page-container"> {/* Use global page container style */}
+                <h1>Pending Events</h1>
+                <p className="info-message">No pending events found at this time.</p> {/* Use info-message class */}
+            </div>
+        );
     }
 
 
