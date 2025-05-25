@@ -26,6 +26,7 @@ api.interceptors.response.use(
   response => response,
   error => {
     if (error.response?.status === 401) {
+      
       // Check if we're in a browser environment
       if (typeof window !== 'undefined') {
         // Only redirect if we're not already on an auth page
@@ -36,8 +37,8 @@ api.interceptors.response.use(
                           currentPath.includes('/check-email')
         
         const isAuthApiCall = error.config?.url?.includes('/auth/me') ||
-                             error.config?.url?.includes('/auth/signin') ||
-                             error.config?.url?.includes('/auth/signout')
+                             error.config?.url?.includes('/auth/sign-in') ||
+                             error.config?.url?.includes('/auth/sign-out')
 
         // Don't redirect if:
         // 1. We're already on an auth page, OR

@@ -15,9 +15,9 @@ export function middleware(request: NextRequest) {
   const isAuthPath = authPaths.some(path => pathname.startsWith(path))
 
   // If accessing protected route without token, redirect to sign-in
-  if (isProtectedPath && !token) {
-    return NextResponse.redirect(new URL('/sign-in', request.url))
-  }
+  // if (isProtectedPath && !token) {
+  //   return NextResponse.redirect(new URL('/sign-in', request.url))
+  // }
 
   // If signed in and trying to access auth pages, redirect to home
   if (token && isAuthPath) {

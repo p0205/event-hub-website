@@ -34,11 +34,24 @@ const LoginPage: React.FC = () => {
         }
 
         try {
+            console.log('Login form: Attempting sign in...');
             await signIn(email, password);
-            // await checkAuth(); // Check auth status after successful login
-            // router.replace('/');
+            console.log('Login form: Sign in successful');
+            // The AuthGuard component will handle the redirect after successful sign in
         } catch (err: any) {
-            setError(err.message || 'An unexpected error occurred.');
+            console.log('Login form: Sign in failed', err);
+            
+            // Handle specific error messages from the API
+            let errorMessage = 'An unexpected error occurred. Please try again.';
+            
+            if (err.message) {
+                errorMessage = err.message;
+            } else if (err.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            }
+            
+            console.log('Login form: Setting error message:', errorMessage);
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
