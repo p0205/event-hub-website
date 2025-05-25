@@ -20,7 +20,7 @@ const LoginPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
-    const { checkAuth } = useAuth();
+    const { signIn } = useAuth();
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -34,9 +34,9 @@ const LoginPage: React.FC = () => {
         }
 
         try {
-            await authService.signIn(email, password);
-            await checkAuth(); // Check auth status after successful login
-            router.replace('/');
+            await signIn(email, password);
+            // await checkAuth(); // Check auth status after successful login
+            // router.replace('/');
         } catch (err: any) {
             setError(err.message || 'An unexpected error occurred.');
         } finally {

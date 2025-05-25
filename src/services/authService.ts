@@ -1,14 +1,31 @@
 // src/services/authService.ts
-import {UserSignUpDTO } from '@/types/auth';
+import { UserSignUpDTO } from '@/types/auth';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
 import { User } from '@/types/user';
 // import { User, LoginCredentials, RegistrationData } from '@/types/user'; // Assuming types
 
 const authService = {
-  signIn: async (email: string, rawPassword: string): Promise<string> => { // Replace 'any' with actual types
 
-    
+  checkAuth: async (): Promise<User | null> => { // Replace 'any' with actual types
+
+
+    try {
+      // Assuming your backend login endpoint is POST /auth/login
+      const response = await api.get('/auth/me');
+
+      console.log(response.headers);
+      return response.data; // e.g., user info or success message
+    } catch (error: any) {
+      // Handle login error (wrong credentials, server error, etc.)
+      throw new Error(error.response?.data?.message || 'Login failed');
+    }
+  },
+
+
+  signIn: async (email: string, rawPassword: string): Promise<User | null> => { // Replace 'any' with actual types
+
+
     try {
       // Assuming your backend login endpoint is POST /auth/login
       const response = await api.post('/auth/sign-in', {
@@ -16,8 +33,8 @@ const authService = {
         rawPassword: rawPassword
       });
 
-        console.log(response.headers);
-      return response.data; // e.g., user info or success message
+      console.log(response.headers);
+      return response.data as User; // e.g., user info or success message
     } catch (error: any) {
       // Handle login error (wrong credentials, server error, etc.)
       throw new Error(error.response?.data?.message || 'Login failed');

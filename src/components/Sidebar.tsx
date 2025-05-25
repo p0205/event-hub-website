@@ -15,17 +15,18 @@ import { authService } from '@/services';
 import { useAuth } from '@/context/AuthContext'
 
 export default function Sidebar() {
-  const { checkAuth } = useAuth(); // Get user and loading state from AuthContext
+  // const { checkAuth } = useAuth(); // Get user and loading state from AuthContext
   const pathname = usePathname(); // Get current path to highlight active link
   const router = useRouter();
+  const {signOut} = useAuth();
 
   const handleLogout = async () => {
     if (confirm("Are you sure to sign out?")) {
       try {
-        await authService.signOut();
+        await signOut();
         // Clear auth state and redirect
         // router.replace('/sign-in');
-        await checkAuth();
+        // await checkAuth();
         // Or redirect to login page
 
       } catch (error) {

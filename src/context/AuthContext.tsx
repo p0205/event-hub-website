@@ -1,123 +1,172 @@
 // src/contexts/AuthContext.tsx
 'use client'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import api from '@/services/api'
 import authService from '@/services/authService'
 import { useRouter, usePathname } from 'next/navigation'
+import { User } from '@/types/user'
 
-/**
- * AuthContext Type Definition
- * Defines the shape of our authentication context with:
- * - isAuthenticated: boolean flag for auth state
- * - user: current user data
- * - loading: loading state during auth checks
- * - checkAuth: function to verify authentication
- * - signOut: function to handle user logout
- */
 interface AuthContextType {
   isAuthenticated: boolean
-  user: any
+  user: User | null
   loading: boolean
-  checkAuth: () => Promise<void>
+  signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
+  checkAuth: () => Promise<void>
 }
 
-// Create the context with undefined as initial value
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-/**
- * AuthProvider Component
- * 
- * This is the main authentication provider that:
- * 1. Manages authentication state
- * 2. Provides authentication methods
- * 3. Handles automatic auth checks
- * 4. Manages user session
- */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [initialized, setInitialized] = useState(false) // Track if auth has been initialized
   const router = useRouter()
   const pathname = usePathname()
 
   // Helper function to identify authentication-related pages
-  const isAuthPage = (path: string) => {
+  const isAuthPage = useCallback((path: string) => {
     return path?.includes('/sign-in') || 
            path?.includes('/sign-up') || 
-           path?.includes('/check-email');
-  }
+           path?.includes('/check-email')
+  }, [])
 
   /**
    * checkAuth Function
-   * Verifies the user's authentication status by:
-   * 1. Making an API call to /auth/me
-   * 2. Setting user data if authenticated
-   * 3. Clearing auth state if not authenticated
-   * 4. Managing loading state
+   * Verifies the user's authentication status by checking with the backend
    */
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
+    // Don't check auth multiple times if already loading
+    if (loading && initialized) {
+      return
+    }
+
     try {
-      const response = await api.get('/auth/me')
-      setUser(response.data)
-      setIsAuthenticated(true)
+      setLoading(true)
+      
+      console.log('Checking authentication...')
+      const response = await authService.checkAuth()
+      
+      if (response) {
+        setUser(response)
+        setIsAuthenticated(true)
+        console.log(`Auth check successful - User: ${response.email}`)
+        
+        // If user is authenticated and on auth page, redirect to home
+        if (isAuthPage(pathname)) {
+          router.replace('/')
+        }
+      } else {
+        throw new Error('No user data received')
+      }
     } catch (error) {
+      console.log('Auth check failed:', error)
       setIsAuthenticated(false)
       setUser(null)
-      // Only clear cookie if we're not on an auth page
+      
+      // Only redirect to sign-in if we're on a protected page
+      // and not already on an auth page
       if (!isAuthPage(pathname)) {
-        document.cookie = 'jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+        // Clear the invalid cookie
+        if (typeof document !== 'undefined') {
+          document.cookie = 'jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+        }
+        router.replace('/sign-in')
       }
+    } finally {
+      setLoading(false)
+      setInitialized(true)
+    }
+  }, [pathname, router, isAuthPage, loading, initialized])
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      setLoading(true)
+      console.log('Attempting sign in...')
+      
+      const response = await authService.signIn(email, password)
+      
+      if (response) {
+        setUser(response)
+        setIsAuthenticated(true)
+        setInitialized(true)
+        console.log(`Login successful - User: ${response.email}`)
+        
+        // Redirect to home page after successful sign-in
+        router.replace('/')
+      } else {
+        throw new Error('No user data received from login')
+      }
+    } catch (error) {
+      console.error('Error during sign in:', error)
+      throw error
     } finally {
       setLoading(false)
     }
   }
 
-  /**
-   * signOut Function
-   * Handles user logout by:
-   * 1. Calling backend logout endpoint
-   * 2. Clearing local auth state
-   * 3. Removing JWT cookie
-   * 4. Redirecting to sign-in page
-   */
   const signOut = async () => {
     try {
+      setLoading(true)
       await authService.signOut()
       setIsAuthenticated(false)
       setUser(null)
+      setInitialized(true)
+      
       // Clear the cookie
-      document.cookie = 'jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+      if (typeof document !== 'undefined') {
+        document.cookie = 'jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+      }
       router.replace('/sign-in')
     } catch (error) {
       console.error('Error during sign out:', error)
-    }
-  }
- 
-  // Effect: Check authentication status on mount and route changes
-  useEffect(() => {
-    // Only check auth if we're not on an auth page
-    if (!isAuthPage(pathname)) {
-      checkAuth()
-    } else {
+      // Even if API call fails, clear local state
+      setIsAuthenticated(false)
+      setUser(null)
+      setInitialized(true)
+      if (typeof document !== 'undefined') {
+        document.cookie = 'jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+      }
+      router.replace('/sign-in')
+    } finally {
       setLoading(false)
     }
-  }, [pathname])
+  }
 
-  // Provide authentication context to children
+  // Check auth only on initial mount
+  useEffect(() => {
+    if (!initialized) {
+      checkAuth()
+    }
+  }, [checkAuth, initialized])
+
+  // Handle pathname changes for authenticated users
+  useEffect(() => {
+    if (initialized && isAuthenticated && isAuthPage(pathname)) {
+      router.replace('/')
+    }
+  }, [pathname, isAuthenticated, initialized, router, isAuthPage])
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Auth State:', { isAuthenticated, user: user?.email, loading, initialized })
+  }, [isAuthenticated, user, loading, initialized])
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, loading, checkAuth, signOut }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      loading, 
+      signIn, 
+      signOut, 
+      checkAuth 
+    }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
-/**
- * useAuth Hook
- * Custom hook to access authentication context
- * Throws error if used outside of AuthProvider
- */
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) throw new Error('useAuth must be used within AuthProvider')
