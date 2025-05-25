@@ -1,16 +1,16 @@
 // src/app/@breadcrumb/events/active/[id]/participants/page.tsx
-"use client"; // <--- Add this directive
+"use client"; 
 
-import { useEffect, useState } from 'react'; // <--- Import React hooks
-import { useParams, notFound } from 'next/navigation'; // <--- Import useParams for client-side param access
+import { useEffect, useState } from 'react'; 
+import { useParams } from 'next/navigation'; 
 import {
-    BreadcrumbItem, // <--- Assuming this comes from your local components
+    BreadcrumbItem,
     BreadcrumbLink,
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator
-} from '@/components/Breadcrumbs'; // Adjust path as needed
-import eventService from '@/services/eventService'; // Adjust path as needed
+} from '@/components/Breadcrumbs'; 
+import eventService from '@/services/eventService'; 
 
 export default function ParticipantsBreadcrumbSlot() {
     const params = useParams<{ id: string }>(); // <--- Get params using the hook

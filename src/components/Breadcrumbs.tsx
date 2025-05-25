@@ -1,18 +1,40 @@
-
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+// Example of how to use the Breadcrumb component:
+// <Breadcrumb>
+//   <BreadcrumbList>
+//     <BreadcrumbItem>
+//       <BreadcrumbLink href="/">Home</BreadcrumbLink>
+//     </BreadcrumbItem>
+//     <BreadcrumbSeparator />
+//     <BreadcrumbItem>
+//       <BreadcrumbLink href="/events">Events</BreadcrumbLink>
+//     </BreadcrumbItem>
+//     <BreadcrumbSeparator />
+//     <BreadcrumbItem>
+//       <BreadcrumbPage>Current Page</BreadcrumbPage>
+//     </BreadcrumbItem>
+//   </BreadcrumbList>
+// </Breadcrumb>
+
+// Main Breadcrumb container component
+// This is like a container that holds all the breadcrumb items
+// It's rendered as a <nav> element for proper semantic HTML
 const Breadcrumb = React.forwardRef<
 	HTMLElement,
 	React.ComponentPropsWithoutRef<"nav"> & {
-		separator?: React.ReactNode;
+		separator?: React.ReactNode; // Optional custom separator between items
 	}
 >(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />);
 Breadcrumb.displayName = "Breadcrumb";
 
+// BreadcrumbList component - renders as an ordered list (ol)
+// This is like a list that holds all the breadcrumb items
+// It provides consistent spacing and styling for all items
 const BreadcrumbList = React.forwardRef<
 	HTMLOListElement,
 	React.ComponentPropsWithoutRef<"ol">
@@ -28,6 +50,9 @@ const BreadcrumbList = React.forwardRef<
 ));
 BreadcrumbList.displayName = "BreadcrumbList";
 
+// BreadcrumbItem component - renders as a list item (li)
+// Each individual breadcrumb item is wrapped in this component
+// For example: "Home", "Events", "Current Page" are each BreadcrumbItems
 const BreadcrumbItem = React.forwardRef<
 	HTMLLIElement,
 	React.ComponentPropsWithoutRef<"li">
@@ -40,14 +65,19 @@ const BreadcrumbItem = React.forwardRef<
 ));
 BreadcrumbItem.displayName = "BreadcrumbItem";
 
+// BreadcrumbLink component - renders as a Next.js Link component
+// This is used for clickable breadcrumb items that navigate to other pages
+// For example: "Home" and "Events" are BreadcrumbLinks
+// Uses Next.js Link for client-side navigation instead of regular <a> tags
+// This means clicking these links won't refresh the entire page
 const BreadcrumbLink = React.forwardRef<
 	HTMLAnchorElement,
 	Omit<React.ComponentPropsWithoutRef<"a">, "href"> & {
-		asChild?: boolean;
-		href: string;
+		asChild?: boolean; // Allows the component to be rendered as a child component
+		href: string; // Required URL for navigation
 	}
 >(({ asChild, className, ...props }, ref) => {
-	const Comp = asChild ? Slot : Link;
+	const Comp = asChild ? Slot : Link; // Use Slot if asChild is true, otherwise use Next.js Link
 
 	return (
 		<Comp
@@ -59,6 +89,9 @@ const BreadcrumbLink = React.forwardRef<
 });
 BreadcrumbLink.displayName = "BreadcrumbLink";
 
+// BreadcrumbPage component - renders as a span
+// Used for the current page in the breadcrumb trail (not clickable)
+// For example: "Current Page" is a BreadcrumbPage
 const BreadcrumbPage = React.forwardRef<
 	HTMLSpanElement,
 	React.ComponentPropsWithoutRef<"span">
@@ -74,6 +107,10 @@ const BreadcrumbPage = React.forwardRef<
 ));
 BreadcrumbPage.displayName = "BreadcrumbPage";
 
+// BreadcrumbSeparator component - renders as a list item
+// Used to visually separate breadcrumb items
+// For example: "Home > Events > Current Page" - the ">" is a BreadcrumbSeparator
+// Default separator is a chevron icon (>) but can be customized
 const BreadcrumbSeparator = ({
 	children,
 	className,
@@ -85,11 +122,15 @@ const BreadcrumbSeparator = ({
 		className={cn("[&>svg]:size-3.5", className)}
 		{...props}
 	>
-		{children ?? <ChevronRight />}
+		{children ?? <ChevronRight />} {/* Use custom separator if provided, otherwise use chevron */}
 	</li>
 );
 BreadcrumbSeparator.displayName = "BreadcrumbSeparator";
 
+// BreadcrumbEllipsis component - renders as a span
+// Used to indicate when there are more breadcrumb items that don't fit
+// For example: "Home > ... > Current Page" - the "..." is a BreadcrumbEllipsis
+// Shows a "more" icon with screen reader text for accessibility
 const BreadcrumbEllipsis = ({
 	className,
 	...props
@@ -101,11 +142,12 @@ const BreadcrumbEllipsis = ({
 		{...props}
 	>
 		<MoreHorizontal className="h-4 w-4" />
-		<span className="sr-only">More</span>
+		<span className="sr-only">More</span> {/* Screen reader text */}
 	</span>
 );
 BreadcrumbEllipsis.displayName = "BreadcrumbElipssis";
 
+// Export all components for use in other parts of the application
 export {
 	Breadcrumb,
 	BreadcrumbList,
