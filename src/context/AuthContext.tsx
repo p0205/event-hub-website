@@ -27,9 +27,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Helper function to identify authentication-related pages
   const isAuthPage = useCallback((path: string) => {
-    return path?.includes('/sign-in') || 
-           path?.includes('/sign-up') || 
-           path?.includes('/check-email')
+    return path?.includes('/sign-in') ||
+      path?.includes('/sign-up') ||
+      path?.includes('/check-email')
   }, [])
 
   /**
@@ -44,15 +44,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setLoading(true)
-      
+
       console.log('Checking authentication...')
       const response = await authService.checkAuth()
-      
+
       if (response) {
         setUser(response)
         setIsAuthenticated(true)
         console.log(`Auth check successful - User: ${response.email}`)
-        
+
         // If user is authenticated and on auth page, redirect to home
         if (isAuthPage(pathname)) {
           router.replace('/')
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('Auth check failed:', error)
       setIsAuthenticated(false)
       setUser(null)
-      
+
       // Only redirect to sign-in if we're on a protected page
       // and not already on an auth page
       if (!isAuthPage(pathname)) {
@@ -80,31 +80,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, router, isAuthPage, loading, initialized])
 
+  // src/contexts/AuthContext.tsx
   const signIn = async (email: string, password: string) => {
+    // Option 1: Remove global loading state changes for signIn
+    // setLoading(true); // REMOVE or make conditional
+
     try {
-      setLoading(true)
-      console.log('Attempting sign in...')
-      
-      const response = await authService.signIn(email, password)
-      
+      console.log('Attempting sign in...');
+      const response = await authService.signIn(email, password);
       if (response) {
-        setUser(response)
-        setIsAuthenticated(true)
-        setInitialized(true)
-        console.log(`Login successful - User: ${response.email}`)
-        router.replace('/'); // Navigate immediately
-        // Redirect to home page after successful sign-in
-        // router.replace('/')
+        setUser(response);
+        setIsAuthenticated(true);
+        setInitialized(true);
+        console.log(`Login successful - User: ${response.email}`);
+        router.replace('/'); // Navigate immediately (remove setTimeout)
       } else {
-        throw new Error('No user data received from login')
+        throw new Error('No user data received from login');
       }
     } catch (error) {
-      console.error(error)
-      throw error
+      console.error('AuthContext signIn error:', error);
+      // Ensure state reflects unauthenticated on error
+      // setIsAuthenticated(false); // Already false, or handled by checkAuth if token becomes invalid
+      // setUser(null);
+      throw error;
     } finally {
-      setLoading(false)
+      // setLoading(false); // REMOVE or make conditional
     }
-  }
+  };
 
   const signOut = async () => {
     try {
@@ -113,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(false)
       setUser(null)
       setInitialized(true)
-      
+
       // Clear the cookie
       if (typeof document !== 'undefined') {
         document.cookie = 'jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
@@ -154,13 +156,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, user, loading, initialized])
 
   return (
-    <AuthContext.Provider value={{ 
-      isAuthenticated, 
-      user, 
-      loading, 
-      signIn, 
-      signOut, 
-      checkAuth 
+    <AuthContext.Provider value={{
+      isAuthenticated,
+      user,
+      loading,
+      signIn,
+      signOut,
+      checkAuth
     }}>
       {children}
     </AuthContext.Provider>
