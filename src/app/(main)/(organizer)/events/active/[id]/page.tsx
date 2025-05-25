@@ -141,10 +141,17 @@ export default function ActiveEventDetailsPage() {
   // --- Render the component using 'event' and 'groupedSessionsData' states ---
   return (
     <div>
+      <div className='page-header'>
+                <div className={'page-title-section'}>
+                    <h2>{event.name}</h2>
+                    
+                </div>
+            </div>
       {/* Event Header / Overview */}
       <div className="section-card form-container">
         <div className="flex justify-between items-center">
-          <h1>{event.name}</h1>
+          
+           
           {currentUserId === event.organizerId && (
             <button onClick={handleEditClick} className="button-secondary">
               {isEditing ? 'Exit Edit Mode' : 'Edit Event'}
