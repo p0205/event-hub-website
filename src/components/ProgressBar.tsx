@@ -33,7 +33,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ spent, allocated, label }) =>
       : 'progressRed'; // Global class name string
 
   // Format the default label as "Value / Total" with 2 decimal places
-  const defaultValueLabel = `$${validSpent.toFixed(2)} / $${validAllocated.toFixed(2)}`;
+  const defaultValueLabel = `RM${validSpent.toFixed(2)} / RM${validAllocated.toFixed(2)}`;
 
 
   return (

@@ -3,6 +3,8 @@ import { EventMedia } from '@/types/event';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
 
+
+  
 const eventMediaService = {
     addEventMedia: async (formdata: FormData, eventId :number): Promise<void> => {
         const response = await api.post(`/events/${eventId}/media`, formdata);

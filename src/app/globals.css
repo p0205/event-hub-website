@@ -1098,9 +1098,33 @@ list-style: none;
 }
 
 /* Style for the main page title above  main content */
-.page-title {
-  font-size: 1.8em; /* Adjust size as needed */
-  color: #333; /* Title color */
+/* .page-title {
+  font-size: 1.8em;
+  color: #333; 
+} */
+ 
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.page-title-section h2 {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.025em;
+}
+
+.page-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 400;
 }
 
 

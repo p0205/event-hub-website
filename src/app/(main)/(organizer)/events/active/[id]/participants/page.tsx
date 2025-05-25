@@ -558,7 +558,14 @@ export default function EventParticipantsPage() {
     return (
         <div className="page-content-wrapper"> {/* Keep this wrapper */}
             {/* --- Page Title --- */}
-            <h2 className="page-title">Participants</h2>
+            <div className='page-header'>
+                <div className={'page-title-section'}>
+                    <h2>Participants</h2>
+                    <p className={'page-subtitle'}>
+                        Administer participants and view demographic insights
+                    </p>
+                </div>
+            </div>
 
             {/* --- Import XLSX Section --- */}
             <div className="form-container" style={{ marginBottom: '30px', padding: '15px', border: '1px solid #ccc', borderRadius: '8px', background: '#f9f9f9' }}>

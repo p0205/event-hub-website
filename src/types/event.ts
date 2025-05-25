@@ -57,7 +57,11 @@ export interface EventBudget {
     budgetCategoryId?: number; // ID from backend
     budgetCategoryName: string; // Store category name used in select
 }
+export interface AddExpensePayload {
+    budgetCategoryId: number | null;
+    amount: number;
 
+}
 /**
  * Interface for a Venue.
  */

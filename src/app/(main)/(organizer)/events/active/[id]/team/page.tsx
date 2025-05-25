@@ -187,7 +187,7 @@ export default function EventTeamPage() {
             if (isSelected) {
                 return prevSelected.filter(u => u.id !== user.id);
             } else {
-               
+
                 return [...prevSelected, user];
             }
         });
@@ -265,20 +265,20 @@ export default function EventTeamPage() {
     if (loading && teamMembers.length === 0) {
         return (
             <div className="page-content-wrapper">
-                <h2 className="page-title">Team</h2>
+                <div className='page-header'>
+                    <div className='page-title-section'>
+                        <h2>Team</h2>
+                        <p className={'page-subtitle'}>
+                            Collaborate with team members to coordinate efforts and ensure seamless event execution
+                        </p>
+                    </div>
+                </div>
                 <p className="loading-message">Loading team data...</p>
             </div>
         );
     }
 
-    if (error && teamMembers.length === 0) {
-        return (
-            <div className="page-content-wrapper">
-                <h2 className="page-title">Team</h2>
-                <p className="error-message">Error: {error}</p>
-            </div>
-        );
-    }
+
 
     const hasTeamMembers = teamMembers && teamMembers.length > 0;
     const hasRoles = teamRoles && teamRoles.length > 0;
@@ -300,13 +300,20 @@ export default function EventTeamPage() {
 
     return (
         <div className="page-content-wrapper">
-            <h2 className="page-title">Team</h2>
+            <div className='page-header'>
+                <div className='page-title-section'>
+                    <h2>Team</h2>
+                    <p className={'page-subtitle'}>
+                        Collaborate with team members to coordinate efforts and ensure seamless event execution
+                    </p>
+                </div>
 
+            </div>
             {/* --- Event Team Members List --- */}
             <div className="form-container">
                 {/* Heading with Add Button */}
                 <div className={styles["teamListHeader"]}>
-                    <h3>Event Team Members ({teamMembers.length})</h3>
+                    <h3>Event Team Members ({totalMembers})</h3>
                     <button
                         className="add-button"
                         onClick={() => setShowAddMemberModal(true)}
@@ -378,7 +385,7 @@ export default function EventTeamPage() {
 
                                     {/* Simple Page Number Display (can be enhanced) */}
                                     <span className="page-number">
-                                        Page {currentPageNo+1} of {totalPages}
+                                        Page {currentPageNo + 1} of {totalPages}
                                     </span>
 
                                     <button

@@ -29,7 +29,7 @@ export default function EventMediaPage() {
     const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
     // Optional: State for a single caption applied to all selected files (if multi-upload) or a way to add caption per file
 
-    const[deleteSuccess,setDeleteSuccess] = useState(false);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
     const [trigger, setTrigger] = useState(0);
 
     const [previewMedia, setPreviewMedia] = useState<EventMedia | null>(null); // selected media to preview
@@ -155,7 +155,15 @@ export default function EventMediaPage() {
     if (loading) {
         return (
             <div className="page-content-wrapper">
-                <h2 className="page-title">Event Media</h2>
+                <div className='page-header'>
+                    <div className='page-title-section'>
+                        <h2>Media</h2>
+                        <p className={'page-subtitle'}>
+                            Upload and manage event media
+                        </p>
+                    </div>
+
+                </div>
                 <p className="loading-message">Loading media files...</p>
             </div>
         );
@@ -164,7 +172,15 @@ export default function EventMediaPage() {
     if (error) {
         return (
             <div className="page-content-wrapper">
-                <h2 className="page-title">Event Media</h2>
+                <div className='page-header'>
+                    <div className='page-title-section'>
+                        <h2>Media</h2>
+                        <p className={'page-subtitle'}>
+                            Upload and manage event media
+                        </p>
+                    </div>
+
+                </div>
                 <p className="error-message">Error: {error}</p>
             </div>
         );
@@ -176,8 +192,15 @@ export default function EventMediaPage() {
     return (
         <div className="page-content-wrapper"> {/* Wrapper for padding/spacing */}
             {/* --- Page Title --- */}
-            <h2 className="page-title">Event Media</h2>
+            <div className='page-header'>
+                <div className='page-title-section'>
+                    <h2>Media</h2>
+                    <p className={'page-subtitle'}>
+                        Upload and manage event media
+                    </p>
+                </div>
 
+            </div>
             {/* --- Upload Media Section --- */}
             <div className="bg-white p-6 rounded-xl shadow-sm">
                 <h2 className="text-xl font-semibold mb-4">Upload Media Files</h2>

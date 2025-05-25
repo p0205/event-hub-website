@@ -193,7 +193,7 @@ export default function EventAttendancePage() {
             setParticipants(data.content);
             setTotalItems(data.totalElements);
             setTotalPages(data.totalPages);
-            setOffset(data.pageable.offset+1);
+            setOffset(data.pageable.offset + 1);
         } catch (error) {
             console.error("Error fetching participants:", error);
         } finally {
@@ -551,7 +551,15 @@ export default function EventAttendancePage() {
     return (
         <div className="page-content-wrapper"> {/* Wrapper for padding/spacing */}
             {/* --- Page Title --- */}
-            <h2 className="page-title">Attendance</h2>
+            {/* <h2 className="page-title">Attendance</h2> */}
+            <div className='page-header'>
+                <div className={'page-title-section'}>
+                    <h2>Attendance</h2>
+                    <p className={'page-subtitle'}>
+                    Generate attendance codes per session and monitor participants' attendance
+                    </p>
+                </div>
+            </div>
 
             {/* --- Session Selection Card --- */}
             {/* Show session selection only if there are sessions */}
@@ -697,16 +705,16 @@ export default function EventAttendancePage() {
 
                     {/* Render the new ParticipantAttendanceTable component */}
                     <AttendanceTable
-                    participants={participants}
-                    onManualAttendanceChange={handleManualAttendanceChange}
-                    currentPage={currentPage}
-                    pageSize={pageSize}
-                    totalItems={totalItems}
-                    totalPages={totalPages}
-                    offset={offset}
-                    onPageChange={handlePageChange}
-                    onPageSizeChange={handlePageSizeChange}
-                />
+                        participants={participants}
+                        onManualAttendanceChange={handleManualAttendanceChange}
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                        totalItems={totalItems}
+                        totalPages={totalPages}
+                        offset={offset}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}
+                    />
                 </div>
             )}
 
