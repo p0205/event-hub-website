@@ -45,7 +45,7 @@ export default function CompletedEventsPage() {
         setCompletedEvents([]); // Reset event data on new fetch
   
         try {
-          const completedEvents = await eventService.getEventsByStatus(user.id,EventStatus.COMPLETED);
+          const completedEvents = await eventService.getEventsByStatus(Number(user?.id),EventStatus.COMPLETED);
           if (!completedEvents) {
             throw new Error('Failed to fetch active events');
           }

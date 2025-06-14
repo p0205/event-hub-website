@@ -67,7 +67,8 @@ export default function EventsLandingPage() {
       setLoading(true);
       setError(null);
       try {
-        const eventList = await eventService.fetchEvents(user.id); // Pass the organizerId if needed
+        if (!user) return; // Do nothing if user is null
+        const eventList = await eventService.fetchEvents(Number(user.id)); // Pass the organizerId if needed
         setActiveEvents(eventList.activeEvents);
         setPendingEvents(eventList.pendingEvents);
         setCompletedEvents(eventList.completedEvents);

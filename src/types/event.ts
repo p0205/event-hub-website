@@ -28,6 +28,7 @@ export interface Event {
     name?: string;
     description?: string | null; // Description can be null
     organizerId?: number; // Backend uses Integer
+    organizerName?: string; // Backend uses Integer
     startDateTime?: string; // ISO string like "YYYY-MM-DDTHH:mm:ss"
     endDateTime?: string | null; // End time can be null
     status: EventStatus; // Use the enum
@@ -98,6 +99,48 @@ export interface EventMedia {
     filename: string;
     fileUrl: string;
     uploadedAt: string;
+}
+export interface EventReport {
+    id: number;
+    reportType: string;
+    fileUrl?: string;
+    generatedAt?: string;
+}
+
+export interface SessionAttendance {
+    sessionName: string;
+    totalAttendees: number;
+    sessionAttendanceRate: number;
+}
+
+export interface AttendanceOverview {
+    attendanceReport: EventReport;
+    sessionAttendances: SessionAttendance[];
+}
+export interface BudgetOverview {
+    budgetReport: EventReport;
+    totalBudget: number;
+    totalExpenses: number;
+    remaining: number;
+}
+
+export interface FeedbackOverview {
+    feedbackReport: EventReport;
+    averageRating: number;
+    feedbackCount: number;
+    ratings: Rating[];
+}
+
+export interface Rating {
+    rating: number;
+    numberOfRating: number;
+}
+
+export interface EventReportOverview {
+    eventName: string;
+    attendance: AttendanceOverview;
+    budget: BudgetOverview;
+    feedback: FeedbackOverview;
 }
 
 

@@ -48,9 +48,7 @@ export default function PendingEventDetailPage() {
                 const fetchedEvent = await eventService.getEventById(eventId);
                 setEvent(fetchedEvent);
 
-                // Example: If you needed to fetch budget categories separately
-                // const categories = await eventBudgetService.getAllBudgetCategories();
-                // setBudgetCategoryMap(createBudgetCategoryMap(categories));
+            
 
             } catch (err: any) {
                 console.error(`Failed to fetch event ${eventId}:`, err);
@@ -135,8 +133,8 @@ export default function PendingEventDetailPage() {
                     <p>{event.description || 'No description provided.'}</p>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">Organizer ID:</label>
-                    <p>{event.organizerId}</p>
+                    <label className="form-label">Organizer:</label>
+                    <p>{event.organizerName}</p>
                 </div>
                 <div className="form-group">
                     <label className="form-label">Expected Participants:</label>
@@ -182,7 +180,7 @@ export default function PendingEventDetailPage() {
                         {/* No 'await' needed here as 'event' is now state fetched in useEffect */}
                         {event.sessions.map((session, index) => (
                             <li key={session.id || index} className="session-item"> {/* Use session.id if available for a more stable key */}
-                                {session.sessionName && <h3>{session.sessionName}</h3>}
+                                {session.sessionName && <h3 style={{ fontWeight: 'bold', fontSize: '1rem' }}>{session.sessionName}</h3>}
                                 <p><strong>Date:</strong> {formatDate(session.startDateTime)}</p>
                                 <p><strong>Time:</strong> {formatDateTime(session.startDateTime)} - {formatDateTime(session.endDateTime)}</p>
                                 <p><strong>Venues:</strong></p>

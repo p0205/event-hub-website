@@ -44,7 +44,7 @@ export default function ActiveEventsPage() {
         setActiveEvents([]); // Reset event data on new fetch
   
         try {
-          const activeEvents = await eventService.getEventsByStatus(user.id,EventStatus.ACTIVE);
+          const activeEvents = await eventService.getEventsByStatus(Number(user?.id),EventStatus.ACTIVE);
           if (!activeEvents) {
             throw new Error('Failed to fetch active events');
           }

@@ -41,8 +41,7 @@ export default function CreateEventPage() {
     const [formData, setFormData] = useState<CreateEventData>({
         name: '',
         description: '',
-        organizerId: user.id, // Replace with actual organizer ID logic
-
+        organizerId: Number(user?.id),
         participantsNo: '',
         sessions: [],
         eventBudgets: [],
@@ -932,14 +931,17 @@ export default function CreateEventPage() {
                                 </div> {/* End Inline Group */}
 
 
+
+
                                 {/* Venue Selection(s) */}
-                                <div className="form-group"> {/* Wrap venue selects in a form-group */}
+                                <div className="form-group" style={{ marginTop: '10px' }}> {/* Wrap venue selects in a form-group */}
                                     <label className="form-label">Venues:</label> {/* Label for the venue section */}
 
                                     {/* Map over the venueIds array to render multiple selects */}
                                     {((session.venueIds || [])).map((venueId, venueIndex) => (
-                                        <div key={venueIndex} className="form-group-item form-group-inline" style={{ marginBottom: '10px' }}> {/* Use inline for select and remove button */}
-                                            <div className="flex items-center justify-between gap-4 mb-2">
+                                        <div key={venueIndex} className="form-group-item" style={{ marginBottom: '10px' }}>
+                                            {/* Venue Select Row */}
+                                            <div className="flex items-center gap-4 mb-2">
                                                 <select
                                                     id={`venue-${session.id}-${venueIndex}`}
                                                     name={`venue-${session.id}-${venueIndex}`}
@@ -962,27 +964,33 @@ export default function CreateEventPage() {
                                                         ))
                                                     }
                                                 </select>
-                                                <div className="flex items-center gap-2 mb-2" style={{ flexShrink: 0 }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={showAllVenues[venueIndex] ?? false}
-                                                        onChange={() => toggleShowAllVenues(venueIndex)}
-                                                        disabled={isLoading || venues.length === 0}
-                                                    />
-                                                    <label>Show all venues</label>
-                                                </div>
+
                                                 {/* Remove button for this specific venue select */}
-                                                {(session.venueIds || []).length > 1 && ( // Only show remove if there's more than one venue select
+                                                {(session.venueIds || []).length > 1 && (
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleRemoveVenueFromSession(session.id, venueIndex)} // Use specific handler
-                                                        className="delete-button" // Use a secondary button style
+                                                        onClick={() => handleRemoveVenueFromSession(session.id, venueIndex)}
+                                                        className="delete-button"
                                                         disabled={isLoading}
-                                                        style={{ flexShrink: 0 }} // Prevent button from shrinking
+                                                        style={{ flexShrink: 0 }}
                                                     >
                                                         <FaTrash />
                                                     </button>
                                                 )}
+                                            </div>
+
+                                            {/* Checkbox Row - Separate from the select and trash button */}
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    id={`show-all-venues-${session.id}-${venueIndex}`}
+                                                    checked={showAllVenues[venueIndex] ?? false}
+                                                    onChange={() => toggleShowAllVenues(venueIndex)}
+                                                    disabled={isLoading || venues.length === 0}
+                                                />
+                                                <label htmlFor={`show-all-venues-${session.id}-${venueIndex}`}>
+                                                    Show all venues
+                                                </label>
                                             </div>
                                         </div>
                                     ))}
@@ -990,19 +998,13 @@ export default function CreateEventPage() {
                                     {/* Add Venue Button (below the list of venue selects) */}
                                     <button
                                         type="button"
-                                        onClick={() => handleAddVenueToSession(session.id)} // Use specific handler
+                                        onClick={() => handleAddVenueToSession(session.id)}
                                         className="button-secondary"
-                                        style={{ marginTop: '5px' }} // Add space above the button
-                                        disabled={isLoading || venues.length === 0} // Disable if no venues to add
+                                        style={{ marginTop: '5px' }}
+                                        disabled={isLoading || venues.length === 0}
                                     >
                                         + Add Venue for this Session
                                     </button>
-
-                                    {/* {venuesLoading && <p className="loading-message" style={{ marginTop: '5px' }}>Loading venues...</p>}
-                                    {venuesError && <p className="error-message" style={{ marginTop: '5px' }}>{venuesError}</p>}
-                                    {!venuesLoading && !venuesError && venues.length === 0 && (
-                                        <p className="info-message" style={{ marginTop: '5px' }}>No venues available to add.</p>
-                                    )} */}
                                 </div>
 
 

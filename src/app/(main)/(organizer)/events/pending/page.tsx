@@ -44,7 +44,10 @@ export default function PendingEventsPage() {
             setPendingEvents([]); // Reset event data on new fetch
 
             try {
-                const pendingEvents = await eventService.getEventsByStatus(user.id, EventStatus.PENDING);
+                if (!user || typeof user.id !== 'number') {
+                    throw new Error('User is not authenticated or has an invalid ID.');
+                }
+                const pendingEvents = await eventService.getEventsByStatus(user.id as number, EventStatus.PENDING);
                 if (!pendingEvents) {
                     throw new Error('Failed to fetch active events');
                 }

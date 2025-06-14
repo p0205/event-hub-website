@@ -11,21 +11,7 @@ import BudgetTable from '@/components/BudgetTable';
 
 
 
-interface UserSearchResult {
-  id: string;
-  name: string;
-  email: string;
-}
 
-// Mock User Search Results (keep for example)
-const mockUserSearchResults: UserSearchResult[] = [
-  { id: 'user-3', name: 'Charlie Brown', email: 'charlie.b@example.com' },
-  { id: 'user-4', name: 'David Green', email: 'david.g@example.com' },
-];
-
-
-
-// --- Component Definition (NON-ASYNC) ---
 export default function ActiveEventDetailsPage() {
   const params = useParams();
   // Ensure params.id exists and is handled correctly before parsing
@@ -151,12 +137,12 @@ export default function ActiveEventDetailsPage() {
       <div className="section-card form-container">
         <div className="flex justify-between items-center">
           
-           
+{/*            
           {currentUserId === event.organizerId && (
             <button onClick={handleEditClick} className="button-secondary">
               {isEditing ? 'Exit Edit Mode' : 'Edit Event'}
             </button>
-          )}
+          )} */}
         </div>
         <p><strong>Status:</strong> {event.status.replace('_', ' ')}</p>
         {event.participantsNo !== undefined && (

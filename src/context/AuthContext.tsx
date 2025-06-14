@@ -1,7 +1,7 @@
 // src/contexts/AuthContext.tsx
 'use client'
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import api from '@/services/api'
+
 import authService from '@/services/authService'
 import { useRouter, usePathname } from 'next/navigation'
 import { User } from '@/types/user'
