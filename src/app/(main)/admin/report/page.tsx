@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Calendar, MapPin, BarChart3, Users, DollarSign, TrendingUp, ChevronDown, Download, Filter, Search, Clock, Building2, TrendingDown } from 'lucide-react';
 import venueService from '@/services/venueService';
+import adminReportService from '@/services/adminReportService';
 import { Venue } from '@/types/event';
 import styles from './report.module.css';
 
@@ -29,7 +30,7 @@ const reportTypes: ReportType[] = [
     {
         id: 'venue-utilization',
         name: 'Venue Utilization Analytics',
-        description: 'Comprehensive analysis of space utilization patterns, occupancy rates, peak usage hours, and optimization recommendations for strategic facility management.',
+        description: 'Comprehensive analysis of space utilization patterns for strategic facility management.',
         icon: BarChart3,
         available: true,
         requiresVenueSelection: true,
@@ -75,16 +76,25 @@ const categoryColors = {
 };
 
 export default function AdminReportPage() {
+    // Format current date to YYYY-MM-DD
+    const getCurrentDate = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     // State management
     const [selectedReportType, setSelectedReportType] = useState<string>('venue-utilization');
-    const [selectedDateRange, setSelectedDateRange] = useState<string>('3months');
-    const [customStartDate, setCustomStartDate] = useState<string>('');
-    const [customEndDate, setCustomEndDate] = useState<string>('');
     const [selectedVenues, setSelectedVenues] = useState<string[]>([]);
     const [isGenerating, setIsGenerating] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
     const [venues, setVenues] = useState<Venue[]>([]);
     const [isLoadingVenues, setIsLoadingVenues] = useState<boolean>(true);
     const [venueError, setVenueError] = useState<string | null>(null);
+    const [customStartDate, setCustomStartDate] = useState<string>(getCurrentDate());
+    const [customEndDate, setCustomEndDate] = useState<string>(getCurrentDate());
 
     const [expandedReportType, setExpandedReportType] = useState<string>('venue-utilization');
     const [venueSearchQuery, setVenueSearchQuery] = useState<string>('');
@@ -102,7 +112,7 @@ export default function AdminReportPage() {
                 setVenues(fetchedVenues);
             } catch (error) {
                 console.error('Failed to fetch venues:', error);
-                setVenueError('Failed to load venues. Please try again later.');
+                setError('Failed to load venues. Please try again later.');
             } finally {
                 setIsLoadingVenues(false);
             }
@@ -129,19 +139,84 @@ export default function AdminReportPage() {
         }
     };
 
-    // Generate report
+    // Handle report generation
     const handleGenerateReport = async () => {
-        if (!currentReportConfig?.available) {
+        console.log('Generate button clicked');
+        console.log('Selected Report Type:', selectedReportType);
+        console.log('Start Date:', customStartDate);
+        console.log('End Date:', customEndDate);
+        console.log('Selected Venues:', selectedVenues);
+
+        if (!selectedReportType) {
+            console.log('No report type selected');
             return;
         }
 
-        setIsGenerating(true);
-        
-        // Simulate report generation
-        setTimeout(() => {
+        const reportType = reportTypes.find(type => type.id === selectedReportType);
+        if (!reportType || !reportType.available) {
+            console.log('Report type not found or not available');
+            return;
+        }
+
+        // Validate dates
+        if (!customStartDate || !customEndDate) {
+            console.log('Dates missing');
+            setError('Please select both start and end dates');
+            return;
+        }
+
+        // Validate date range is at least one month
+        const startDate = new Date(customStartDate);
+        const endDate = new Date(customEndDate);
+        const oneMonthInMs = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+        const dateRangeInMs = endDate.getTime() - startDate.getTime();
+
+        if (dateRangeInMs < oneMonthInMs) {
+            setError('Please select a date range of at least one month');
+            return;
+        }
+
+        try {
+            console.log('Starting report generation...');
+            setIsGenerating(true);
+            setError(null);
+
+            // Format dates to include time
+            const formatDateTime = (dateStr: string) => {
+                const date = new Date(dateStr);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
+            };
+
+            const request = {
+                startDateTime: formatDateTime(customStartDate),
+                endDateTime: formatDateTime(customEndDate),
+                venueIds: selectedVenues.map(id => parseInt(id))
+            };
+            console.log('Request payload:', request);
+
+            const report = await adminReportService.generateVenueUtilizationReport(request);
+            console.log('Report generated successfully');
+
+            // Create download link
+            const url = window.URL.createObjectURL(report);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${reportType.name.toLowerCase().replace(/\s+/g, '_')}_report.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Error generating report:', err);
+            setError(err instanceof Error ? err.message : 'Failed to generate report');
+        } finally {
             setIsGenerating(false);
-            alert('Report generated successfully! Opening in new tab...');
-        }, 3000);
+        }
     };
 
     // Get filtered venues based on search
@@ -154,7 +229,17 @@ export default function AdminReportPage() {
 
     // Get selected date range label
     const getSelectedDateRangeLabel = () => {
-        return 'Custom Range';
+        if (!customStartDate || !customEndDate) return ' - ';
+        
+        const formatDate = (dateStr: string) => {
+            const date = new Date(dateStr);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        return `${formatDate(customStartDate)} - ${formatDate(customEndDate)}`;
     };
 
     return (
@@ -364,6 +449,11 @@ export default function AdminReportPage() {
                                                                         </>
                                                                     )}
                                                                 </button>
+                                                                {error && (
+                                                                    <div className={styles.errorMessage}>
+                                                                        {error}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </>
                                                     ) : (

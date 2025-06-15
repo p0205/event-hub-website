@@ -16,7 +16,7 @@ const adminReportService = {
      */
     generateVenueUtilizationReport: async (request: VenueUtilizationReportRequest): Promise<Blob> => {
         try {
-            const response = await api.post('/api/admin/report/venue-utilization', request, {
+            const response = await api.post('/admin/report/venue-utilization', request, {
                 responseType: 'blob' 
             });
 
