@@ -69,6 +69,7 @@ export interface AddExpensePayload {
 export interface Venue {
     id: string;
     name: string;
+    fullName: string;
     location: string; // e.g., building, room number
     capacity: number;
     // Add other venue properties
