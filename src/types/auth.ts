@@ -1,7 +1,5 @@
 // src/types/auth.ts
 
-import { User } from "./user";
-
 // Interface for the data expected when a user logs in
 interface LoginCredentials {
     email: string;

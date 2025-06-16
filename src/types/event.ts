@@ -8,7 +8,7 @@ export enum EventStatus {
     COMPLETED = 'COMPLETED',
     ARCHIVED = 'ARCHIVED',
     CANCELLED = 'CANCELLED',
-    // Add other statuses if your backend supports them
+  
 }
 
 export interface CalendarEvent {

@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(response)
         setIsAuthenticated(true)
         console.log(`Auth check successful - User: ${response.email}`)
-
+        console.log(`Auth check successful - User: ${response.mustChangePassword}`)
         // If user is authenticated and on auth page, redirect to home
         if (isAuthPage(pathname)) {
           router.replace('/')
@@ -93,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(true);
         setInitialized(true);
         console.log(`Login successful - User: ${response.email}`);
+        console.log(`Login successful - User: ${response.mustChangePassword}`);
         router.replace('/'); // Navigate immediately (remove setTimeout)
       } else {
         throw new Error('No user data received from login');

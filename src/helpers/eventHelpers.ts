@@ -46,6 +46,18 @@ export const formatDate = (dateString: string | null | undefined): string => {
     }
 };
 
+export const formatDateAndTime = (dateString?: string | null) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+};
+
 // Utility function to parse a time string (e.g., "14:30") into a Time object
 export const parseTimeString = (timeString: string): Time | undefined => {
     const [hour, minute] = timeString.split(':').map(Number);

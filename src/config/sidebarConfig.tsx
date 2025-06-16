@@ -2,7 +2,7 @@
 import React from 'react'; // Still need React for JSX compilation in some setups
 // Import the IconType as well, although it's not used directly in the interface,
 // it might help TS understand the imports are component types.
-import { FaHome, FaCalendarAlt, FaUsers, FaChartBar, FaBell, FaCog, FaTicketAlt, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
+import { FaHome, FaCalendarAlt, FaUsers, FaChartBar, FaBell, FaCog, FaTicketAlt, FaSignInAlt, FaUserPlus, FaDollarSign, FaPeopleCarry, FaUserAlt, FaUser } from 'react-icons/fa';
 
 
 // Define the structure for a navigation item
@@ -19,8 +19,12 @@ const navigationItems: SidebarNavItem[] = [
     { label: 'Home', href: '/', icon: <FaHome />, roles: ['Admin', 'Event Organizer', 'Participant'] },
     { label: 'Events', href: '/events', icon: <FaCalendarAlt />, roles: ['Admin', 'Event Organizer', 'Participant'] },
     // { label: 'Notifications', href: '/notifications', icon: <FaBell />, roles: ['Admin', 'Event Organizer', 'Participant'] },
+   
+    { label: 'Budgets', href: '/budgets', icon: <FaDollarSign />, roles: ['Admin'] },
+    { label: 'Roles', href: '/roles', icon: <FaUser />, roles: ['Admin'] },
+    { label: 'Reports', href: '/reports', icon: <FaChartBar />, roles: ['Admin'] },
     { label: 'Users', href: '/users', icon: <FaUsers />, roles: ['Admin'] },
-    { label: 'Reports', href: '/reports', icon: <FaChartBar />, roles: ['Admin', 'Event Organizer'] },
+   
     { label: 'Settings', href: '/settings', icon: <FaCog />, roles: ['Admin', 'Event Organizer', 'Participant'] },
     // Add back the Participant and Guest specific items
 ];

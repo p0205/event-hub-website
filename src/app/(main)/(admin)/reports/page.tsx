@@ -86,7 +86,7 @@ export default function AdminReportPage() {
     };
 
     // State management
-    const [selectedReportType, setSelectedReportType] = useState<string>('venue-utilization');
+    const [selectedReportType, setSelectedReportType] = useState<string>('');
     const [selectedVenues, setSelectedVenues] = useState<string[]>([]);
     const [isGenerating, setIsGenerating] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -96,7 +96,7 @@ export default function AdminReportPage() {
     const [customStartDate, setCustomStartDate] = useState<string>(getCurrentDate());
     const [customEndDate, setCustomEndDate] = useState<string>(getCurrentDate());
 
-    const [expandedReportType, setExpandedReportType] = useState<string>('venue-utilization');
+    const [expandedReportType, setExpandedReportType] = useState<string>('');
     const [venueSearchQuery, setVenueSearchQuery] = useState<string>('');
 
     // Get current report type configuration
@@ -243,17 +243,15 @@ export default function AdminReportPage() {
     };
 
     return (
-        <div className={styles.pageContainer}>
-            <div className={styles.container}>
-                <div className={styles.maxWidth}>
+        <div>
+            <div >
+                <div className="max-w-4xl mx-auto">
                     {/* Header Section */}
                     <div className={styles.header}>
-                        <div className={styles.headerContent}>
-                            <div className={styles.headerIcon}>
-                                <FileText className={styles.headerIconSvg} />
-                            </div>
+                        <div className="flex justify-between items-center mb-6">
+                        
                             <div>
-                                <h1 className={styles.headerTitle}>Report Generation</h1>
+                                <h1 className="text-2xl font-bold text-gray-800">Report Generation</h1>
                             </div>
                         </div>
                     </div>
