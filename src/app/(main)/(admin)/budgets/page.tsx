@@ -4,6 +4,7 @@ import { BudgetCategory } from "@/types/event";
 import { useEffect, useState } from "react";
 import { FaPlus, FaTrash, FaSearch, FaSpinner } from "react-icons/fa";
 import BudgetCategoriesTable from "./BudgetCategoriesTable";
+import styles from './budget.module.css';
 
 export default function ManageBudgetPage() {
     const [budgets, setBudgets] = useState<BudgetCategory[]>([]);
@@ -118,61 +119,60 @@ export default function ManageBudgetPage() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Budget Management</h1>
-
-                <div className="flex gap-4">
-                    <div className="relative">
+        <div className={styles.pageContainer}>
+            <div className={styles.container}>
+                <div className={styles.header}>
+                    <h1>Budget Management</h1>
+                    <div className={styles.searchBar}>
+                        <FaSearch className={styles.searchIcon} />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
                             placeholder="Search budgets..."
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
-                        <FaSearch className="absolute left-3 top-3 text-gray-400" />
                         {isSearching && (
-                            <FaSpinner className="absolute right-3 top-3 animate-spin text-gray-400" />
+                            <FaSpinner className={styles.searchIcon} style={{ right: '1rem', left: 'auto' }} />
                         )}
                     </div>
                 </div>
-            </div>
 
-            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-                <div className="flex items-center gap-4">
-                    <input
-                        type="text"
-                        value={newBudgetName}
-                        onChange={(e) => setNewBudgetName(e.target.value)}
-                        onKeyUp={(e) => e.key === 'Enter' && handleAddBudget()}
-                        placeholder="Enter new budget name"
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <button
-                        onClick={handleAddBudget}
-                        disabled={isAdding}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400"
-                    >
-                        {isAdding ? <FaSpinner className="animate-spin" /> : <FaPlus />}
-                        Add Budget
-                    </button>
+                <div className={styles.addBudgetContainer}>
+                    <div className={styles.addBudgetForm}>
+                        <input
+                            type="text"
+                            value={newBudgetName}
+                            onChange={(e) => setNewBudgetName(e.target.value)}
+                            onKeyUp={(e) => e.key === 'Enter' && handleAddBudget()}
+                            placeholder="Enter new budget name"
+                            className={styles.addBudgetInput}
+                        />
+                        <button
+                            onClick={handleAddBudget}
+                            disabled={isAdding}
+                            className={styles.addButton}
+                        >
+                            {isAdding ? <FaSpinner className="animate-spin" /> : <FaPlus />}
+                            Add Budget
+                        </button>
+                    </div>
                 </div>
+
+                
+                    <BudgetCategoriesTable       
+                        budgetCategories={budgets}
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                        totalItems={totalItems}
+                        totalPages={totalPages}
+                        offset={offset}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}   
+                        handleDeleteBudget={handleDeleteBudget}
+                    />
+                
             </div>
-
-            <BudgetCategoriesTable       
-                budgetCategories={budgets}
-                currentPage={currentPage}
-                pageSize={pageSize}
-                totalItems={totalItems}
-                totalPages={totalPages}
-                offset={offset}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}   
-                handleDeleteBudget={handleDeleteBudget}
-                />
-
         </div>
     );
 }

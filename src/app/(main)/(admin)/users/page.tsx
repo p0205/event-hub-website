@@ -106,7 +106,7 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div  className={styles.pageContainer}>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
         <button

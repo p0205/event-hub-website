@@ -2,7 +2,7 @@
 'use client'; // Mark this component as a Client Component
 
 import eventService from '@/services/eventService';
-import { BudgetCategory, CreateEventData, EventBudget, CreateSessionData, Venue, Session } from '@/types/event';
+import { BudgetCategory, CreateEventData, EventBudget, CreateSessionData, Venue, Session, EventType } from '@/types/event';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useState, useEffect } from 'react';
@@ -45,6 +45,7 @@ export default function CreateEventPage() {
         participantsNo: '',
         sessions: [],
         eventBudgets: [],
+        type: '',
     });
 
     const [recommendedVenues, setRecommendedVenues] = useState<Venue[]>([]);
@@ -184,16 +185,7 @@ export default function CreateEventPage() {
                     endDateTime: '',   // These will be calculated on submit
                 }];
 
-                // Add the first budget item if needed initially (optional)
-                // If you want an initial budget row, uncomment this and add similar logic
-                // const initialBudgets = [{
-                //     id: uuidv4(), // Generate UUID here on client
-                //     amountAllocated: '',
-                //     amountSpent: 0,
-                //     budgetCategoryId: undefined,
-                //     categoryName: '',
-                // }];
-
+             
                 return {
                     ...prev,
                     eventVenues: initialVenues,
@@ -528,6 +520,7 @@ export default function CreateEventPage() {
             // Append the correctly structured session and budget data as JSON strings
             apiFormData.append('sessions', JSON.stringify(processedSessionsForBackend));
             apiFormData.append('eventBudgets', JSON.stringify(processedBudgets));
+            apiFormData.append('type', formData.type);
 
             // Append the file if it exists
             if (approvalFile) {
@@ -546,6 +539,7 @@ export default function CreateEventPage() {
                 description: apiFormData.get('description'),
                 organizerId: apiFormData.get('organizerId'),
                 participantsNo: apiFormData.get('participantsNo'),
+                type: apiFormData.get('type'),
                 sessions: apiFormData.get('sessions'), // Will show the stringified JSON
                 eventBudgets: apiFormData.get('eventBudgets'), // Will show the stringified JSON
                 supportingDocument: apiFormData.get('supportingDocument') ? (apiFormData.get('supportingDocument') as File).name : 'None'
@@ -593,6 +587,7 @@ export default function CreateEventPage() {
             participantsNo: '',
             sessions: [createDefaultSession()], // Reset with one default session
             eventBudgets: [], // Clear budgets
+            type: '',  // Reset type field
         });
         setApprovalFile(null);
         setRecommendedVenues([]);
@@ -693,6 +688,25 @@ export default function CreateEventPage() {
                                 rows={4}
                                 className="form-input"
                             />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="type" className="form-label">Event Type:</label>
+                            <select
+                                id="type"
+                                name="type"
+                                value={formData.type}
+                                onChange={handleInputChange}
+                                required
+                                className="form-input"
+                            >
+                                <option value="">Select Event Type</option>
+                                {Object.values(EventType).map((type) => (
+                                    <option key={type} value={type}>
+                                        {type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className="form-group">

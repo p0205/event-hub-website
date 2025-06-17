@@ -38,7 +38,11 @@ export default function AddParticipantModal({ open, onCancel, onConfirm }: AddPa
         const fetchData = async () => {
             try {
             const data = await userService.getUserByNameOrEmail(searchText);
-            setSearchResults(data);
+            setSearchResults(data.map(user => ({
+                id: user.id ?? '',  // Provide empty string as fallback if id is undefined
+                name: user.name,
+                email: user.email
+            })));
             } catch (error) {
               console.error('Error fetching search results:', error);
               setSearchResults([]);

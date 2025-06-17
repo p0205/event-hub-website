@@ -1,13 +1,13 @@
 /* Page Layout */
 .pageContainer {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f8fafc 0%, #dbeafe 50%, #e0e7ff 100%);
+  min-height: 100vh;
+ 
+  padding: 1.5rem;
   }
   
   .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
+    max-width: 80rem;
+  margin: 0 auto;
   }
   
   .maxWidth {

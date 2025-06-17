@@ -4,8 +4,9 @@ import { Role } from "@/types/event";
 import { useEffect, useState } from "react";
 import { FaPlus, FaTrash, FaSearch, FaSpinner } from "react-icons/fa";
 import RolesTable from "./RolesTable";
+import styles from './roles.module.css';
 
-export default function ManageRolePage() {
+export default function ManageRolesPage() {
     const [roles, setRoles] = useState<Role[]>([]);
     const [newRoleName, setNewRoleName] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
@@ -122,42 +123,39 @@ export default function ManageRolePage() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Role Management</h1>
-
-                <div className="flex gap-4">
-                    <div className="relative">
+        <div className={styles.pageContainer}>
+            <div className={styles.container}>
+                <div className={styles.header}>
+                    <h1>Role Management</h1>
+                    <div className={styles.searchBar}>
+                        <FaSearch className={styles.searchIcon} />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
                             placeholder="Search roles..."
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
-                        <FaSearch className="absolute left-3 top-3 text-gray-400" />
                         {isSearching && (
-                            <FaSpinner className="absolute right-3 top-3 animate-spin text-gray-400" />
+                            <FaSpinner className={styles.searchIcon} style={{ right: '1rem', left: 'auto' }} />
                         )}
-                    </div>
                 </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-                <div className="flex items-center gap-4">
+                <div className={styles.addRoleContainer}>
+                    <div className={styles.addRoleForm}>
                     <input
                         type="text"
                         value={newRoleName}
                         onChange={(e) => setNewRoleName(e.target.value)}
                         onKeyUp={(e) => e.key === 'Enter' && handleAddRole()}
                         placeholder="Enter new role name"
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className={styles.addRoleInput}
                     />
                     <button
                         onClick={handleAddRole}
                         disabled={isAdding}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400"
+                            className={styles.addButton}
                     >
                         {isAdding ? <FaSpinner className="animate-spin" /> : <FaPlus />}
                         Add Role
@@ -165,14 +163,9 @@ export default function ManageRolePage() {
                 </div>
             </div>
 
-            {/* {loading ? (
-                <div className="flex justify-center items-center h-32">
-                    <FaSpinner className="animate-spin text-2xl text-blue-600" />
-                </div>
-            ) : ( */}
+             
                 <RolesTable       
                 roles={roles}
-                handleDeleteRole={handleDeleteRole}
                 currentPage={currentPage}
                 pageSize={pageSize}
                 totalItems={totalItems}
@@ -180,10 +173,10 @@ export default function ManageRolePage() {
                 offset={offset}
                 onPageChange={handlePageChange}
                 onPageSizeChange={handlePageSizeChange}   
+                        handleDeleteRole={handleDeleteRole}
                 />
-
-                
-            {/* )} */}
+     
+            </div>
         </div>
     );
 }

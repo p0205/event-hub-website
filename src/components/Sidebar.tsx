@@ -6,41 +6,50 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 import { FaSignOutAlt } from 'react-icons/fa';
 
-
 // Import the navigation items configuration
-import navigationItems from '@/config/sidebarConfig'; // Adjust import path
-
+import navigationItems, { SidebarNavItem } from '@/config/sidebarConfig';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/services';
 import { useAuth } from '@/context/AuthContext'
 
+// Define valid roles type
+type ValidRole = 'ADMIN' | 'EVENT ORGANIZER' | 'Participant' | 'Guest';
+
 export default function Sidebar() {
-  // const { checkAuth } = useAuth(); // Get user and loading state from AuthContext
-  const pathname = usePathname(); // Get current path to highlight active link
+  const pathname = usePathname();
   const router = useRouter();
-  const {signOut} = useAuth();
+  const { signOut, user } = useAuth();
 
   const handleLogout = async () => {
     if (confirm("Are you sure to sign out?")) {
       try {
         await signOut();
-        // Clear auth state and redirect
-        // router.replace('/sign-in');
-        // await checkAuth();
-        // Or redirect to login page
-
       } catch (error) {
         console.error('Sign out failed:', error);
       }
     }
   };
 
+  // Filter navigation items based on user role
+  const filteredNavigationItems = navigationItems.filter(item => {
+    // If no roles specified, item is accessible to all
+    if (!item.roles) return true;
+    
+    // If user has no role, only show items with no role restriction
+    if (!user?.role) return false;
+    
+    // Ensure user role is a valid role type
+    const userRole = user.role as ValidRole;
+    
+    // Check if user's role is in the allowed roles
+    return item.roles.includes(userRole);
+  });
+
   return (
     <aside className="narrow-sidebar flex flex-col h-full">
       {/* Main Navigation */}
       <nav className="flex-grow">
         <ul className="sidebar-nav-list">
-          {navigationItems.map((item) => {
+          {filteredNavigationItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/'));
 
             return (
@@ -51,8 +60,7 @@ export default function Sidebar() {
                 </Link>
               </li>
             );
-          }
-          )}
+          })}
           {/* Divider */}
           <div className="border-t border-gray-300 my-2"></div>
           <button
@@ -64,8 +72,6 @@ export default function Sidebar() {
           </button>
         </ul>
       </nav>
-
-
     </aside>
   );
 }

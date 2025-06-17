@@ -102,7 +102,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
                 </div>
 
                 {/* Scrollable content area */}
-                <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
+                <div className="overflow-y-auto max-h-[calc(90vh-180px)]">
                     <div className="px-8 py-6">
                         {/* Error message with enhanced styling */}
                         {error && (
@@ -271,8 +271,8 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
                     </div>
                 </div>
 
-                {/* Enhanced footer with professional styling */}
-                <div className="bg-white px-8 py-6 border-t border-gray-200 flex justify-end space-x-4">
+                {/* Enhanced footer with increased vertical padding */}
+                <div className="bg-white px-8 py-4 border-t border-gray-200 flex justify-end space-x-5">
                     <button
                         type="button"
                         onClick={onClose}

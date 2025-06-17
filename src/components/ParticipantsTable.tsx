@@ -8,7 +8,7 @@ import ConfirmationModal from './ConfirmationModal';
 
 interface ParticipantsTableProps {
     participants: User[];
-    onDeleteParticipant: (id: number | string) => void; // ID can be number or string
+    onDeleteParticipant: ((id: number | string) => void) | null; // Make it optional by allowing null
     // --- Pagination Props ---
     currentPage: number;
     pageSize: number;
@@ -43,7 +43,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
     };
 
     const handleConfirmDelete = () => {
-        if (toDeleteId !== null) {
+        if (toDeleteId !== null && onDeleteParticipant) {
             onDeleteParticipant(toDeleteId);
         }
         setShowConfirm(false);
@@ -97,7 +97,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                             <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>Faculty</th>
                             <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>Course</th>
                             <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'left' }}>Year</th>
-                            <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'center' }}>Actions</th>
+                            {onDeleteParticipant && <th style={{ border: '1px solid #ddd', padding: '12px', textAlign: 'center' }}>Actions</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -111,22 +111,24 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                                 <td style={{ border: '1px solid #ddd', padding: '10px' }}>{participant.faculty || '-'}</td>
                                 <td style={{ border: '1px solid #ddd', padding: '10px' }}>{participant.course || '-'}</td>
                                 <td style={{ border: '1px solid #ddd', padding: '10px' }}>{participant.year || '-'}</td>
-                                <td style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'center' }}>
-                                    <button
-                                        onClick={() => handleDeleteClick(participant.id)}
-                                        style={{
-                                            padding: '6px 12px',
-                                            backgroundColor: '#dc3545',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '4px',
-                                            cursor: 'pointer',
-                                            fontSize: '0.9em'
-                                        }}
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
+                                {onDeleteParticipant && (
+                                    <td style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'center' }}>
+                                        <button
+                                            onClick={() => handleDeleteClick(participant.id ?? '')}
+                                            style={{
+                                                padding: '6px 12px',
+                                                backgroundColor: '#dc3545',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                fontSize: '0.9em'
+                                            }}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

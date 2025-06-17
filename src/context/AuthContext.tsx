@@ -53,9 +53,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(true)
         console.log(`Auth check successful - User: ${response.email}`)
         console.log(`Auth check successful - User: ${response.mustChangePassword}`)
+        console.log(`Auth check successful - User: ${response.role}`)
+      
         // If user is authenticated and on auth page, redirect to home
         if (isAuthPage(pathname)) {
-          router.replace('/')
+          if(response.role == 'ADMIN'){
+            router.replace('/dashboard')
+          }else{
+            router.replace('/')
+          }
+          
         }
       } else {
         throw new Error('No user data received')
@@ -82,8 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // src/contexts/AuthContext.tsx
   const signIn = async (email: string, password: string) => {
-    // Option 1: Remove global loading state changes for signIn
-    // setLoading(true); // REMOVE or make conditional
+
 
     try {
       console.log('Attempting sign in...');
@@ -94,18 +100,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setInitialized(true);
         console.log(`Login successful - User: ${response.email}`);
         console.log(`Login successful - User: ${response.mustChangePassword}`);
-        router.replace('/'); // Navigate immediately (remove setTimeout)
+        if(response.role == 'ADMIN'){
+          router.replace('/dashboard'); // Navigate immediately (remove setTimeout)
+        }else{
+          router.replace('/home'); // Navigate immediately (remove setTimeout)
+        }
       } else {
         throw new Error('No user data received from login');
       }
     } catch (error) {
       console.error('AuthContext signIn error:', error);
-      // Ensure state reflects unauthenticated on error
-      // setIsAuthenticated(false); // Already false, or handled by checkAuth if token becomes invalid
-      // setUser(null);
       throw error;
-    } finally {
-      // setLoading(false); // REMOVE or make conditional
     }
   };
 

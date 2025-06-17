@@ -471,7 +471,7 @@ export default function EventTeamPage() {
 
                                                 return (
                                                     <li key={user.id} className={`${styles["search-result-item"]} ${isSelected ? styles["selected"] : ''} ${user.hasRole ? styles["already-member"] : ''}`}>
-                                                        <img src={'/default-avatar.png'} alt={user.name} className={styles["profile-image"]} width={35} height={35} />
+                                                        {/* <img src={'/default-avatar.png'} alt={user.name} className={styles["profile-image"]} width={35} height={35} /> */}
                                                         <div className={styles["user-info"]}>
                                                             <div className={styles["user-name"]}>{user.name}</div>
                                                             <div className={styles["user-email"]}>{user.email}</div>
@@ -503,7 +503,7 @@ export default function EventTeamPage() {
                                 <ul className={styles.resultsList}> {/* Reuse class for scrolling/styling */}
                                     {selectedUsersForAdd.map(user => (
                                         <li key={user.id} className={styles["selected-user-item"]}>
-                                            <img src={'/default-avatar.png'} alt={user.name} className={styles["profile-image"]} width={30} height={30} />
+                                            {/* <img src={'/default-avatar.png'} alt={user.name} className={styles["profile-image"]} width={30} height={30} /> */}
                                             <div className={styles["user-info"]}>
                                                 <div className={styles["user-name"]}>{user.name}</div>
                                                 <div className={styles["user-email"]}>{user.email}</div>

@@ -1,6 +1,7 @@
 // src/app/events/active/[id]/layout.tsx
 
-import EventSubmenuSidebar from '@/components/organizers/events/ActiveEventSideBar';
+import CompletedEventSubmenuSidebar from '@/components/organizers/events/CompletedEventSideBar';
+
 // Layout for individual event pages (/events/[id] and its sub-routes)
 export default function EventDetailLayout({
   children, // This will be the nested page components (e.g., overview/page.tsx, participants/page.tsx)
@@ -17,7 +18,7 @@ export default function EventDetailLayout({
 
        {/* Secondary Event Submenu Sidebar */}
        {/* This sidebar is specific to this layout */}
-       <EventSubmenuSidebar /> {/* Pass nothing, it gets ID from useParams */}
+       <CompletedEventSubmenuSidebar /> {/* Pass nothing, it gets ID from useParams */}
 
 
       {/* The main content area where individual pages will be rendered */}

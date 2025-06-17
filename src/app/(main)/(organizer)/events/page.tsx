@@ -8,6 +8,18 @@ import { EventStatus, SimpleEvent } from '@/types/event';
 import { eventService } from '@/services';
 import { useAuth } from '@/context/AuthContext';
 
+// Add styles for the section title links
+const styles = {
+  sectionTitleLink: {
+    textDecoration: 'none',
+    color: 'inherit',
+    cursor: 'pointer',
+    '&:hover': {
+      color: '#2563eb', // blue-600
+    },
+  },
+};
+
 export default function EventsLandingPage() {
   const { user } = useAuth();
   const [activeEvents, setActiveEvents] = useState<SimpleEvent[]>([]);
@@ -148,12 +160,12 @@ export default function EventsLandingPage() {
             onClick={() => toggleSectionExpansion(EventStatus.ACTIVE)}
             aria-expanded={isActiveExpanded} // Accessibility attribute
           >
-            {/* Use a simple character for the arrow/caret */}
-            {/* Rotate the character based on state */}
             {isActiveExpanded ? '▼' : '►'}
           </button>
-          {/* Section Title */}
+          {/* Section Title as Link */}
+          <Link href="/events/active" style={styles.sectionTitleLink}>
           <h2>Active Events</h2>
+          </Link>
         </div>
         {/* Conditionally render the grid based on state */}
         {isActiveExpanded && (
@@ -180,8 +192,10 @@ export default function EventsLandingPage() {
           >
             {isPendingExpanded ? '▼' : '►'}
           </button>
-          {/* Section Title */}
+          {/* Section Title as Link */}
+          <Link href="/events/pending" style={styles.sectionTitleLink}>
           <h2>Pending Approval</h2>
+          </Link>
         </div>
         {/* Conditionally render the grid based on state */}
         {isPendingExpanded && (
@@ -208,8 +222,10 @@ export default function EventsLandingPage() {
           >
             {isCompletedExpanded ? '▼' : '►'}
           </button>
-          {/* Section Title */}
+          {/* Section Title as Link */}
+          <Link href="/events/completed" style={styles.sectionTitleLink}>
           <h2>Completed Events</h2>
+          </Link>
         </div>
         {/* Conditionally render the grid based on state */}
         {isCompletedExpanded && (

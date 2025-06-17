@@ -129,6 +129,10 @@ export default function PendingEventDetailPage() {
                     <p>{event.name}</p>
                 </div>
                 <div className="form-group">
+                    <label className="form-label">Event Type:</label>
+                    <p>{event.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</p>
+                </div>
+                <div className="form-group">
                     <label className="form-label">Description:</label>
                     <p>{event.description || 'No description provided.'}</p>
                 </div>

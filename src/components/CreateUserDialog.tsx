@@ -130,7 +130,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                     </div>
                 </div>
 
-                <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
+                <div className="overflow-y-auto max-h-[calc(90vh-180px)]">
                     <div className="px-8 py-6">
                         {error && (
                             <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg">
@@ -292,7 +292,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-white px-8 py-6 border-t border-gray-200 flex justify-end space-x-4">
+                <div className="bg-white px-8 py-3 border-t border-gray-200 flex justify-end space-x-4">
                     
                     <button
                         type="submit"

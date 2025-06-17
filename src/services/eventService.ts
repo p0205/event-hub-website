@@ -125,7 +125,11 @@ const eventService: EventService = {
       //     console.log(`${key}:`, value);
       // });
 
-      const response = await api.post(API_ENDPOINT, eventFormData);
+      const response = await api.post(API_ENDPOINT, eventFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       // Check if the response status code indicates success (e.g., 200 OK, 201 Created)
       if (!(response.status === 201)) {

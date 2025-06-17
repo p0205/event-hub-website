@@ -10,7 +10,30 @@ export enum EventStatus {
     CANCELLED = 'CANCELLED',
   
 }
+export enum EventType {
+    TALK = 'TALK',
+    SEMINAR = 'SEMINAR',
+    WORKSHOP = 'WORKSHOP',
+    CONFERENCE = 'CONFERENCE',
+    SYMPOSIUM = 'SYMPOSIUM',
+    HACKATHON = 'HACKATHON',
+    CODE_CHALLENGE = 'CODE_CHALLENGE',
+    INNOVATION_PITCH = 'INNOVATION_PITCH',
+    BOOTCAMP = 'BOOTCAMP',
+    CAREER_TALK = 'CAREER_TALK',
+    SOFT_SKILLS_TRAINING = 'SOFT_SKILLS_TRAINING',
+    STUDENT_FORUM = 'STUDENT_FORUM',
+    CLUB_MEETING = 'CLUB_MEETING',
+    INDUSTRY_VISIT = 'INDUSTRY_VISIT',
+    COMPANY_SHOWCASE = 'COMPANY_SHOWCASE',
+    NETWORKING_EVENT = 'NETWORKING_EVENT',
+    COMPETITION = 'COMPETITION',
+    EXHIBITION = 'EXHIBITION',
+    FESTIVAL = 'FESTIVAL',
+    CULTURAL_EVENT = 'CULTURAL_EVENT',
+  }
 
+  
 export interface CalendarEvent {
     eventId: number;
     eventName: string;
@@ -37,7 +60,8 @@ export interface Event {
     sessions: Session[]; // Array of session/venue details (backend calls them EventVenue)
     eventBudgets: EventBudget[]; // Array of budget details (backend calls them EventBudget)
     team?: TeamMember[];     // Added team members
-    posters?: string[]; // Array of poster image URLs (example)
+    posters?: string[]; 
+    type: EventType;
 
 }
 
@@ -163,6 +187,7 @@ export interface CreateEventData {
     sessions: CreateSessionData[];
     eventBudgets: EventBudget[];
     supportingDocument?: File;
+    type: string;  // Add type field
 }
 
 

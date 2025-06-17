@@ -1,0 +1,154 @@
+.dashboardContainer {
+    min-height: 100vh;
+ 
+    padding: 1.5rem;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cardValue {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 0.25rem;
+}
+
+.iconContainer {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconContainer.blue {
+  background-color: #eff6ff;
+}
+
+.iconContainer.green {
+  background-color: #ecfdf5;
+}
+
+.iconContainer.purple {
+  background-color: #f5f3ff;
+}
+
+.iconContainer.orange {
+  background-color: #fff7ed;
+}
+
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon.blue {
+  color: #2563eb;
+}
+
+.icon.green {
+  color: #059669;
+}
+
+.icon.purple {
+  color: #7c3aed;
+}
+
+.icon.orange {
+  color: #ea580c;
+}
+
+.chartGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .chartGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.chartBox {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.chartHeader {
+  margin-bottom: 1.5rem;
+}
+
+.chartTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.chartSubtitle {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-top: 0.25rem;
+}

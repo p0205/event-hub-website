@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { loading, isAuthenticated } = useAuth();
+  const { loading, isAuthenticated, user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [countdown, setCountdown] = useState(3); // For redirect message
@@ -48,7 +48,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace('/sign-in');
       }
     } else if (isAuthenticated && isAuthPage(pathname)) {
-      router.push('/');
+      if(user?.role == 'ADMIN'){
+        router.replace('/dashboard')
+      }else{
+        router.replace('/')
+      }
     }
   }, [loading, isAuthenticated, pathname, countdown, router]); // Removed isAuthPage from deps
 

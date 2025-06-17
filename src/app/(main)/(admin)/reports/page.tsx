@@ -243,9 +243,9 @@ export default function AdminReportPage() {
     };
 
     return (
-        <div>
+        <div  className={styles.pageContainer}>
             <div >
-                <div className="max-w-4xl mx-auto">
+                <div className={styles.container}>
                     {/* Header Section */}
                     <div className={styles.header}>
                         <div className="flex justify-between items-center mb-6">

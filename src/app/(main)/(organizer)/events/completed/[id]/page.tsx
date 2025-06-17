@@ -12,7 +12,7 @@ import BudgetTable from '@/components/BudgetTable';
 
 
 
-export default function ActiveEventDetailsPage() {
+export default function CompletedEventDetailsPage() {
   const params = useParams();
   // Ensure params.id exists and is handled correctly before parsing
   const eventIdString = params?.id ? (Array.isArray(params.id) ? params.id[0] : params.id) : null;
