@@ -115,7 +115,7 @@ export default function EventParticipantsPage() {
         setIsLoadingInitial(true);
         setInitialLoadError(null);
         // Clear other status messages on initial load
-     
+
         setSaveError(null);
         try {
             // Call your service to get participants already saved for this event
@@ -145,7 +145,38 @@ export default function EventParticipantsPage() {
         setPageSize(newPageSize);
     }
 
+    // Handle exporting attendance data (e.g., as CSV)
+    const handleExportAttendance = async () => {
+        if (!eventId) {
+            console.error("Cannot export: Event ID missing.");
+            return;
+        }
 
+        try {
+            // Show loading state if needed
+            const xlsxBlob = await eventService.exportParticipantsXLSX(Number(eventId));
+
+            // Create a download link
+            const url = window.URL.createObjectURL(xlsxBlob);
+            const link = document.createElement('a');
+            link.href = url;
+
+            // Set the filename using the session name if available
+            const filename =  `attendance-${eventId.replace(/\s+/g, '_')}.xlsx`;
+            link.download = filename;
+
+            // Trigger the download
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error: any) {
+            console.error("Failed to export attendance data:", error);
+            // You might want to show an error message to the user here
+        }
+    };
 
     // --- Filter Options (Derived from participants data) ---
     const filterOptions = useMemo(() => {
@@ -328,7 +359,14 @@ export default function EventParticipantsPage() {
                 {/* List Title and Add Button */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
                     <h3>Participants List ({sortedParticipants.length} of {participants.length})</h3> {/* Show count of filtered/total */}
-                    
+                    {/* Export Button */}
+                    {participants && (
+                        <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
+                            <button className="button-secondary" onClick={handleExportAttendance}>
+                                Export Participants (XLSX)
+                            </button>
+                        </div>
+                    )}
                 </div>
 
 
@@ -480,7 +518,7 @@ export default function EventParticipantsPage() {
             )}
 
 
-           
+
         </div> // End page-content-wrapper
     );
 }

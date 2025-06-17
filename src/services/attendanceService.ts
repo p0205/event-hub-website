@@ -40,6 +40,24 @@ const attendanceService = {
         // axios puts the response body in .data, which should match BackendPage<Attendee> type
         return response.data;
     },
+
+    // Add new method to export attendance data as CSV
+    exportAttendanceCSV: async (eventId: number, sessionId: number): Promise<Blob> => {
+        try {
+            const response = await api.get(`events/${eventId}/attendance/${sessionId}/export`, {
+                responseType: 'blob' // Important: This tells axios to handle the response as a blob
+            });
+
+            if (response.status !== HttpStatusCode.Ok) {
+                throw new Error('Failed to export attendance data');
+            }
+
+            return response.data;
+        } catch (error: any) {
+            console.error('Error exporting attendance data:', error);
+            throw new Error(error.response?.data?.message || 'Failed to export attendance data');
+        }
+    }
 };
 
 export default attendanceService;

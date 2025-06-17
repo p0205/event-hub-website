@@ -46,6 +46,7 @@ interface ApiErrorResponse {
 */
 
 interface EventService {
+  exportParticipantsXLSX(eventId: number): Promise<Blob>;
   getEventById: (id: number) => Promise<Event>;
   getEventNameById: (id: number) => Promise<string>;
   createEventService: (eventFormData: FormData) => Promise<Event>;
@@ -60,9 +61,7 @@ interface EventService {
 }
 
 const eventService: EventService = {
-
   // ... (other service functions like createEvent, getAllEvents, etc.) ...
-
   /**
    * Fetches a specific event by its ID.
    * Corresponds to backend: GET /events/{id}
@@ -97,17 +96,15 @@ const eventService: EventService = {
  * @throws An error if the event is not found (e.g., 404) or another API error occurs.
  */
   getEventNameById: async (id: number): Promise<string> => {
-    console.log("API Call: GET" , `/events/${id}/name`);
+    console.log("API Call: GET", `/events/${id}/name`);
     // Makes a GET request to the backend endpoint /events/:id
-
     try {
       const response = await api.get<string>(`/events/${id}/name`);
       return response.data;
     } catch (error) {
       throw new Error(`Failed to fetch event name: ${error}`);
     }
-        // Axios puts the actual data payload from the backend response body into the .data property.
-
+    // Axios puts the actual data payload from the backend response body into the .data property.
   },
 
 
@@ -124,7 +121,6 @@ const eventService: EventService = {
       // eventFormData.forEach((value, key) => {
       //     console.log(`${key}:`, value);
       // });
-
       const response = await api.post(API_ENDPOINT, eventFormData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -143,13 +139,12 @@ const eventService: EventService = {
         }
 
         // Construct a meaningful error message
-        const errorMessage =
-          errorData?.message ||
+        const errorMessage = errorData?.message ||
           `API Error: ${response.status} ${response.statusText}`;
 
         console.error('API Error Response:', errorData || response.statusText);
         // Throw an error that includes details if available
-        const error = new Error(errorMessage) as Error & { details?: any; statusCode?: number };
+        const error = new Error(errorMessage) as Error & { details?: any; statusCode?: number; };
         error.details = errorData; // Attach full error details if parsed
         error.statusCode = response.status;
         throw error;
@@ -221,9 +216,9 @@ const eventService: EventService = {
     return response.data;
   },
 
-  getParticipantsByEventId: async (eventId: number,  pageNumber?:number, pageSize?:number,sortBy?:string): Promise<PageData<User>> => {
+  getParticipantsByEventId: async (eventId: number, pageNumber?: number, pageSize?: number, sortBy?: string): Promise<PageData<User>> => {
     const response = await api.get(`/events/${eventId}/participants`, {
-      params: { 
+      params: {
         pageNumber,
         pageSize,
         sortBy
@@ -251,14 +246,15 @@ const eventService: EventService = {
   saveParticipants: async (eventId: number, participantList: User[]): Promise<User[]> => {
     console.log("API Call: POST /events/{id}/participants");
 
-    const response = await api.post<User[]>(`/events/${eventId}/participants`, participantList,{
+    const response = await api.post<User[]>(`/events/${eventId}/participants`, participantList, {
       params: { eventId }
     });
 
     if (response.status !== HttpStatusCode.Created) {
       throw new Error('Failed to save participants list');
     }
-    return response.data;// Indicate success
+    return response.data; // Indicate success
+
     // ... (rest of the eventService object) ...
   },
   /**
@@ -269,27 +265,42 @@ const eventService: EventService = {
    * @returns A Promise resolving when the deletion is complete.
    * @throws An error if the deletion fails (e.g., 404 Not Found).
    */
-  deleteParticipants: async (eventId: number, participantId:number): Promise<void> => {
+  deleteParticipants: async (eventId: number, participantId: number): Promise<void> => {
     console.log("API Call: DELETE /events/{id}/participants/{participantId}");
     const response = await api.delete(`/events/${eventId}/participants/${participantId}`);
 
-    if(response.status !== HttpStatusCode.NoContent) {
+    if (response.status !== HttpStatusCode.NoContent) {
       throw new Error('Failed to delete participant');
     }
   },
 
-  getCalendarEvents: async (userId: number): Promise<CalendarEvent[]> =>{
-    const response = await api.get<CalendarEvent[]>(`/events/calendar`,{
-      params:{userId }
+  getCalendarEvents: async (userId: number): Promise<CalendarEvent[]> => {
+    const response = await api.get<CalendarEvent[]>(`/events/calendar`, {
+      params: { userId }
     });
-    if(response.status !== HttpStatusCode.Ok) {
+    if (response.status !== HttpStatusCode.Ok) {
       throw new Error('Failed to fetch calendar events');
     }
     console.log(response.data);
     return response.data;
-  }
+  },
 
 
+  exportParticipantsXLSX: async (eventId: number): Promise<Blob> => {
+        try {
+            const response = await api.get(`events/${eventId}/participants/export`, {
+                responseType: 'blob' // Important: This tells axios to handle the response as a blob
+            });
 
+            if (response.status !== HttpStatusCode.Ok) {
+                throw new Error('Failed to export attendance data');
+            }
+
+            return response.data;
+        } catch (error: any) {
+            console.error('Error exporting attendance data:', error);
+            throw new Error(error.response?.data?.message || 'Failed to export attendance data');
+        }
+    }
 }
 export default eventService; 

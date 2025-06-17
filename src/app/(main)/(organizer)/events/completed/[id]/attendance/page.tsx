@@ -517,11 +517,38 @@ export default function EventAttendancePage() {
 
 
     // Handle exporting attendance data (e.g., as CSV)
-    const handleExportAttendance = () => {
-        console.log("Exporting attendance data for event:", eventId);
-        // TODO: Implement logic to fetch and format attendanceRecords into CSV or other format
-        // This might be a separate API endpoint that returns a CSV file directly.
-        // Example: window.open(`/api/events/${eventId}/attendance/export-csv`);
+    const handleExportAttendance = async () => {
+        if (!selectedSessionId || !numericEventId) {
+            console.error("Cannot export: Event ID or Session ID missing.");
+            return;
+        }
+
+        try {
+            // Show loading state if needed
+            const xlsxBlob = await attendanceService.exportAttendanceCSV(numericEventId, Number(selectedSessionId));
+            
+            // Create a download link
+            const url = window.URL.createObjectURL(xlsxBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Set the filename using the session name if available
+            const filename = selectedSession 
+                ? `attendance-${selectedSession.sessionName.replace(/\s+/g, '_')}.xlsx`
+                : `attendance-session-${selectedSessionId}.xlsx`;
+            link.download = filename;
+            
+            // Trigger the download
+            document.body.appendChild(link);
+            link.click();
+            
+            // Cleanup
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error: any) {
+            console.error("Failed to export attendance data:", error);
+            // You might want to show an error message to the user here
+        }
     };
 
 
@@ -698,7 +725,7 @@ export default function EventAttendancePage() {
                     {participants && (
                         <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
                             <button className="button-secondary" onClick={handleExportAttendance}>
-                                Export Attendance (CSV)
+                                Export Attendance (XLSX)
                             </button>
                         </div>
                     )}

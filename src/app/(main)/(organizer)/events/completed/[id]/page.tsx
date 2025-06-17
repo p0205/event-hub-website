@@ -32,15 +32,15 @@ export default function CompletedEventDetailsPage() {
   // const [loadingSessions, setLoadingSessions] = useState(false); // Loading state for sessions specifically
   // const [sessionError, setSessionError] = useState<string | null>(null); // Error state for sessions
 
- 
+
 
   // Effect 1: Fetch main event details
   useEffect(() => {
     // Only fetch if eventId is a valid number
     if (eventId === null || isNaN(eventId)) {
-        setError("Invalid Event ID.");
-        setLoading(false);
-        return;
+      setError("Invalid Event ID.");
+      setLoading(false);
+      return;
     }
 
     const fetchEventDetails = async () => {
@@ -96,7 +96,7 @@ export default function CompletedEventDetailsPage() {
   //        set([]);
   //        setLoadingSessions(false);
   //   }
-    
+
   //   // Intentionally NOT depending on groupedSessionsData to avoid loops
   //   // Only depends on 'event' state changing and 'loadingSessions' state
   // }, [event, loadingSessions]); // Rerun when event data is fetched or if loading state changes
@@ -127,16 +127,16 @@ export default function CompletedEventDetailsPage() {
   return (
     <div>
       <div className='page-header'>
-                <div className={'page-title-section'}>
-                    <h2>{event.name}</h2>
-                    
-                </div>
-            </div>
+        <div className={'page-title-section'}>
+          <h2>{event.name}</h2>
+
+        </div>
+      </div>
       {/* Event Header / Overview */}
       <div className="section-card form-container">
         <div className="flex justify-between items-center">
-          
-{/*            
+
+          {/*            
           {currentUserId === event.organizerId && (
             <button onClick={handleEditClick} className="button-secondary">
               {isEditing ? 'Exit Edit Mode' : 'Edit Event'}
@@ -147,6 +147,8 @@ export default function CompletedEventDetailsPage() {
         {event.participantsNo !== undefined && (
           <p><strong>Expected Participants:</strong> {event.participantsNo}</p>
         )}
+        <p><strong>Event Type:</strong> {event.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</p>
+
         <div className="description-section">
           <p><strong>Description:</strong></p>
           <p>{event.description || 'No description provided.'}</p>
@@ -155,45 +157,45 @@ export default function CompletedEventDetailsPage() {
 
       {/* Budget Overview (Using event.eventBudgets) */}
       <div className="section-card form-container">
-          <h2>Budget Overview</h2>
-          {event.eventBudgets && event.eventBudgets.length > 0 ? (
-            <BudgetTable budgets={event.eventBudgets} />
-          ) : (
-              <p>No budget information available for this event.</p>
-          )}
+        <h2>Budget Overview</h2>
+        {event.eventBudgets && event.eventBudgets.length > 0 ? (
+          <BudgetTable budgets={event.eventBudgets} />
+        ) : (
+          <p>No budget information available for this event.</p>
+        )}
       </div>
 
 
       {/* Sessions  */}
       <div className="section-card form-container">
-          <h2>Sessions</h2>
-          {event.sessions.length > 0 ? (
-              <ul className="sessions-list">
-                  {event.sessions.map((session, index) => (
-                      <li key={`${session.sessionName}-${index}`} className="session-item"> {/* More stable key */}
-                          {session.sessionName && <h3>{session.sessionName}</h3>}
-                          <p><strong>Date:</strong> {formatDate(session.startDateTime)}</p>
-                          <p><strong>Time:</strong> {formatDateTime(session.startDateTime)} - {formatDateTime(session.endDateTime)}</p>
-                          {session.venues && session.venues.length > 0 ? (
-                             <>
-                                <p><strong>Venues:</strong></p>
-                                <ul style={{ paddingLeft: '20px' }}>
-                                    {session.venues.map((venue: Venue, idx: number) => (
-                                        <li key={venue.id || idx}> {/* Prefer venue.id if available */}
-                                            {venue.name}
-                                        </li>
-                                    ))}
-                                </ul>
-                             </>
-                          ) : (
-                             <p><strong>Venues:</strong> No venue details available.</p>
-                          )}
-                      </li>
-                  ))}
-              </ul>
-          ) : (
-               <p>No session information available for this event.</p> // Message when no sessions exist
-          )}
+        <h2>Sessions</h2>
+        {event.sessions.length > 0 ? (
+          <ul className="sessions-list">
+            {event.sessions.map((session, index) => (
+              <li key={`${session.sessionName}-${index}`} className="session-item"> {/* More stable key */}
+                {session.sessionName && <h3>{session.sessionName}</h3>}
+                <p><strong>Date:</strong> {formatDate(session.startDateTime)}</p>
+                <p><strong>Time:</strong> {formatDateTime(session.startDateTime)} - {formatDateTime(session.endDateTime)}</p>
+                {session.venues && session.venues.length > 0 ? (
+                  <>
+                    <p><strong>Venues:</strong></p>
+                    <ul style={{ paddingLeft: '20px' }}>
+                      {session.venues.map((venue: Venue, idx: number) => (
+                        <li key={venue.id || idx}> {/* Prefer venue.id if available */}
+                          {venue.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <p><strong>Venues:</strong> No venue details available.</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No session information available for this event.</p> // Message when no sessions exist
+        )}
       </div>
 
     </div>
