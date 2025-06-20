@@ -1,5 +1,3 @@
-  
-  
 import { Bell } from "lucide-react";
 import Link from "next/link";
 
@@ -11,23 +9,12 @@ export default function Topbar() {
         <img src="/ftmkLogo.png" alt="Logo" className="h-8 inline-block mr-2" />
         Event Hub
       </div>
-      {/* Right - Notification & Profile */}
+    
       <div className="flex items-center gap-4">
-        {/* Notification Icon */}
-        <Link href="/notifications">
-        <button className="relative">
-          <Bell className="text-black" size={22} />
-          {/* Example notification dot */}
-          <span className="absolute top-0 right-0 h-2 w-2 bg-red-600 rounded-full"></span>
-        </button>
-        </Link>
-        {/* Profile Image - Link to Profile Settings */}
-        <Link href="/settings">
-          <img
-            src="/profile.png"
-            alt="Profile"
-            className="w-9 h-9 rounded-full cursor-pointer border-2 border-white"
-          />
+      
+        
+        <Link href="/public/calendar" className="font-bold">
+          Discover Events
         </Link>
       </div>
     </nav>
