@@ -29,15 +29,15 @@ import styles from './notifications.module.css'; // Create this CSS module
 const mockNotifications: Notification[] = [
     {
         id: 'notif-1', userId: 'user-1', message: 'You have been invited to "Project Kickoff".',
-        timestamp: '2025-04-20T10:00:00Z', isRead: false, type: 'event_invite', linkUrl: '/events/project-kickoff-id/overview'
+        timestamp: '2025-04-20T10:00:00Z', isRead: false, type: 'event_invite', linkUrl: '/my-events/project-kickoff-id/overview'
     },
      {
         id: 'notif-2', userId: 'user-1', message: 'The "Annual Conference" budget report is now available.',
-        timestamp: '2025-04-20T09:30:00Z', isRead: false, type: 'report_available', linkUrl: '/events/annual-conference-id/reports'
+        timestamp: '2025-04-20T09:30:00Z', isRead: false, type: 'report_available', linkUrl: '/my-events/annual-conference-id/reports'
     },
     {
         id: 'notif-3', userId: 'user-1', message: 'Your event "Client Workshop" has been approved.',
-        timestamp: '2025-04-19T18:00:00Z', isRead: true, type: 'event_status', linkUrl: '/events/client-workshop-id/overview'
+        timestamp: '2025-04-19T18:00:00Z', isRead: true, type: 'event_status', linkUrl: '/my-events/client-workshop-id/overview'
     },
      {
         id: 'notif-4', userId: 'user-1', message: 'Reminder: Team Sync meeting tomorrow at 10 AM.',

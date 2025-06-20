@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Calendar, MapPin, BarChart3, Users, DollarSign, TrendingUp, ChevronDown, Download, Filter, Search, Clock, Building2, TrendingDown } from 'lucide-react';
 import venueService from '@/services/venueService';
-import adminReportService from '@/services/adminReportService';
+import adminService from '@/services/adminService';
 import { Venue } from '@/types/event';
 import styles from './report.module.css';
 
@@ -38,11 +38,11 @@ const reportTypes: ReportType[] = [
         category: 'Operations'
     },
     {
-        id: 'event-attendance',
-        name: 'Event Attendance Intelligence',
-        description: 'Advanced analytics on event participation trends, attendance forecasting, and engagement metrics to drive strategic event planning decisions.',
-        icon: Users,
-        available: false,
+        id: 'event-type-performance',
+        name: 'Event Type Performance',
+        description: 'Insightful analysis of event types by participation, attendance, and engagement to support strategic planning and future event design.',
+        icon: TrendingUp,
+        available: true,
         requiresVenueSelection: false,
         requiresDateRange: true,
         category: 'Analytics'
@@ -57,16 +57,7 @@ const reportTypes: ReportType[] = [
         requiresDateRange: true,
         category: 'Financial'
     },
-    {
-        id: 'participant-demographics',
-        name: 'Stakeholder Demographics Report',
-        description: 'Strategic insights into participant demographics, engagement patterns, satisfaction metrics, and behavioral analytics for enhanced decision-making.',
-        icon: TrendingUp,
-        available: false,
-        requiresVenueSelection: false,
-        requiresDateRange: true,
-        category: 'Analytics'
-    }
+   
 ];
 
 const categoryColors = {
@@ -192,21 +183,31 @@ export default function AdminReportPage() {
                 return `${year}-${month}-${day}T${hours}:${minutes}`;
             };
 
-            const request = {
-                startDateTime: formatDateTime(customStartDate),
-                endDateTime: formatDateTime(customEndDate),
-                venueIds: selectedVenues.map(id => parseInt(id))
-            };
-            console.log('Request payload:', request);
-
-            const report = await adminReportService.generateVenueUtilizationReport(request);
+            let report;
+            let filename;
+            if (selectedReportType === 'event-type-performance') {
+                report = await adminService.generateEventTypePerformanceReport(
+                    formatDateTime(customStartDate),
+                    formatDateTime(customEndDate)
+                );
+                filename = 'event_type_performance_report.pdf';
+            } else {
+                const request = {
+                    startDateTime: formatDateTime(customStartDate),
+                    endDateTime: formatDateTime(customEndDate),
+                    venueIds: selectedVenues.map(id => parseInt(id))
+                };
+                console.log('Request payload:', request);
+                report = await adminService.generateVenueUtilizationReport(request);
+                filename = `${reportType.name.toLowerCase().replace(/\s+/g, '_')}_report.pdf`;
+            }
             console.log('Report generated successfully');
 
             // Create download link
             const url = window.URL.createObjectURL(report);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${reportType.name.toLowerCase().replace(/\s+/g, '_')}_report.pdf`;
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

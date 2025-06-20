@@ -1,0 +1,120 @@
+/* src/app/my-events/[id]/attendance/styles/attendancePage.module.css */
+
+/* --- Styles specific to the Attendance Page --- */
+
+/* Layout for the QR code section (QR image and download button) */
+.qr-code-section {
+    display: flex;
+    flex-direction: column; /* Stack the QR code and button vertically */
+    align-items: center; /* Center items horizontally */
+    gap: 20px; /* Space between the QR code container and the button */
+    padding: 20px; /* Add some padding inside this section */
+    /* Add a border or background if you want to visually group it */
+    /* border: 1px solid #eee; */
+    /* border-radius: 8px; */
+    /* background-color: #f9f9f9; */
+}
+
+/* Container for the QR code image */
+/* This corresponds to the div wrapping the <img> tag */
+.qr-code-container {
+    /* You can set a background or border for the QR code area */
+    /* border: 1px solid #ddd; */
+    padding: 10px; /* Optional padding around the QR code */
+    background-color: #fff; /* White background for the QR code area */
+    /* Ensure it has a defined size if the img tag doesn't */
+    /* width: 256px; */
+    /* height: 256px; */
+}
+
+/* Style for the QR code image itself */
+.qr-code-container img {
+    display: block; /* Remove extra space below the image */
+    max-width: 100%; /* Ensure it scales within its container */
+    height: auto; /* Maintain aspect ratio */
+}
+
+
+/* Container for the attendance list table */
+/* This corresponds to the div with className={styles.attendanceListContainer} */
+/* Important for managing table width and horizontal scrolling */
+.attendance-list-container {
+    margin-top: 15px; /* Space above the table container */
+    overflow-x: auto; /* Add horizontal scrollbar if the table content overflows */
+    width: 100%; /* --- Make the container take the full width of its parent (.form-container) --- */
+    box-sizing: border-box; /* Include padding/border in element's total width/height */
+}
+
+/* Styles for the attendance table itself */
+/* This corresponds to the table with className={styles.attendanceTable} */
+.attendance-table {
+    width: 100%; /* --- Make the table expand to the full width of its container --- */
+    border-collapse: collapse; /* Collapse borders between table cells */
+    /* Optional: Add a border around the entire table */
+    /* border: 1px solid #ddd; */
+}
+
+/* Styles for table header cells (th) and data cells (td) */
+.attendance-table th,
+.attendance-table td {
+    padding: 12px; /* Inner padding within each cell */
+    text-align: left; /* Align text to the left */
+    border-bottom: 1px solid #ddd; /* Add a bottom border to separate rows */
+    /* Add vertical borders if desired */
+    /* border-right: 1px solid #eee; */
+}
+/* Remove right border on the last cell if adding vertical borders */
+/* .attendanceTable th:last-child, */
+/* .attendanceTable td:last-child { */
+/* border-right: none; */
+/* } */
+
+
+/* Specific styles for table header cells (th) */
+.attendance-table th {
+    background-color: #f2f2f2; /* Light gray background for headers */
+    font-weight: bold; /* Bold text for headers */
+    /* cursor: pointer; */ /* Cursor style for sortable headers is handled inline in JSX */
+    transition: background-color 0.2s ease; /* Smooth transition for hover effect */
+    /* You might add border-top if you want lines above headers too */
+    /* border-top: 1px solid #ddd; */
+}
+
+/* Hover effect for table header cells */
+.attendance-table th:hover {
+    background-color: #e0e0e0; /* Slightly darker background when hovering over a header */
+}
+
+/* Remove the bottom border for the cells in the last table row */
+.attendance-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Add a background color to even rows for better readability (zebra stripes) */
+.attendance-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9; /* Very light gray background for even rows */
+}
+
+/* Style to highlight rows where attendance has been taken */
+.attended-row {
+    background-color: #e8f5e9; /* Light green background for attended rows */
+    /* You can add other styles like bold text, different border color, etc. */
+    /* font-weight: bold; */
+}
+
+/* Styles for table rows (optional, can be used for hover effects on rows etc.) */
+/* .attendanceTable tbody tr { */
+    /* transition: background-color 0.2s ease; */
+/* } */
+/* .attendanceTable tbody tr:hover { */
+    /* background-color: #f0f0f0; */ /* Hover effect for rows */
+/* } */
+
+
+/* Specific styles for table data cells (td) if needed, but usually th/td covers most styling */
+/* .attendanceTable td {} */
+
+
+/* Note: Reusable styles that apply broadly (like .page-title, .form-container, .button-primary,
+   .button-secondary, .loading-message, .error-message, .no-events-message, .form-group)
+   should remain in your globals.css file. */

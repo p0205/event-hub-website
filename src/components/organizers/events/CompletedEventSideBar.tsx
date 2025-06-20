@@ -22,16 +22,16 @@ export default function CompletedEventSubmenuSidebar() {
     const eventId = params.id as string; // Get the event ID from the URL
     const pathname = usePathname(); // Get the current path
 
-    // Determine the base path for this event (e.g., /events/event-active-1)
-    const eventBasePath = `/events/completed/${eventId}`;
+    // Determine the base path for this event (e.g., /my-events/event-active-1)
+    const eventBasePath = `/my-events/completed/${eventId}`;
 
     // Function to determine if a submenu link is active
     const isSubmenuLinkActive = (hrefSegment: string) => {
-        // The full path for a submenu item is /events/[id]/hrefSegment
+        // The full path for a submenu item is /my-events/[id]/hrefSegment
         const itemPath = `${eventBasePath}/${hrefSegment}`;
         // Check if the current pathname exactly matches the item path
         // or starts with it for nested routes within a submenu section (less common)
-        // For 'overview', it should also be active on the base /events/[id] path
+        // For 'overview', it should also be active on the base /my-events/[id] path
          if (hrefSegment === '') {
              return pathname === eventBasePath ;
          }
@@ -45,7 +45,7 @@ export default function CompletedEventSubmenuSidebar() {
                  {/* Optional: Display the Event Title here (might need to fetch it or pass it down) */}
                  {/* <h3>Event Title Placeholder</h3> */}
                  {/* Link back to the main Events grid page */}
-                 <Link href="/events" className="back-to-events-link">
+                 <Link href="/my-events" className="back-to-events-link">
                      &lt; All Events {/* Use &lt; for < */}
                  </Link>
             </div>

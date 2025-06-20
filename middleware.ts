@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Define protected routes
-  const protectedPaths = ['/', '/budget', '/role', '/events']
+  const protectedPaths = ['/', '/budget', '/role', '/my-events']
   const isProtectedPath = protectedPaths.includes(pathname) ||
     protectedPaths.some(path => path !== '/' && pathname.startsWith(path + '/'))
 

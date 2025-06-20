@@ -40,11 +40,6 @@ export default async function BreadcrumbSlot({
     for (let i = 0; i < segments.length; i++) {
         const segment = segments[i]; // Get the current segment
 
-        // Construct the href path for this segment
-        // Example: for segments ["events", "pending", "21"]
-        // i=0: segment="events", href="/events"
-        // i=1: segment="pending", href="/events/pending"
-        // i=2: segment="21",      href="/events/pending/21" (This will be the last item)
         const href = '/' + segments.slice(0, i + 1).join('/');
 
         const isLast = i === segments.length - 1; // Check if this is the last segment

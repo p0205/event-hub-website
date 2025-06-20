@@ -152,3 +152,18 @@
   color: #4b5563;
   margin-top: 0.25rem;
 }
+/* Styles for the container div */
+.dropdownContainer {
+  display: flex; /* Makes the container a flex container */
+  justify-content: flex-end; /* Aligns items to the end (right) of the main axis */
+  padding-bottom: 1rem; 
+}
+
+/* Optional: Styles specific to the select element if you move them from inline */
+.dropdownContainer select {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  font-size: 1rem;
+  /* You might want to remove the inline style once you have this class */
+}

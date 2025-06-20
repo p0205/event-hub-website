@@ -17,73 +17,42 @@ import {
     CartesianGrid,
 } from 'recharts';
 import styles from './dashboard.module.css';
+import { AdminDashboardData } from '@/types/admin';
+import adminService from '@/services/adminService';
 
 const Dashboard = () => {
-    const [summary, setSummary] = useState({
-        totalUsers: 0,
-        totalActiveEvents: 0,
-        totalCompletedEvents: 0,
-    });
 
-    const [eventMonthlyGrowth, setEventMonthlyGrowth] = useState<{ month: string; events: number; }[]>([]);
-    const [eventTimeDist, setEventTimeDist] = useState<{ hour: string; count: number; }[]>([]);
-    const [topVenues, setTopVenues] = useState<{ name: string; count: number; }[]>([]);
-    const [eventTypeData, setEventTypeData] = useState<{ name: string; value: number; }[]>([]);
+    const [dashboard, setDashboard] = useState<AdminDashboardData>();
+    const [monthNumber, setMonthNumber] = useState<number>(3);
 
     useEffect(() => {
-        // Simulate API fetch
-        setSummary({
-            totalUsers: 320,
-            totalActiveEvents: 23,
-            totalCompletedEvents: 33,
-        });
 
-        setEventMonthlyGrowth([
-            { month: 'Jan', events: 3 },
-            { month: 'Feb', events: 5 },
-            { month: 'Mar', events: 7 },
-            { month: 'Apr', events: 9 },
-            { month: 'May', events: 12 },
-            { month: 'Jun', events: 15 },
-        ]);
+        fetchDashboardData();
 
-        setEventTimeDist([
-            { hour: '08:00', count: 2 },
-            { hour: '09:00', count: 4 },
-            { hour: '10:00', count: 7 },
-            { hour: '11:00', count: 8 },
-            { hour: '12:00', count: 6 },
-            { hour: '13:00', count: 5 },
-            { hour: '14:00', count: 4 },
-            { hour: '15:00', count: 6 },
-            { hour: '16:00', count: 3 },
-            { hour: '17:00', count: 2 },
-            { hour: '18:00', count: 1 },
-        ]);
-
-        setTopVenues([
-            { name: 'Auditorium A', count: 12 },
-            { name: 'Lab 2', count: 9 },
-            { name: 'Seminar Hall', count: 7 },
-            { name: 'FTMK Room 101', count: 5 },
-            { name: 'Gallery', count: 4 },
-        ]);
-
-        setEventTypeData([
-            { name: 'Talk', value: 14 },
-            { name: 'Workshop', value: 10 },
-            { name: 'Competition', value: 6 },
-            { name: 'Exhibition', value: 4 },
-            { name: 'Seminar', value: 3 },
-        ]);
-    }, []);
+    }, [monthNumber]);
 
     const pieColors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899'];
     const primaryColor = '#2563eb';
     const secondaryColor = '#64748b';
 
     // Calculate average events per month (based on completed events as they represent actual activity)
-    const avgEventsPerMonth = (summary.totalCompletedEvents / 6).toFixed(1); // 6 months of data
+    const avgEventsPerMonth = dashboard?.summary ? (dashboard.summary.totalCompletedEvents / 6).toFixed(1) : '0.0'; // 6 months of data
+
+    const fetchDashboardData = async () => {
+        try {
+            const response = await adminService.getDashboardData(monthNumber);
+            setDashboard(response);
+            console.debug('Dashboard data:', dashboard);
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        }
+    };
+
+    // Format the month for display in the line chart
+    const formattedMonthlyGrowth = dashboard?.monthlyGrowth?.map((item: { month: string; events: number }) => ({
+        ...item,
+        month: new Date(item.month + '-01').toLocaleString('default', { month: 'short', year: 'numeric' })
+    })) ?? [];
 
     const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
         if (active && payload && payload.length) {
@@ -103,9 +72,9 @@ const Dashboard = () => {
         <div className={styles.dashboardContainer}>
             <div className={styles.container}>
                 <div className={styles.header}>
-                <h1>Dashboard</h1>
-                       
-                   
+                    <h1>Dashboard</h1>
+
+
                 </div>
 
                 {/* Summary Cards */}
@@ -114,7 +83,7 @@ const Dashboard = () => {
                         <div className={styles.cardHeader}>
                             <div>
                                 <p className={styles.cardTitle}>Total Users</p>
-                                <p className={styles.cardValue}>{summary.totalUsers}</p>
+                                <p className={styles.cardValue}>{dashboard?.summary.totalUsers ?? 0}</p>
                             </div>
                             <div className={`${styles.iconContainer} ${styles.blue}`}>
                                 <svg className={`${styles.icon} ${styles.blue}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,8 +96,8 @@ const Dashboard = () => {
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
                             <div>
-                                <p className={styles.cardTitle}>Total Active Events</p>
-                                <p className={styles.cardValue}>{summary.totalActiveEvents}</p>
+                                <p className={styles.cardTitle}>Total Active Users</p>
+                                <p className={styles.cardValue}>{dashboard?.summary.totalActiveUsers ?? 0}</p>
                             </div>
                             <div className={`${styles.iconContainer} ${styles.green}`}>
                                 <svg className={`${styles.icon} ${styles.green}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,12 +106,26 @@ const Dashboard = () => {
                             </div>
                         </div>
                     </div>
+                </div>
 
+                <div className={styles.dropdownContainer}>
+                    <select
+                        className="right-aligned-select"
+                        value={monthNumber}
+                        onChange={e => setMonthNumber(Number(e.target.value))}
+                    >
+                        <option value={3}>Past 3 Month</option>
+                        <option value={6}>Past 6 Month</option>
+                        <option value={12}>Past 12 Month</option>
+                    </select>
+                </div>
+
+                <div className={styles.summaryGrid}>
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
                             <div>
                                 <p className={styles.cardTitle}>Total Completed Events</p>
-                                <p className={styles.cardValue}>{summary.totalCompletedEvents}</p>
+                                <p className={styles.cardValue}>{dashboard?.summary.totalCompletedEvents ?? 0}</p>
                             </div>
                             <div className={`${styles.iconContainer} ${styles.purple}`}>
                                 <svg className={`${styles.icon} ${styles.purple}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,25 +158,25 @@ const Dashboard = () => {
                             <h3 className={styles.chartTitle}>Monthly Event Growth</h3>
                             <p className={styles.chartSubtitle}>Event creation trends over time</p>
                         </div>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={eventMonthlyGrowth} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                        <ResponsiveContainer width="100%" height={350}>
+                            <LineChart data={formattedMonthlyGrowth} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                                <XAxis 
-                                    dataKey="month" 
+                                <XAxis
+                                    dataKey="month"
                                     axisLine={false}
                                     tickLine={false}
                                     tick={{ fill: '#64748b', fontSize: 12 }}
                                 />
-                                <YAxis 
+                                <YAxis
                                     axisLine={false}
                                     tickLine={false}
                                     tick={{ fill: '#64748b', fontSize: 12 }}
                                 />
                                 <Tooltip content={CustomTooltip} />
-                                <Line 
-                                    type="monotone" 
-                                    dataKey="events" 
-                                    stroke={primaryColor} 
+                                <Line
+                                    type="monotone"
+                                    dataKey="events"
+                                    stroke={primaryColor}
                                     strokeWidth={3}
                                     dot={{ fill: primaryColor, strokeWidth: 2, r: 4 }}
                                     activeDot={{ r: 6, stroke: primaryColor, strokeWidth: 2 }}
@@ -208,23 +191,23 @@ const Dashboard = () => {
                             <h3 className={styles.chartTitle}>Event Distribution by Hour</h3>
                             <p className={styles.chartSubtitle}>Peak usage times throughout the day</p>
                         </div>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={eventTimeDist} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                        <ResponsiveContainer width="100%" height={350}>
+                            <BarChart data={dashboard?.timeDistribution ?? []} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                                <XAxis 
-                                    dataKey="hour" 
+                                <XAxis
+                                    dataKey="hour"
                                     axisLine={false}
                                     tickLine={false}
                                     tick={{ fill: '#64748b', fontSize: 12 }}
                                 />
-                                <YAxis 
+                                <YAxis
                                     axisLine={false}
                                     tickLine={false}
                                     tick={{ fill: '#64748b', fontSize: 12 }}
                                 />
                                 <Tooltip content={CustomTooltip} />
-                                <Bar 
-                                    dataKey="count" 
+                                <Bar
+                                    dataKey="count"
                                     fill={secondaryColor}
                                     radius={[4, 4, 0, 0]}
                                 />
@@ -238,10 +221,10 @@ const Dashboard = () => {
                             <h3 className={styles.chartTitle}>Top 5 Most Used Venues</h3>
                             <p className={styles.chartSubtitle}>Venue utilization breakdown</p>
                         </div>
-                        <ResponsiveContainer width="100%" height={300}>
+                        <ResponsiveContainer width="100%" height={350}>
                             <PieChart>
                                 <Pie
-                                    data={topVenues}
+                                    data={dashboard?.topVenues ?? []}
                                     dataKey="count"
                                     nameKey="name"
                                     cx="50%"
@@ -250,15 +233,15 @@ const Dashboard = () => {
                                     paddingAngle={1}
                                     label
                                 >
-                                    {topVenues.map((entry, index) => (
-                                        <Cell 
-                                            key={`cell-venue-${index}`} 
+                                    {(dashboard?.topVenues ?? []).map((entry: { name: string; count: number }, index: number) => (
+                                        <Cell
+                                            key={`cell-venue-${index}`}
                                             fill={pieColors[index % pieColors.length]}
                                         />
                                     ))}
                                 </Pie>
                                 <Tooltip content={CustomTooltip} />
-                                <Legend 
+                                <Legend
                                     wrapperStyle={{ paddingTop: '20px' }}
                                     iconType="circle"
                                 />
@@ -269,13 +252,13 @@ const Dashboard = () => {
                     {/* Event Types Chart */}
                     <div className={styles.chartBox}>
                         <div className={styles.chartHeader}>
-                            <h3 className={styles.chartTitle}>Most Demanded Event Types</h3>
+                            <h3 className={styles.chartTitle}>Top 5 Most Demanded Event Types</h3>
                             <p className={styles.chartSubtitle}>Popular event categories</p>
                         </div>
-                        <ResponsiveContainer width="100%" height={300}>
+                        <ResponsiveContainer width="100%" height={350}>
                             <PieChart>
                                 <Pie
-                                    data={eventTypeData}
+                                    data={dashboard?.eventTypes ?? []}
                                     dataKey="value"
                                     nameKey="name"
                                     cx="50%"
@@ -284,15 +267,15 @@ const Dashboard = () => {
                                     paddingAngle={1}
                                     label
                                 >
-                                    {eventTypeData.map((entry, index) => (
-                                        <Cell 
-                                            key={`cell-${index}`} 
+                                    {(dashboard?.eventTypes ?? []).map((entry: { name: string; value: number }, index: number) => (
+                                        <Cell
+                                            key={`cell-${index}`}
                                             fill={pieColors[index % pieColors.length]}
                                         />
                                     ))}
                                 </Pie>
                                 <Tooltip content={CustomTooltip} />
-                                <Legend 
+                                <Legend
                                     wrapperStyle={{ paddingTop: '20px' }}
                                     iconType="circle"
                                 />

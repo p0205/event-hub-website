@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 //     </BreadcrumbItem>
 //     <BreadcrumbSeparator />
 //     <BreadcrumbItem>
-//       <BreadcrumbLink href="/events">Events</BreadcrumbLink>
+//       <BreadcrumbLink href="/my-events">Events</BreadcrumbLink>
 //     </BreadcrumbItem>
 //     <BreadcrumbSeparator />
 //     <BreadcrumbItem>

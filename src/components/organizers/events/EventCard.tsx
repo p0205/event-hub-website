@@ -33,7 +33,7 @@ export default function EventCard({ event }: { event: SimpleEvent }) {
 
   return (
     // Wrap the card content in a Next.js Link for navigation
-    <Link href={`/events/${event.status.toLowerCase()}/${event.id}`}  className="event-card-link" passHref>
+    <Link href={`/my-events/${event.status.toLowerCase()}/${event.id}`}  className="event-card-link" passHref>
        {/* Use an anchor tag for semantic correctness and apply styles */}
         <div className="event-card"> {/* The card container */}
           <div className={`event-card-icon ${statusColor()}`}> {/* Icon/Initials area */}
