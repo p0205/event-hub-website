@@ -27,7 +27,7 @@ const navigationItems: SidebarNavItem[] = [
     { label: 'Reports', href: '/reports', icon: <FaChartBar />, roles: ['ADMIN'] },
     { label: 'Users', href: '/users', icon: <FaUsers />, roles: ['ADMIN'] },
    
-    { label: 'Settings', href: '/settings', icon: <FaCog />, roles: ['ADMIN', 'EVENT ORGANIZER', 'Participant'] },
+    // { label: 'Settings', href: '/settings', icon: <FaCog />, roles: ['ADMIN', 'EVENT ORGANIZER', 'Participant'] },
     // Add back the Participant and Guest specific items
 ];
 

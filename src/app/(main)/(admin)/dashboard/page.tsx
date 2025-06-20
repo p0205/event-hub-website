@@ -21,15 +21,20 @@ import { AdminDashboardData } from '@/types/admin';
 import adminService from '@/services/adminService';
 
 const Dashboard = () => {
+    const today = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+
+    // Format as yyyy-MM-dd for input type="date"
+    const formatDate = (date: Date) => date.toISOString().slice(0, 10);
 
     const [dashboard, setDashboard] = useState<AdminDashboardData>();
-    const [monthNumber, setMonthNumber] = useState<number>(3);
+    const [startDateTime, setStartDateTime] = useState<string>(formatDate(thirtyDaysAgo));
+    const [endDateTime, setEndDateTime] = useState<string>(formatDate(today));
 
     useEffect(() => {
-
         fetchDashboardData();
-
-    }, [monthNumber]);
+    }, [startDateTime, endDateTime]);
 
     const pieColors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899'];
     const primaryColor = '#2563eb';
@@ -40,7 +45,9 @@ const Dashboard = () => {
 
     const fetchDashboardData = async () => {
         try {
-            const response = await adminService.getDashboardData(monthNumber);
+
+    
+            const response = await adminService.getDashboardData(startDateTime, endDateTime);
             setDashboard(response);
             console.debug('Dashboard data:', dashboard);
         } catch (error) {
@@ -73,8 +80,6 @@ const Dashboard = () => {
             <div className={styles.container}>
                 <div className={styles.header}>
                     <h1>Dashboard</h1>
-
-
                 </div>
 
                 {/* Summary Cards */}
@@ -109,15 +114,29 @@ const Dashboard = () => {
                 </div>
 
                 <div className={styles.dropdownContainer}>
-                    <select
-                        className="right-aligned-select"
-                        value={monthNumber}
-                        onChange={e => setMonthNumber(Number(e.target.value))}
-                    >
-                        <option value={3}>Past 3 Month</option>
-                        <option value={6}>Past 6 Month</option>
-                        <option value={12}>Past 12 Month</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <label>
+                            Start Date:
+                            <input
+                                type="date"
+                                value={startDateTime}
+                                max={endDateTime}
+                                onChange={e => setStartDateTime(e.target.value)}
+                                style={{ marginLeft: '0.5rem' }}
+                            />
+                        </label>
+                        <label>
+                            End Date:
+                            <input
+                                type="date"
+                                value={endDateTime}
+                                min={startDateTime}
+                                max={formatDate(today)}
+                                onChange={e => setEndDateTime(e.target.value)}
+                                style={{ marginLeft: '0.5rem' }}
+                            />
+                        </label>
+                    </div>
                 </div>
 
                 <div className={styles.summaryGrid}>

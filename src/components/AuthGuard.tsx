@@ -13,6 +13,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const isAuthPage = (path: string | null) => { // Ensure path can be null
     return path?.includes('/sign-in') || 
            path?.includes('/sign-up') || 
+           path?.includes('/public') || 
            path?.includes('/check-email');
   };
 

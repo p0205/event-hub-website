@@ -1,6 +1,7 @@
 import { AdminDashboardData } from '@/types/admin';
 import api from './api';
 import { HttpStatusCode } from 'axios';
+import { convertToLocalDateTime } from '@/helpers/eventHelpers';
 
 interface VenueUtilizationReportRequest {
     startDateTime: string;  // ISO-8601 format
@@ -11,11 +12,14 @@ interface VenueUtilizationReportRequest {
 
 const adminService = {
 
-    getDashboardData: async (monthNo:number): Promise<AdminDashboardData> => {
+    getDashboardData: async (startDateTime:string, endDateTime:string): Promise<AdminDashboardData> => {
         try {
+            startDateTime = convertToLocalDateTime(startDateTime);
+            endDateTime = convertToLocalDateTime(endDateTime);
             const response = await api.get('/admin/dashboard',{
                 params: {
-                    "numberOfMonths" : monthNo,
+                    "startDateTime" : startDateTime,
+                    "endDateTime" : endDateTime,
                 }
             }
                 

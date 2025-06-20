@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isAuthPage = useCallback((path: string) => {
     return path?.includes('/sign-in') ||
       path?.includes('/sign-up') ||
+      path?.includes('/public') ||
       path?.includes('/check-email')
   }, [])
 
@@ -103,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if(response.role == 'ADMIN'){
           router.replace('/dashboard'); // Navigate immediately (remove setTimeout)
         }else{
-          router.replace('/home'); // Navigate immediately (remove setTimeout)
+          router.replace('/'); // Navigate immediately (remove setTimeout)
         }
       } else {
         throw new Error('No user data received from login');

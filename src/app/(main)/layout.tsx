@@ -5,6 +5,8 @@
 import Topbar from '@/components/Topbar';
 import Sidebar from '@/components/Sidebar';
 import { redirect } from 'next/navigation';
+import AuthGuard from '@/components/AuthGuard';
+import { AuthProvider } from '@/context/AuthContext';
 // import { getUserFromCookie } from '@/lib/auth';
 
 // breadcrumb is likely something specific to your layout structure.
@@ -30,27 +32,30 @@ export default async function MainLayout({
   return (
     // Note: The root app/layout.tsx provides the <html> and <body> tags.
     // This layout focuses on the structure within the body for the (main) group.
-    
-    <div className="flex flex-col min-h-screen">
-      {/* The Topbar for routes in the (main) group */}
-      <Topbar />
 
-      {/* Container for the Sidebar and the main page content */}
-      <div className="flex items-stretch flex-1">
-        {/* The Sidebar for routes in the (main) group */}
-        <div className="sidebar-container-wrapper bg-white shadow-md">
-          <Sidebar />
-        </div>
+      <AuthGuard>
+        <div className="flex flex-col min-h-screen">
+          {/* The Topbar for routes in the (main) group */}
+          <Topbar />
 
-        {/* The main content area for pages within the (main) group */}
-        <main className="flex-1 bg-gray-100 p-6 space-y-6 overflow-y-auto">
-          {/* Remove {breadcrumb} unless you implement a way to provide it here */}
-          {breadcrumb}
-          <div>
-            {children} {/* The content of your page files within (main) */}
+          {/* Container for the Sidebar and the main page content */}
+          <div className="flex items-stretch flex-1">
+            {/* The Sidebar for routes in the (main) group */}
+            <div className="sidebar-container-wrapper bg-white shadow-md">
+              <Sidebar />
+            </div>
+
+            {/* The main content area for pages within the (main) group */}
+            <main className="flex-1 bg-gray-100 p-6 space-y-6 overflow-y-auto">
+              {/* Remove {breadcrumb} unless you implement a way to provide it here */}
+              {breadcrumb}
+              <div>
+                {children} {/* The content of your page files within (main) */}
+              </div>
+            </main>
           </div>
-        </main>
-      </div>
-    </div>
+        </div>
+      </AuthGuard>
+
   );
 }

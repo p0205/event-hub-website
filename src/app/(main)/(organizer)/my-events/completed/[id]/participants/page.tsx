@@ -162,7 +162,7 @@ export default function EventParticipantsPage() {
             link.href = url;
 
             // Set the filename using the session name if available
-            const filename =  `attendance-${eventId.replace(/\s+/g, '_')}.xlsx`;
+            const filename =  `participants-${eventId.replace(/\s+/g, '_')}.xlsx`;
             link.download = filename;
 
             // Trigger the download
@@ -173,7 +173,7 @@ export default function EventParticipantsPage() {
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
         } catch (error: any) {
-            console.error("Failed to export attendance data:", error);
+            console.error("Failed to export participant data:", error);
             // You might want to show an error message to the user here
         }
     };

@@ -18,10 +18,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50">
-        <AuthProvider>
-          <AuthGuard>
-            {children}
-          </AuthGuard>
+      <AuthProvider>
+        {children}
         </AuthProvider>
         <Toaster richColors position="bottom-center" /> {/* Global Toaster */}
       </body>

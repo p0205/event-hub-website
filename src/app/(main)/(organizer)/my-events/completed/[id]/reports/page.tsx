@@ -128,7 +128,7 @@ export default function EventReportsPage() {
         <div className={styles["page-container"]}>
 
             <h1>{reportOverview?.eventName}</h1>
-            <p className={styles["event-subtitle"]}>{"Sample Event"} - {"Sample Event End Date"}</p>
+            {/* <p className={styles["event-subtitle"]}>{"Sample Event"} - {"Sample Event End Date"}</p> */}
 
             <div className={styles["reports-container"]}>
                 {/* Attendance Report Card */}
@@ -141,7 +141,6 @@ export default function EventReportsPage() {
                     </div>
 
                     <div className={styles["report-content"]}>
-
                         {/* Session Attendance Details */}
                         <div className={styles["session-list"]}>
                             <h3>Session Attendance</h3>
@@ -150,7 +149,7 @@ export default function EventReportsPage() {
                                     <div className={styles["session-name"]}><strong>{session.sessionName}</strong></div>
                                     <div className={styles["session-detail"]}>
                                         <span>Total Attendees: {session.totalAttendees}</span> &nbsp;|&nbsp;
-                                        <span>Attendance Rate: {session.sessionAttendanceRate}%</span>
+                                        <span>Attendance Rate: {session.sessionAttendanceRate.toFixed(2)}%</span>
                                     </div>
                                 </div>
                             ))}
@@ -226,7 +225,7 @@ export default function EventReportsPage() {
                         <div className={styles["report-summary"]}>
                             <div className={styles["summary-item"]}>
                                 <span className={styles["summary-label"]}>Overall Rating</span>
-                                <span className={styles["summary-value"]}>{reportOverview?.feedback.averageRating}/5</span>
+                                <span className={styles["summary-value"]}>{reportOverview?.feedback.averageRating.toFixed(2)}/5</span>
                             </div>
                             <div className={styles["summary-item"]}>
                                 <span className={styles["summary-label"]}>Total Feedback</span>
@@ -252,7 +251,7 @@ export default function EventReportsPage() {
                                 <h3>Feedback Summary</h3>
                                 <div className={styles["rating-overview"]}>
                                     <div className={styles["average-rating"]}>
-                                        <span className={styles["rating-number"]}>{reportOverview?.feedback.averageRating}</span>
+                                        <span className={styles["rating-number"]}>{reportOverview?.feedback.averageRating.toFixed(2)}</span>
                                         {renderStarRating(reportOverview?.feedback.averageRating ?? 0)}
                                         <span className={styles["total-feedback"]}>({reportOverview?.feedback.feedbackCount} feedback entries)</span>
                                     </div>
