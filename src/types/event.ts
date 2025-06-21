@@ -37,11 +37,36 @@ export enum EventType {
 export interface CalendarEvent {
     eventId: number;
     eventName: string;
+    eventType? :string;
+    description? :string;
     sessionId: number;
     sessionName: string;
     startDateTime: string;
     endDateTime: string;
     venueNames: string;
+}
+
+interface EventDetailsSessionDTO {
+    id: number;
+    sessionName: string;
+    startDateTime: string;
+    endDateTime: string;
+    venues: SimpleVenueDTO[];
+}
+
+export interface EventDetails {
+    id: number;
+    eventName: string;
+    description: string;
+    registerDate: string;
+    startDateTime: string;
+    endDateTime: string;
+    organizerName: string;
+    picName: string;
+    picContact: string;
+    picEmail: string;
+    sessions: EventDetailsSessionDTO[];
+    eventType: string;
 }
 /**
  * Interface for the main Event object structure.
@@ -98,6 +123,12 @@ export interface Venue {
     capacity: number;
     // Add other venue properties
 }
+
+export interface SimpleVenueDTO {
+    id: string;
+    name: string;
+}
+
 
 export interface BudgetCategory {
     id: number;

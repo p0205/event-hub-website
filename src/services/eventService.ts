@@ -1,7 +1,7 @@
 // --- eventService.ts ---
 import { HttpStatusCode } from 'axios';
 import api from './api'; // Import the central API client
-import { CalendarEvent, DemographicsSummary, Event, EventList, SimpleEvent } from '@/types/event';
+import { CalendarEvent, DemographicsSummary, Event, EventDetails, EventList, SimpleEvent } from '@/types/event';
 import { User } from '@/types/user';
 import { PageData } from '@/types/api';
 
@@ -58,6 +58,8 @@ interface EventService {
   saveParticipants: (eventId: number, participantList: User[]) => Promise<User[]>;
   deleteParticipants: (eventId: number, participantId: number) => Promise<void>;
   getCalendarEvents: (userId: number) => Promise<CalendarEvent[]>;
+  getAllCalendarEventsByMonth: (startDateTime: string, endDateTime:string) => Promise<CalendarEvent[]>;
+  getEventDetails: (eventId: number) => Promise<EventDetails>;
 }
 
 const eventService: EventService = {
@@ -280,6 +282,29 @@ const eventService: EventService = {
     });
     if (response.status !== HttpStatusCode.Ok) {
       throw new Error('Failed to fetch calendar events');
+    }
+    console.log(response.data);
+    return response.data;
+  },
+
+  getAllCalendarEventsByMonth: async (startDateTime: string, endDateTime:string): Promise<CalendarEvent[]> => {
+    const response = await api.get<CalendarEvent[]>(`/events/calendar/all-events`, {
+      params: { 
+        "startDateTime": startDateTime,
+        "endDateTime" : endDateTime
+       }
+    });
+    if (response.status !== HttpStatusCode.Ok) {
+      throw new Error('Failed to fetch calendar events');
+    }
+    console.log(response.data);
+    return response.data;
+  },
+
+  getEventDetails: async (eventId: number) : Promise<EventDetails> => {
+    const response = await api.get<EventDetails>(`/events/${eventId}/details`);
+    if (response.status !== HttpStatusCode.Ok) {
+      throw new Error('Failed to fetch event details');
     }
     console.log(response.data);
     return response.data;

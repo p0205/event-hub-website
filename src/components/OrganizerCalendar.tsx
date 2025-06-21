@@ -22,7 +22,7 @@ export default function OrganizerCalendar() {
       setLoading(true);
       setError(null);
       try {
-        const response = await eventService.getCalendarEvents(user.id);
+        const response = await eventService.getCalendarEvents(Number(user!.id));
         setEvents(response);
       } catch (e: any) {
         setError(`Failed to load events: ${e.message || 'Unknown error'}`);

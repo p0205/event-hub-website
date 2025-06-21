@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, MapPin, Clock, Users, Download, Smartphone, Navigation, Eye, List, CalendarDays } from 'lucide-react';
 import styles from './public.module.css';
+import { useRouter } from 'next/navigation';
 
 interface Event {
   id: string;
@@ -16,6 +17,8 @@ interface Event {
 }
 
 const EventHub = () => {
+  const router = useRouter();
+
   // No event/calendar/filter state or functions needed
   return (
     <div className={styles.container}>
@@ -31,7 +34,7 @@ const EventHub = () => {
             </p>
             <button 
               className={styles.heroButton}
-              onClick={() => document.getElementById('calendar')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => router.push('/public/calendar')}
             >
               <Calendar className={styles.buttonIcon} />
               Discover Events
