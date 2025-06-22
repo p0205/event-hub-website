@@ -23,7 +23,6 @@ export default function UsersPage() {
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [offset, setOffset] = useState(0);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -31,7 +30,6 @@ export default function UsersPage() {
       setUsers(data.content);
       setTotalItems(data.totalElements);
       setTotalPages(data.totalPages);
-      setOffset(data.pageable.offset);
     } catch (error: unknown) {
       if (error instanceof Error) {
         alert(error.message || "Failed to fetch users");

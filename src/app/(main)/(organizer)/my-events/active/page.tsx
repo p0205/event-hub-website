@@ -31,7 +31,6 @@ import { useAuth } from '@/context/AuthContext';
 export default function ActiveEventsPage() {
 
     const [activeEvents, setActiveEvents] = useState<SimpleEvent[]>([]);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const {user} = useAuth();
 
@@ -39,7 +38,6 @@ export default function ActiveEventsPage() {
     useEffect(() => {
       // Only fetch if eventId is a valid number
       const fetchActiveEvents = async () => {
-        setLoading(true);
         setError(null);
         setActiveEvents([]); // Reset event data on new fetch
   
@@ -50,11 +48,13 @@ export default function ActiveEventsPage() {
           }
           console.log('Fetched Event:', activeEvents); // Debug log
           setActiveEvents(activeEvents);
-        } catch (e: any) {
+        } catch (e: unknown) {
           console.error("Failed to fetch active events:", e);
-          setError(e.message || "Failed to fetch active events. Please try again.");
-        } finally {
-          setLoading(false);
+          if (e instanceof Error) {
+            setError(e.message || "Failed to fetch active events. Please try again.");
+          } else {
+            setError("Failed to fetch active events. Please try again.");
+          }
         }
       };
       fetchActiveEvents();

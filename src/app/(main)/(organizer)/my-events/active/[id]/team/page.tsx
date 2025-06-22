@@ -70,7 +70,7 @@ export default function EventTeamPage() {
             }
         };
         loadTeamData();
-    }, [eventId, refreshTeamTrigger, currentPageNo, pageSize, "user.name"]); // Rerun if eventId or trigger changes
+    }, [eventId, refreshTeamTrigger, currentPageNo, pageSize]); // Rerun if eventId or trigger changes
 
     // --- Data Loading (fetch roles - triggered when modal is shown) ---
     useEffect(() => {
@@ -164,9 +164,13 @@ export default function EventTeamPage() {
             if (data.length === 0) {
                 setSearchError('No users found matching the email/name.');
             }
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error("User search error:", e);
-            setSearchError(`Search failed: ${e.message || 'Unknown error'}`);
+            if (e instanceof Error) {
+                setSearchError(`Search failed: ${e.message || 'Unknown error'}`);
+            } else {
+                setSearchError('Search failed: Unknown error');
+            }
             setSearchResults([]);
         } finally {
             setSearching(false);
@@ -231,10 +235,14 @@ export default function EventTeamPage() {
             // Or close immediately:
             // setShowAddMemberModal(false);
 
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error("Bulk add team member API error:", e);
-            const apiErrorMessage = e.response?.data?.message || e.message || 'Unknown error';
-            setAddUsersError(`Failed to add users: ${apiErrorMessage}`);
+            if (e instanceof Error) {
+                const apiErrorMessage = e.message || 'Unknown error';
+                setAddUsersError(`Failed to add users: ${apiErrorMessage}`);
+            } else {
+                setAddUsersError('Failed to add users: Unknown error');
+            }
             setAddUsersSuccess(false);
         } finally {
             // Set addingUsers back to false *unless* closing modal immediately
@@ -257,10 +265,14 @@ export default function EventTeamPage() {
             await teamService.deleteTeamMember(Number(eventId), userIdToDelete);
             console.log("Team member successfully deleted.");
             setRefreshTeamTrigger(prev => prev + 1); // Trigger refetch
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error("Delete team member error:", e);
-            const apiErrorMessage = e.response?.data?.message || e.message || 'Unknown error';
-            setError(`Failed to delete team member: ${apiErrorMessage}`);
+            if (e instanceof Error) {
+                const apiErrorMessage = e.message || 'Unknown error';
+                setError(`Failed to delete team member: ${apiErrorMessage}`);
+            } else {
+                setError('Failed to delete team member: Unknown error');
+            }
             // Optional: Trigger refetch even on error to ensure consistency
             // setRefreshTeamTrigger(prev => prev + 1);
         } finally {
