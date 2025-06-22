@@ -2,21 +2,18 @@
 'use client'; // Mark this component as a Client Component
 
 import eventService from '@/services/eventService';
-import { BudgetCategory, CreateEventData, EventBudget, CreateSessionData, Venue, Session, EventType } from '@/types/event';
+import { BudgetCategory, CreateEventData, EventBudget, CreateSessionData, Venue, EventType } from '@/types/event';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import { FaTrash } from 'react-icons/fa';
 import venueService from '@/services/venueService';
-import eventBudgetService from '@/services/eventBudgetService';
 import budgetCategoryService from '@/services/budgetCategoryService';
 import { Time } from "@internationalized/date";
 import { TimeInput } from "@heroui/react";
-import { formatDateTime, parseTimeString } from '@/helpers/eventHelpers';
+import { parseTimeString } from '@/helpers/eventHelpers';
 import { useAuth } from '@/context/AuthContext';
-// import { useRouter } from 'next/navigation'; // Import if using router for navigation
-
 
 // Helper function to create a new default session
 const createDefaultSession = (): CreateSessionData => ({
@@ -30,13 +27,9 @@ const createDefaultSession = (): CreateSessionData => ({
     endDateTime: '',   // Will be calculated later
 });
 
-
-
-
 // --- The Component ---
 export default function CreateEventPage() {
     const router = useRouter(); // Initialize router for navigation
-    // const router = useRouter(); // Initialize router if needed for navigation
     const { user } = useAuth();
     const [formData, setFormData] = useState<CreateEventData>({
         name: '',
@@ -53,21 +46,10 @@ export default function CreateEventPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
 
-
-
     const [venues, setVenues] = useState<Venue[]>([]);
-    const [venuesLoading, setVenuesLoading] = useState(true);
-    // Correct way to initialize showAllVenues as an array of booleans
     const [showAllVenues, setShowAllVenues] = useState<boolean[]>([false]);
-
-    // State variable to hold any error message if fetching fails
-    const [venuesError, setVenuesError] = useState<string | null>(null);
     const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
-    const [budgetCategoriesLoading, setBudgetCategoriesLoading] = useState(true);
-    // State variable to hold any error message if fetching fails
-    const [budgetCategoriesError, setBudgetCategoriesError] = useState<string | null>(null);
     const [resetEndTimeInputs, setResetEndTimeInputs] = useState<Record<string, boolean>>({});
-
 
     const toggleShowAllVenues = (venueIndex: number) => {
         setShowAllVenues((prev) => {
@@ -83,10 +65,6 @@ export default function CreateEventPage() {
         // Define the asynchronous function that will perform the fetch
         const fetchVenues = async () => {
             console.log("Inside fetchVenues");
-            // Set loading state to true before starting the fetch
-            setVenuesLoading(true);
-            // Clear any previous error messages
-            setVenuesError(null);
             try {
                 console.log("Calling venueService.fetchVenues()");
                 // Call the service function to get venues from the backend API.
@@ -96,25 +74,19 @@ export default function CreateEventPage() {
 
                 console.log("Fetched venues:", fetchedVenues);
                 setVenues(fetchedVenues);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 // If an error occurs during the fetch, log it and set the error state
                 console.error("Failed to fetch venues:", err);
-                setVenuesError(`Failed to load venues: ${err.message || 'Unknown error'}`);
+                if (err instanceof Error) {
+                    console.error(`Failed to load venues: ${err.message || 'Unknown error'}`);
+                }
                 // Optionally clear venues state on error if you don't want to show partial data
                 // setVenues([]);
-            } finally {
-                // This block runs regardless of success or failure
-                // Set loading state to false once the fetch is complete
-                setVenuesLoading(false);
             }
         };
 
         const fetchBudgetCategories = async () => {
             console.log("Inside fetchBudgetCategories");
-            // Set loading state to true before starting the fetch
-            setBudgetCategoriesLoading(true);
-            // Clear any previous error messages
-            setBudgetCategoriesError(null);
             try {
                 console.log("Calling budgetCategoryService.fetchVenues()");
                 // Call the service function to get venues from the backend API.
@@ -123,27 +95,20 @@ export default function CreateEventPage() {
                 // Update the 'venues' state with the data received from the API
 
                 setBudgetCategories(fetchBudgetCategories);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 // If an error occurs during the fetch, log it and set the error state
                 console.error("Failed to fetch budget categories:", err);
-                setBudgetCategoriesError(`Failed to load budget categories: ${err.message || 'Unknown error'}`);
+                if (err instanceof Error) {
+                    console.error(`Failed to load budget categories: ${err.message || 'Unknown error'}`);
+                }
                 // Optionally clear venues state on error if you don't want to show partial data
                 // setVenues([]);
-            } finally {
-                // This block runs regardless of success or failure
-                // Set loading state to false once the fetch is complete
-                setBudgetCategoriesLoading(false);
             }
         };
-
-
-
 
         // Call the fetch function immediately when the effect runs (on mount)
         fetchVenues();
         fetchBudgetCategories();
-
-
 
     }, []);
 
@@ -161,9 +126,8 @@ export default function CreateEventPage() {
             // If sessions array is not empty (e.g., after state reset, HMR), do nothing
             return prev;
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, []);
-
 
     const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -210,7 +174,6 @@ export default function CreateEventPage() {
         return () => clearTimeout(timeoutId); // Cleanup to avoid memory leaks
     }, [formData.participantsNo]);
 
-
     useEffect(() => {
         let timer: NodeJS.Timeout;
         if (submitSuccess) {
@@ -225,8 +188,6 @@ export default function CreateEventPage() {
         // Cleanup function: clear the timer if the component unmounts or submitSuccess changes before the timer fires
         return () => clearTimeout(timer);
     }, [submitSuccess]); // Re-run this effect whenever submitSuccess changes
-
-
 
     // --- Event Handlers ---
 
@@ -357,7 +318,6 @@ export default function CreateEventPage() {
         }
     };
 
-
     // Handler for changing a specific venue select within a session's venueIds array
     const handleVenueSelectChange = (sessionId: string, venueIndex: number, value: string) => {
         setFormData({
@@ -409,7 +369,6 @@ export default function CreateEventPage() {
         setFormError(null);
     };
 
-
     // --- Form Submission ---
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         console.log("Enter handle submit");
@@ -440,7 +399,6 @@ export default function CreateEventPage() {
                     throw new Error(`End Time is required for session "${session.sessionName}".`);
                 }
 
-
                 // Validate combined date/time (basic check)
                 if (session.endDateTime <= session.startDateTime) {
                     throw new Error(`End time must be after start time for session "${session.sessionName}".`);
@@ -459,7 +417,6 @@ export default function CreateEventPage() {
                     throw new Error(`At least one venue must be selected for session "${session.sessionName}".`);
                 }
 
-
                 // *** Prepare data for backend (SessionDTO structure) ***
                 // The backend SessionDTO expects a List<Venue>. We send a list
                 // of objects containing only the 'id' as that's what the backend
@@ -476,10 +433,8 @@ export default function CreateEventPage() {
                     // Similarly, qrCodeImage is generated backend-side if needed.
                 };
 
-
                 return backendSessionData;
             });
-
 
             // Process Budgets (Structure matches backend EventBudgetDTO)
             // Filter out budgets without a category or allocated amount
@@ -500,7 +455,6 @@ export default function CreateEventPage() {
                         budgetCategoryId: budget.budgetCategoryId,
                     };
                 });
-
 
             // Basic Form Validation
             if (!formData.name || formData.name.trim() === '') {
@@ -556,12 +510,12 @@ export default function CreateEventPage() {
             console.log('Redirecting to /my-events/pending/', newEventId);
             router.push(`/my-events/pending/${newEventId}`); // Navigate to a relevant page
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Submission Error:", error);
             // Provide more specific feedback if possible
-            if (error.response && error.response.data && error.response.data.message) {
+            if (error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response && error.response.data && typeof error.response.data === 'object' && 'message' in error.response.data) {
                 // Error from backend API
-                setFormError(`Submission Failed: ${error.response.data.message}`);
+                setFormError(`Submission Failed: ${(error.response.data as { message: string }).message}`);
             } else if (error instanceof Error) {
                 // Error generated during frontend processing (validation, etc.)
                 setFormError(`Submission Failed: ${error.message}`);
@@ -573,7 +527,6 @@ export default function CreateEventPage() {
             setIsLoading(false); // Ensure loading indicator is turned off
         }
     };
-
 
     const handleCancel = () => {
         // ... (keep existing cancel logic)
@@ -661,7 +614,6 @@ export default function CreateEventPage() {
             <div className="form-container">
                 <form onSubmit={handleSubmit}>
 
-
                     {/* --- Event Details Section --- */}
                     <div className="form-section">
                         <h2>Event Details</h2>
@@ -742,16 +694,13 @@ export default function CreateEventPage() {
                             )}
                         </div>
 
-
                     </div>
-
-
 
                     {/* --- Budget Section --- */}
                     <div className="form-section">
                         <h2>Budget</h2>
                         {/* Map over budget items to render each row */}
-                        {formData.eventBudgets.map((item, index) => (
+                        {formData.eventBudgets.map((item) => (
                             // This div wraps the category select, amount input, and remove button
                             // The CSS for .budget-item-controls makes these children display as a flex row
                             <div key={item.id} className="budget-item-controls">
@@ -849,7 +798,6 @@ export default function CreateEventPage() {
                         </div>
                     </div>
 
-
                     {/* --- Sessions Section (Venue & Time) --- */}
                     <div className="form-section">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '1rem' }}>
@@ -864,7 +812,6 @@ export default function CreateEventPage() {
                                 + Add Session
                             </button>
                         </div>
-
 
                         {formData.sessions.map((session, index) => (
                             <div key={session.id} className="session-group"> {/* Use session-group class */}
@@ -944,9 +891,6 @@ export default function CreateEventPage() {
                                     </div>
                                 </div> {/* End Inline Group */}
 
-
-
-
                                 {/* Venue Selection(s) */}
                                 <div className="form-group" style={{ marginTop: '10px' }}> {/* Wrap venue selects in a form-group */}
                                     <label className="form-label">Venues:</label> {/* Label for the venue section */}
@@ -1021,7 +965,6 @@ export default function CreateEventPage() {
                                     </button>
                                 </div>
 
-
                             </div>
 
                         )
@@ -1046,7 +989,6 @@ export default function CreateEventPage() {
                         </button>
                     </div>
                 </form>
-
 
                 {showSuccessMessage && submitSuccess && (
                     <div className="success-overlay">

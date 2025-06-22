@@ -48,9 +48,13 @@ export default function EventBudgetPage() {
 
             setEventBudgets(mappedData);
             console.log("Event Budgets loaded:", data);
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error("Error loading budget data:", e);
-            setError(`Failed to load budget data: ${e.message || 'Unknown error'}`);
+            if (e instanceof Error) {
+                setError(`Failed to load budget data: ${e.message || 'Unknown error'}`);
+            } else {
+                setError('Failed to load budget data: Unknown error');
+            }
         } finally {
             setLoading(false);
         }
@@ -103,12 +107,12 @@ export default function EventBudgetPage() {
     }, [categoryBudgetSummary]);
 
     // --- Helper Functions ---
-    const getBudgetStatus = (percentage: number) => {
-        if (percentage <= 70) return { status: 'good', label: 'On Track' };
-        if (percentage <= 90) return { status: 'warning', label: 'Watch Closely' };
-        if (percentage <= 100) return { status: 'warning', label: 'Nearly Exceeded' };
-        return { status: 'exceeded', label: 'Over Budget' };
-    };
+    // const getBudgetStatus = (percentage: number) => {
+    //     if (percentage <= 70) return { status: 'good', label: 'On Track' };
+    //     if (percentage <= 90) return { status: 'warning', label: 'Watch Closely' };
+    //     if (percentage <= 100) return { status: 'warning', label: 'Nearly Exceeded' };
+    //     return { status: 'exceeded', label: 'Over Budget' };
+    // };
 
     const formatCurrency = (amount: number) => {
         return `RM${amount.toFixed(2)}`;
@@ -183,9 +187,13 @@ export default function EventBudgetPage() {
 
             handleCloseAddExpenseForm(); // Close modal on success
             alert('Expense recorded successfully!'); // Provide user feedback
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error("Failed to record expense:", e);
-            setAddExpenseError(e.message || "Failed to record expense.");
+            if (e instanceof Error) {
+                setAddExpenseError(e.message || "Failed to record expense.");
+            } else {
+                setAddExpenseError("Failed to record expense.");
+            }
         } finally {
             setIsSubmittingExpense(false);
         }
@@ -330,7 +338,7 @@ export default function EventBudgetPage() {
             {hasBudgetCategories && (
                 <div>
                     {categoryBudgetSummary.map(category => {
-                        const statusInfo = getBudgetStatus(category.percentage); // Removed as it's not used in display currently
+                        // const statusInfo = getBudgetStatus(category.percentage); // Removed as it's not used in display currently
 
                         return (
                             <div key={category.id} className={styles['category-card']}>

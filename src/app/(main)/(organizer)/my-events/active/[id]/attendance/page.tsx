@@ -72,9 +72,13 @@ export default function EventAttendancePage() {
                 } else {
                     setSelectedSessionId(null); // Ensure no session is selected if none exist
                 }
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error("Failed to fetch attendance data:", e);
-                setError(`Failed to load attendance data: ${e.message || 'Unknown error'}`);
+                if (e instanceof Error) {
+                    setError(`Failed to load attendance data: ${e.message || 'Unknown error'}`);
+                } else {
+                    setError('Failed to load attendance data: Unknown error');
+                }
                 setSessions(null); // Ensure sessions is null on error
             } finally {
                 setLoading(false);
@@ -138,9 +142,13 @@ export default function EventAttendancePage() {
                     throw new Error("Received empty or invalid response for QR code.");
                 }
 
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error("Failed to auto-fetch QR code:", e);
-                setQrCodeError(`Failed to load QR code: ${e.message || 'Unknown error'}`);
+                if (e instanceof Error) {
+                    setQrCodeError(`Failed to load QR code: ${e.message || 'Unknown error'}`);
+                } else {
+                    setQrCodeError('Failed to load QR code: Unknown error');
+                }
                 setQrCodeImageUrl(null); // Ensure QR is cleared on error
             } finally {
                 setQrCodeLoading(false); // Stop loading indicator
@@ -174,10 +182,6 @@ export default function EventAttendancePage() {
     const handlePageSizeChange = (newSize: number) => {
         setPageSize(newSize);
         setCurrentPage(1); // Reset to the first page on page size change
-    };
-
-    const handleManualAttendanceChange = (participantId: string, currentlyAttended: boolean) => {
-        console.log(`Attendance change for participant ${participantId} to ${currentlyAttended}`);
     };
 
     const fetchParticipants = async (page: number, size: number) => {
@@ -331,50 +335,6 @@ export default function EventAttendancePage() {
         setQrCodeError(null); // Clear previous errors
 
         // Determine the expiresAt value based on custom input (formatted as local date time string)
-        let expiresAtLocalString: string | undefined = undefined;
-
-        if (customExpiresAt) {
-            // If user provided a custom date/time from the datetime-local input,
-            // parse it and format it as a local date time string (YYYY-MM-DDTHH:mm:ss)
-            try {
-                // new Date('YYYY-MM-DDTHH:mm') parses as local time
-                const date = new Date(customExpiresAt);
-                if (!isNaN(date.getTime())) {
-                    // Manually format local date and time components
-                    const year = date.getFullYear();
-                    const month = (`0${date.getMonth() + 1}`).slice(-2); // Month is 0-indexed
-                    const day = (`0${date.getDate()}`).slice(-2);
-                    const hours = (`0${date.getHours()}`).slice(-2);
-                    const minutes = (`0${date.getMinutes()}`).slice(-2);
-                    const seconds = (`0${date.getSeconds()}`).slice(-2); // Add seconds for the desired format
-
-                    expiresAtLocalString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-
-                } else {
-                    throw new Error("Invalid custom date/time format.");
-                }
-            } catch (e: any) {
-                console.error("Invalid custom expiresAt:", customExpiresAt, e);
-                setQrCodeError(`Invalid expiration date/time: ${e.message || 'Please check the format.'}`);
-                setIsGeneratingQr(false);
-                // Don't close modal on validation error, let user fix
-                return;
-            }
-        } else if (selectedSession?.endDateTime) {
-            // If no custom date set but session has end time, use that as the default value shown in the input.
-            // The API call below will use the formatted customExpiresAt (which is empty if no custom date)
-            // If customExpiresAt is empty, expiresAtLocalString will be undefined at the end of the 'if' block.
-            // This branch is mostly for displaying the default in the modal input,
-            // the actual value sent to the API is determined by customExpiresAt.
-            console.log("Using session endDateTime as default for modal input, but sending customExpiresAt value to API.");
-            // The actual expiresAtLocalString sent will be undefined if customExpiresAt is empty.
-            // The formatting logic for selectedSession.endDateTime is handled in handleOpenGenerateQrModal
-        }
-        // If customExpiresAt is empty and selectedSession.endDateTime is not used for a custom value,
-        // expiresAtLocalString remains undefined, and the backend will use its default.
-
-        // We need to re-determine expiresAtLocalString based ONLY on the customExpiresAt input value for the API call.
-        // Let's simplify the logic here to just format customExpiresAt if present.
         let finalExpiresAtParam: string | undefined = undefined;
         if (customExpiresAt) {
             try {
@@ -390,11 +350,15 @@ export default function EventAttendancePage() {
                 } else {
                     throw new Error("Invalid custom date/time format.");
                 }
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error("Invalid custom expiresAt:", customExpiresAt, e);
-                setQrCodeError(`Invalid expiration date/time: ${e.message || 'Please check the format.'}`);
+                if (e instanceof Error) {
+                    setQrCodeError(`Invalid expiration date/time: ${e.message || 'Please check the format.'}`);
+                } else {
+                    setQrCodeError('Invalid expiration date/time: Please check the format.');
+                }
                 setIsGeneratingQr(false);
-                return; // Stop on error
+                return;
             }
         }
 
@@ -425,9 +389,13 @@ export default function EventAttendancePage() {
             }
 
 
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error("Failed to generate QR code:", e);
-            setQrCodeError(`Failed to generate QR code: ${e.message || 'Unknown error'}`);
+            if (e instanceof Error) {
+                setQrCodeError(`Failed to generate QR code: ${e.message || 'Unknown error'}`);
+            } else {
+                setQrCodeError('Failed to generate QR code: Unknown error');
+            }
             // Ensure QR is cleared on error
             setQrCodeImageUrl(null);
             // Do NOT close the modal on error, let the user see the error or try again
@@ -460,59 +428,6 @@ export default function EventAttendancePage() {
 
         // Note: URL.revokeObjectURL is handled in the useEffect cleanup
         // It's automatically called when qrCodeImageUrl changes or component unmounts.
-    };
-
-
-    // Handle manually marking attendance for a participant
-    const handleManualAttendance = (participantId: string, currentlyAttended: boolean) => {
-        console.log(`Attempting to manually mark participant ${participantId} for session ${selectedSessionId}`);
-        if (!selectedSessionId || !numericEventId) {
-            console.error("No session selected or event ID missing for manual attendance.");
-            // TODO: Provide user feedback
-            return;
-        }
-
-        // Determine the action: mark as attended or mark as not attended
-        const action = currentlyAttended ? 'unmark' : 'mark'; // Decide if you're marking or unmarking
-        const newAttendedStatus = !currentlyAttended; // The status it will become
-
-        // TODO: Implement API call to record manual attendance
-        // Example: fetch(`/api/events/${numericEventId}/attendance/manual`, {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({
-        //         participantId,
-        //         sessionId: selectedSessionId, // Use string ID here as per state
-        //         action: action, // 'mark' or 'unmark'
-        //         timestamp: new Date().toISOString(), // Record time on manual mark
-        //         method: 'Manual',
-        //     })
-        // });
-
-        // After a successful API call (within the .then() or try block):
-        // You should update the component's state (`attendanceRecords`) to reflect the change.
-        // This will cause `participantAttendanceList` to recalculate and the UI to update.
-        // Example of optimistic update (update state immediately, revert on error):
-        /*
-        // Find and update the specific record or add a new one
-        setAttendanceRecords(prevRecords => {
-            const updatedRecords = prevRecords.filter(r => !(r.participantId === participantId && r.sessionId === selectedSessionId)); // Remove existing record for this session/participant
-            if (newAttendedStatus) {
-                // Add the new record if marking as attended
-                updatedRecords.push({
-                     participantId: participant.id, // Ensure you have participant ID here
-                     sessionId: selectedSessionId,
-                     timestamp: new Date().toISOString(), // Use actual time from backend if possible
-                     method: 'Manual',
-                });
-            }
-            return updatedRecords; // Return the new array
-        });
-
-        // Then make the actual API call and handle success/error (e.g., revert state on error)
-        */
-        console.log(`Simulating API call to ${action} participant ${participantId}'s attendance.`);
-        // TODO: Implement the actual API call and state update logic here.
     };
 
 
@@ -556,7 +471,7 @@ export default function EventAttendancePage() {
                 <div className={'page-title-section'}>
                     <h2>Attendance</h2>
                     <p className={'page-subtitle'}>
-                    Generate attendance codes per session and monitor participants' attendance
+                    Generate attendance codes per session and monitor participants&apos; attendance
                     </p>
                 </div>
             </div>
@@ -706,7 +621,6 @@ export default function EventAttendancePage() {
                     {/* Render the new ParticipantAttendanceTable component */}
                     <AttendanceTable
                         participants={participants}
-                        onManualAttendanceChange={handleManualAttendanceChange}
                         currentPage={currentPage}
                         pageSize={pageSize}
                         totalItems={totalItems}

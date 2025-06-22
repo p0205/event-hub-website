@@ -1,14 +1,11 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { formatDate, formatDateTime } from '@/helpers/eventHelpers'; // Import formatting helper
 import { Attendee } from '@/types/event';
 
-
-
 interface ParticipantAttendanceTableProps {
     participants: Attendee[]; // This is now the list for the CURRENT page
-    onManualAttendanceChange: (participantId: string, currentlyAttended: boolean) => void;
     selectedSessionName?: string | null;
 
     // --- Pagination Props ---
@@ -24,7 +21,6 @@ interface ParticipantAttendanceTableProps {
 
 const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
     participants,
-    onManualAttendanceChange,
     // Pagination Props
     currentPage,
     pageSize,
@@ -37,7 +33,6 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
 
     const startIndex = (currentPage - 1) * pageSize + 1;
     const endIndex = Math.min(startIndex + pageSize - 1, totalItems); // Ensure end index doesn't exceed total items
-
 
     return (
         <div>
@@ -61,8 +56,6 @@ const ParticipantAttendanceTable: React.FC<ParticipantAttendanceTableProps> = ({
                 </div>
 
             )}
-
-
 
             <table className={"paging-table"}>
                 <thead>

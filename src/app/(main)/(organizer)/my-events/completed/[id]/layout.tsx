@@ -1,24 +1,20 @@
-// src/app/my-events/active/[id]/layout.tsx
+// src/app/events/completed/[id]/layout.tsx
 
-import CompletedEventSubmenuSidebar from '@/components/organizers/events/CompletedEventSideBar';
+import CompletedEventSideBar from '@/components/organizers/events/CompletedEventSideBar';
 
-// Layout for individual event pages (/my-events/[id] and its sub-routes)
+// Layout for individual event pages (/events/[id] and its sub-routes)
 export default function EventDetailLayout({
   children, // This will be the nested page components (e.g., overview/page.tsx, participants/page.tsx)
-  params, // Get the event ID from the route parameters
 }: {
   children: React.ReactNode;
-  params: { id: string }; // Define params type
 }) {
-//   const eventId = params.id; // Access the event ID
-
   // Return the layout structure directly, without <html> or <body>
   return (
     <div className="flex items-stretch flex-1 event-content-panel-wrapper">
 
        {/* Secondary Event Submenu Sidebar */}
        {/* This sidebar is specific to this layout */}
-       <CompletedEventSubmenuSidebar /> {/* Pass nothing, it gets ID from useParams */}
+       <CompletedEventSideBar /> {/* Pass nothing, it gets ID from useParams */}
 
 
       {/* The main content area where individual pages will be rendered */}

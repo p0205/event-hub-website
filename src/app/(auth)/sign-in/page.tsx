@@ -2,10 +2,7 @@
 'use client';
 
 import React, { useState, FormEvent } from 'react';
-import Head from 'next/head';
 import Link from 'next/link';
-import { authService } from '@/services';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 
@@ -19,7 +16,6 @@ const SignInPage: React.FC = () => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const router = useRouter();
     const { signIn } = useAuth();
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -38,16 +34,16 @@ const SignInPage: React.FC = () => {
             await signIn(email, password);
             console.log("After signIn");
             
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.log('Login form: Sign in failed', err);
             
             // Handle specific error messages from the API
             let errorMessage = 'An unexpected error occurred. Please try again.';
             
-            if (err.message) {
+            if (err instanceof Error && err.message) {
                 errorMessage = err.message;
-            } else if (err.response?.data?.message) {
-                errorMessage = err.response.data.message;
+            } else if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'data' in err.response && err.response.data && typeof err.response.data === 'object' && 'message' in err.response.data) {
+                errorMessage = String(err.response.data.message);
             }
             
             console.log('Login form: Setting error message:', errorMessage);
@@ -151,7 +147,7 @@ const SignInPage: React.FC = () => {
                     </form>
 
                     <div className="signup-link">
-                        Don't have an account? {' '}
+                        Don&apos;t have an account? {' '}
                         <Link href="/sign-up/check-email">
                             Sign up
                         </Link>

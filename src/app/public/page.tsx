@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Calendar, MapPin, Clock, Users, Download, Smartphone, Navigation, Eye, List, CalendarDays } from 'lucide-react';
+import { Calendar} from 'lucide-react';
 import styles from './public.module.css';
 import { useRouter } from 'next/navigation';
 

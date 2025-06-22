@@ -1,11 +1,10 @@
-
 // src/app/my-events/[id]/page.tsx
 'use client'; // Mark as Client Component
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation'; // To get route parameters (the event ID)
 import eventService from '@/services/eventService';
-import { Event, Session, TeamMember, Venue } from '@/types/event'; // Ensure Venue is imported
+import { Event, Venue } from '@/types/event'; // Ensure Venue is imported
 import { formatDate, formatDateTime } from '@/helpers/eventHelpers'; // Assuming this path is correct
 import BudgetTable from '@/components/BudgetTable';
 
@@ -21,10 +20,10 @@ export default function ActiveEventDetailsPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  // const [isEditing, setIsEditing] = useState(false);
 
   // State for QR Code display
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  // const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   // const [team, setTeam] = useState<TeamMember[]>([]); // Not used directly, event.team is used
 
   // --- State for grouped sessions ---
@@ -57,9 +56,13 @@ export default function ActiveEventDetailsPage() {
         }
         console.log('Fetched Event:', fetchedEvent); // Debug log
         setEvent(fetchedEvent);
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error("Failed to fetch event details:", e);
-        setError(e.message || "Failed to load event details. Please try again.");
+        if (e instanceof Error) {
+          setError(e.message || "Failed to load event details. Please try again.");
+        } else {
+          setError("Failed to load event details. Please try again.");
+        }
       } finally {
         setLoading(false);
       }
@@ -103,10 +106,10 @@ export default function ActiveEventDetailsPage() {
 
 
   // --- Handlers (Keep as they are, they correctly use async/await internally) ---
-  const handleEditClick = () => {
-    setIsEditing(!isEditing);
-    console.log('Edit Event clicked');
-  };
+  // const handleEditClick = () => {
+  //   setIsEditing(!isEditing);
+  //   console.log('Edit Event clicked');
+  // };
 
 
   // --- Rendering Logic ---

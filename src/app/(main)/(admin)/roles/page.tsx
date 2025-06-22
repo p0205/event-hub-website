@@ -1,8 +1,8 @@
 "use client";
 import roleService from "@/services/roleService";
 import { Role } from "@/types/event";
-import { useEffect, useState } from "react";
-import { FaPlus, FaTrash, FaSearch, FaSpinner } from "react-icons/fa";
+import { useEffect, useState, useCallback } from "react";
+import { FaPlus, FaSearch, FaSpinner } from "react-icons/fa";
 import RolesTable from "./RolesTable";
 import styles from './roles.module.css';
 
@@ -10,7 +10,6 @@ export default function ManageRolesPage() {
     const [roles, setRoles] = useState<Role[]>([]);
     const [newRoleName, setNewRoleName] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
-    const [loading, setLoading] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
 
@@ -21,26 +20,26 @@ export default function ManageRolesPage() {
     const [totalPages, setTotalPages] = useState(0);
     const [offset, setOffset] = useState(0);
 
-    // Fetch roles on initial load
-    useEffect(() => {
-        fetchRoles();
-    }, [currentPage, pageSize]);
-
-    const fetchRoles = async () => {
+    const fetchRoles = useCallback(async () => {
         try {
-            setLoading(true);
-            const data = await roleService.fetchRolesInPages(currentPage,pageSize);
+            const data = await roleService.fetchRolesInPages(currentPage, pageSize);
             setRoles(data.content);
             setTotalItems(data.totalElements);
             setTotalPages(data.totalPages);
             setOffset(data.pageable.offset);
-
-        } catch (error: any) {
-            alert(error.message || "Failed to fetch roles");
-        } finally {
-            setLoading(false);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                alert(error.message || "Failed to fetch roles");
+            } else {
+                alert("Failed to fetch roles");
+            }
         }
-    };
+    }, [currentPage, pageSize]);
+
+    // Fetch roles on initial load
+    useEffect(() => {
+        fetchRoles();
+    }, [fetchRoles]);
 
     const handleAddRole = async () => {
         if (!newRoleName.trim()) {
@@ -63,14 +62,18 @@ export default function ManageRolesPage() {
             setNewRoleName("");
             await fetchRoles();
             alert(`Role ${newRoleName} is added successfully`);
-        } catch (error: any) {
-            alert(error.message || "Failed to add role");
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                alert(error.message || "Failed to add role");
+            } else {
+                alert("Failed to add role");
+            }
         } finally {
             setIsAdding(false);
         }
     };
 
-    const handleSearch = async () => {
+    const handleSearch = useCallback(async () => {
         if (!searchQuery.trim()) {
             fetchRoles();
             return;
@@ -79,46 +82,46 @@ export default function ManageRolesPage() {
             setIsSearching(true);
             const data = await roleService.fetchRolesByName(searchQuery);
             setRoles(data);
-        } catch (error: any) {
-            alert(error.message || "Failed to search roles");
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                alert(error.message || "Failed to search roles");
+            } else {
+                alert("Failed to search roles");
+            }
         } finally {
             setIsSearching(false);
         }
-    };
+    }, [searchQuery, fetchRoles]);
 
     const handlePageChange = (newPage: number) => {
         setCurrentPage(newPage);
-        
     };
 
     const handlePageSizeChange = (newSize: number) => {
         setPageSize(newSize);
-
         setCurrentPage(0); // Reset to the first page on page size change
     };
-
-
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             handleSearch();
         }, 1000);
         return () => clearTimeout(delayDebounce);
-    }, [searchQuery]);
-
+    }, [handleSearch]);
 
     const handleDeleteRole = async (id: number) => {
         if (!confirm("Are you sure you want to delete this role?")) return;
 
         try {
-            setLoading(true);
             await roleService.deleteRole(id);
             await fetchRoles();
             alert("Role is deleted successfully");
-        } catch (error: any) {
-            alert(error.message || "Failed to delete role");
-        } finally {
-            setLoading(false);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                alert(error.message || "Failed to delete role");
+            } else {
+                alert("Failed to delete role");
+            }
         }
     };
 
@@ -139,43 +142,41 @@ export default function ManageRolesPage() {
                         {isSearching && (
                             <FaSpinner className={styles.searchIcon} style={{ right: '1rem', left: 'auto' }} />
                         )}
+                    </div>
                 </div>
-            </div>
 
                 <div className={styles.addRoleContainer}>
                     <div className={styles.addRoleForm}>
-                    <input
-                        type="text"
-                        value={newRoleName}
-                        onChange={(e) => setNewRoleName(e.target.value)}
-                        onKeyUp={(e) => e.key === 'Enter' && handleAddRole()}
-                        placeholder="Enter new role name"
+                        <input
+                            type="text"
+                            value={newRoleName}
+                            onChange={(e) => setNewRoleName(e.target.value)}
+                            onKeyUp={(e) => e.key === 'Enter' && handleAddRole()}
+                            placeholder="Enter new role name"
                             className={styles.addRoleInput}
-                    />
-                    <button
-                        onClick={handleAddRole}
-                        disabled={isAdding}
+                        />
+                        <button
+                            onClick={handleAddRole}
+                            disabled={isAdding}
                             className={styles.addButton}
-                    >
-                        {isAdding ? <FaSpinner className="animate-spin" /> : <FaPlus />}
-                        Add Role
-                    </button>
+                        >
+                            {isAdding ? <FaSpinner className="animate-spin" /> : <FaPlus />}
+                            Add Role
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-             
-                <RolesTable       
-                roles={roles}
-                currentPage={currentPage}
-                pageSize={pageSize}
-                totalItems={totalItems}
-                totalPages={totalPages}
-                offset={offset}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}   
-                        handleDeleteRole={handleDeleteRole}
+                <RolesTable
+                    roles={roles}
+                    currentPage={currentPage}
+                    pageSize={pageSize}
+                    totalItems={totalItems}
+                    totalPages={totalPages}
+                    offset={offset}
+                    onPageChange={handlePageChange}
+                    onPageSizeChange={handlePageSizeChange}
+                    handleDeleteRole={handleDeleteRole}
                 />
-     
             </div>
         </div>
     );

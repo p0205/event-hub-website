@@ -8,13 +8,11 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 interface BudgetSummaryDonutChartProps {
   spent: number;
   remaining: number;
-  label?: string;
 }
 
 const BudgetSummaryDonutChart: React.FC<BudgetSummaryDonutChartProps> = ({ 
   spent, 
-  remaining, 
-  label 
+  remaining
 }) => {
   // Ensure spent and remaining are numbers and non-negative
   const validSpent = typeof spent === 'number' && !isNaN(spent) ? Math.max(0, spent) : 0;
@@ -84,7 +82,7 @@ const BudgetSummaryDonutChart: React.FC<BudgetSummaryDonutChartProps> = ({
         cornerRadius: 8,
         displayColors: true,
         callbacks: {
-          label: function(context: any) {
+          label: function(context: { parsed: number; label: string }) {
             const value = context.parsed;
             const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
             return `${context.label}: RM${value.toFixed(2)} (${percentage}%)`;

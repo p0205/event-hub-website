@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, UserAccountStatus } from '@/types/user';
-import { X, User as UserIcon, Mail, Phone, GraduationCap, BookOpen, Calendar, Shield } from 'lucide-react';
+import { X, User as UserIcon, Mail, Phone, GraduationCap, BookOpen, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import userService from '@/services/userService';
 
@@ -94,8 +94,12 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             toast.success('User created successfully!');
             onCreate();
             onClose();
-        } catch (err: any) {
-            setError(err.message || 'Failed to create user');
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message || 'Failed to create user');
+            } else {
+                setError('Failed to create user');
+            }
         } finally {
             setLoading(false);
         }

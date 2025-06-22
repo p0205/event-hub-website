@@ -4,9 +4,10 @@ import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { useState } from "react";
+import { enUS } from "date-fns/locale/en-US";
 
 const locales = {
-  "en-US": require("date-fns/locale/en-US"),
+  "en-US": enUS,
 };
 
 const localizer = dateFnsLocalizer({
@@ -36,7 +37,7 @@ const events = [
 ];
 
 export default function Calendar() {
-  const [allEvents, setAllEvents] = useState(events);
+  const [allEvents] = useState(events);
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-md">

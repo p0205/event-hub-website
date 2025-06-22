@@ -1,12 +1,12 @@
 // src/app/my-events/[id]/team/page.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 
 // Assuming a CSS Module for team page specific styles
 import styles from './team.module.css'; // Create this CSS module
-import userService from '@/services/userService';
+// import userService from '@/services/userService';
 import { User } from '@/types/user';
 import teamService from '@/services/teamService';
 import { Role, SearchUserInTeam, TeamMember } from '@/types/event'; // Ensure TeamMember type includes userId, name, email, role
@@ -25,7 +25,7 @@ export default function EventTeamPage() {
     // --- State for team members pagination
     const [currentPageNo, setCurrentPageNo] = useState(0);
     const [pageSize, setPageSize] = useState(5);
-    const [sortBy, setSortBy] = useState<string>("user.name");
+    // const [sortBy, setSortBy] = useState<string>("user.name");
     const [totalPages, setTotalPages] = useState(0);
     const [totalMembers, setTotalMembers] = useState(0);
 
@@ -51,22 +51,26 @@ export default function EventTeamPage() {
             setLoading(true);
             setError(null);
             try {
-                const response = await teamService.getTeamMembers(Number(eventId), currentPageNo, pageSize, sortBy);
+                const response = await teamService.getTeamMembers(Number(eventId), currentPageNo, pageSize, "user.name");
                 setTeamMembers(response.content);
                 setPageSize(response.size);
                 setCurrentPageNo(response.pageable.pageNumber);
                 setTotalPages(response.totalPages);
                 setTotalMembers(response.totalElements);
 
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error("Error loading team data:", e);
-                setError(`Failed to load team data: ${e.message || 'Unknown error'}`);
+                if (e instanceof Error) {
+                    setError(`Failed to load team data: ${e.message || 'Unknown error'}`);
+                } else {
+                    setError('Failed to load team data: Unknown error');
+                }
             } finally {
                 setLoading(false);
             }
         };
         loadTeamData();
-    }, [eventId, refreshTeamTrigger, currentPageNo, pageSize, sortBy]); // Rerun if eventId or trigger changes
+    }, [eventId, refreshTeamTrigger, currentPageNo, pageSize, "user.name"]); // Rerun if eventId or trigger changes
 
     // --- Data Loading (fetch roles - triggered when modal is shown) ---
     useEffect(() => {
@@ -77,9 +81,13 @@ export default function EventTeamPage() {
             try {
                 const data = await teamService.getRoles();
                 setTeamRoles(data);
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error("Error loading team roles:", e);
-                setSearchError(`Failed to load roles: ${e.message || 'Unknown error'}`); // Use searchError for modal context
+                if (e instanceof Error) {
+                    setSearchError(`Failed to load roles: ${e.message || 'Unknown error'}`);
+                } else {
+                    setSearchError('Failed to load roles: Unknown error');
+                }
             } finally {
                 setSearching(false); // Roles finished loading
             }

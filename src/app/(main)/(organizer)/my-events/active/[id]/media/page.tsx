@@ -25,11 +25,9 @@ export default function EventMediaPage() {
 
     const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null); // Files selected by user
     const [uploading, setUploading] = useState(false); // State for upload loading
-    const [uploadError, setUploadError] = useState<string | null>(null);
     const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
     // Optional: State for a single caption applied to all selected files (if multi-upload) or a way to add caption per file
 
-    const [deleteSuccess, setDeleteSuccess] = useState(false);
     const [trigger, setTrigger] = useState(0);
 
     const [previewMedia, setPreviewMedia] = useState<EventMedia | null>(null); // selected media to preview
@@ -50,9 +48,13 @@ export default function EventMediaPage() {
                 // Use mock data directly for the initial media list
                 setMediaFiles(data);
 
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error("Error loading mock media data:", e);
-                setError(`Failed to load mock media data: ${e.message || 'Unknown error'}`);
+                if (e instanceof Error) {
+                    setError(`Failed to load mock media data: ${e.message || 'Unknown error'}`);
+                } else {
+                    setError('Failed to load mock media data: Unknown error');
+                }
             } finally {
                 setLoading(false);
             }
@@ -74,10 +76,7 @@ export default function EventMediaPage() {
     const handleFileSelect = (files: FileList | null) => {
         if (!files) return;
 
-        const filesArray = Array.from(files);
-
         setSelectedFiles(files);
-        setUploadError(null); // Clear previous errors
         setUploadSuccess(null); // Clear previous success messages
         // Reset category if needed, or default to first
         // Optional: Reset caption state
@@ -85,12 +84,12 @@ export default function EventMediaPage() {
     // Handle triggering the upload process (Simulated with state update)
     const handleUploadFiles = async () => {
         if (!selectedFiles || selectedFiles.length === 0) {
-            setUploadError('Please select files to upload.');
+            setError('Please select files to upload.');
             return;
         }
 
         setUploading(true);
-        setUploadError(null);
+        setError(null);
         setUploadSuccess(null);
 
         const formData = new FormData();
@@ -106,7 +105,7 @@ export default function EventMediaPage() {
 
             // setMediaFiles(prevMedia => [...prevMedia, ...uploadedFileDetails]); // Add new files to the list
             setUploadSuccess(`${selectedFiles.length} file(s) uploaded successfully!`); // Show success message
-            setUploadError(null); // Clear any previous errors
+            setError(null); // Clear any previous errors
 
             // Reset upload form state
             setSelectedFiles(null); // Clear selected files from the input
@@ -114,9 +113,13 @@ export default function EventMediaPage() {
             if (fileInput) fileInput.value = ''; // Reset the file input visually
             // setReceiptFileName(null); // Clear displayed file name
 
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error("Simulated upload error:", e);
-            setUploadError(`Upload failed: ${e.message || 'Unknown error'}`);
+            if (e instanceof Error) {
+                setError(`Upload failed: ${e.message || 'Unknown error'}`);
+            } else {
+                setError('Upload failed: Unknown error');
+            }
             setUploadSuccess(null);
         } finally {
             setUploading(false); // Hide loading indicator
@@ -139,11 +142,14 @@ export default function EventMediaPage() {
 
             setTrigger(prev => prev + 1);
             setLoading(false);
-            setDeleteSuccess(true);
             toast.success("Deleted successfully");
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error("Simulated delete media error:", e);
-            setError(`Failed to delete media file: ${e.message || 'Unknown error'}`);
+            if (e instanceof Error) {
+                setError(`Failed to delete media file: ${e.message || 'Unknown error'}`);
+            } else {
+                setError('Failed to delete media file: Unknown error');
+            }
         } finally {
             setLoading(false); // Hide loading indicator
         }

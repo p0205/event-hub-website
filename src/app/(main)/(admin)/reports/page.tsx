@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FileText, Calendar, MapPin, BarChart3, Users, DollarSign, TrendingUp, ChevronDown, Download, Filter, Search, Clock, Building2, TrendingDown } from 'lucide-react';
+import { Calendar, BarChart3, DollarSign, TrendingUp, ChevronDown, Download, Search, Building2 } from 'lucide-react';
 import venueService from '@/services/venueService';
 import adminService from '@/services/adminService';
 import { Venue } from '@/types/event';
@@ -19,11 +19,6 @@ interface ReportType {
     category: string;
     estimatedTime?: string;
 }
-
-// Remove the predefined date ranges
-const dateRanges = [
-    { label: 'Custom Range', value: 'custom' },
-];
 
 // Report types with their configurations
 const reportTypes: ReportType[] = [
@@ -60,12 +55,6 @@ const reportTypes: ReportType[] = [
    
 ];
 
-const categoryColors = {
-    'Operations': 'bg-blue-50 text-blue-700 border-blue-200',
-    'Analytics': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    'Financial': 'bg-amber-50 text-amber-700 border-amber-200'
-};
-
 export default function AdminReportPage() {
     // Format current date to YYYY-MM-DD
     const getCurrentDate = () => {
@@ -82,30 +71,22 @@ export default function AdminReportPage() {
     const [isGenerating, setIsGenerating] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [venues, setVenues] = useState<Venue[]>([]);
-    const [isLoadingVenues, setIsLoadingVenues] = useState<boolean>(true);
-    const [venueError, setVenueError] = useState<string | null>(null);
     const [customStartDate, setCustomStartDate] = useState<string>(getCurrentDate());
     const [customEndDate, setCustomEndDate] = useState<string>(getCurrentDate());
 
     const [expandedReportType, setExpandedReportType] = useState<string>('');
     const [venueSearchQuery, setVenueSearchQuery] = useState<string>('');
 
-    // Get current report type configuration
-    const currentReportConfig = reportTypes.find(type => type.id === selectedReportType);
-
     // Fetch venues when component mounts
     useEffect(() => {
         const fetchVenues = async () => {
             try {
-                setIsLoadingVenues(true);
-                setVenueError(null);
+                setError(null);
                 const fetchedVenues = await venueService.fetchVenues();
                 setVenues(fetchedVenues);
             } catch (error) {
                 console.error('Failed to fetch venues:', error);
                 setError('Failed to load venues. Please try again later.');
-            } finally {
-                setIsLoadingVenues(false);
             }
         };
 
@@ -288,7 +269,9 @@ export default function AdminReportPage() {
                                                     <div className={styles.reportTypeHeader}>
                                                         <h3 className={styles.reportTypeTitle}>{type.name}</h3>
                                                     </div>
-                                                    <p className={styles.reportTypeDescription}>{type.description}</p>
+                                                    <div className={styles.reportTypeDescription}>
+                                                        <p>{type.description}</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <ChevronDown className={`
@@ -379,7 +362,7 @@ export default function AdminReportPage() {
                                                                         <div className={styles.venueList}>
                                                                             {getFilteredVenues().length === 0 ? (
                                                                                 <div className={styles.venueListEmpty}>
-                                                                                    No venues found matching "{venueSearchQuery}"
+                                                                                    No venues found matching &quot;{venueSearchQuery}&quot;
                                                                                 </div>
                                                                             ) : (
                                                                                 getFilteredVenues().map((venue, index) => (

@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation'; // From URL get event ID, for navigation
-import { v4 as uuidv4 } from 'uuid'; // For temporary IDs for new participants
+// import { v4 as uuidv4 } from 'uuid'; // For temporary IDs for new participants
 
 // Import Recharts components (ensure these are installed: npm install recharts)
 import {
@@ -74,7 +74,6 @@ export default function EventParticipantsPage() {
     // --- State for team members pagination
     const [currentPageNo, setCurrentPageNo] = useState(0);
     const [pageSize, setPageSize] = useState(5);
-    const [sortBy, setSortBy] = useState<string>("participant.name");
     const [totalPages, setTotalPages] = useState(0);
     const [totalParticipants, setTotalParticipants] = useState(0);
     const [offset, setOffset] = useState(0);
@@ -94,7 +93,7 @@ export default function EventParticipantsPage() {
             return;
         }
         fetchSavedParticipants();
-    }, [eventId, currentPageNo, pageSize, sortBy]); // Re-run effect if eventId changes
+    }, [eventId, currentPageNo, pageSize]); // Re-run effect if eventId changes
 
 
     // --- Recalculate Demographics whenever participants list changes ---
@@ -143,15 +142,19 @@ export default function EventParticipantsPage() {
         setSaveError(null);
         try {
             // Call your service to get participants already saved for this event
-            const response = await eventService.getParticipantsByEventId(Number(eventId), currentPageNo, pageSize, sortBy);
+            const response = await eventService.getParticipantsByEventId(Number(eventId), currentPageNo, pageSize);
             setParticipants(response.content); // Set the main participants state
             setCurrentPageNo(response.pageable.pageNumber);
             setTotalPages(response.totalPages);
             setTotalParticipants(response.totalElements);
             setOffset(response.pageable.offset + 1);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Failed to fetch initially saved participants:", err);
-            setInitialLoadError(`Failed to load existing participants: ${err.message || 'Unknown error'}`);
+            if (err instanceof Error) {
+                setInitialLoadError(`Failed to load existing participants: ${err.message || 'Unknown error'}`);
+            } else {
+                setInitialLoadError('Failed to load existing participants: Unknown error');
+            }
             setParticipants([]); // Display empty list on error
         } finally {
             setIsLoadingInitial(false);
@@ -211,9 +214,13 @@ export default function EventParticipantsPage() {
             setUploadedParticipants(importedList);
 
 
-        } catch (importErr: any) {
+        } catch (importErr: unknown) {
             console.error("Import Error:", importErr);
-            setImportError(`Import failed: ${importErr.message || 'Unknown error during import'}`);
+            if (importErr instanceof Error) {
+                setImportError(`Import failed: ${importErr.message || 'Unknown error during import'}`);
+            } else {
+                setImportError('Import failed: Unknown error during import');
+            }
             setImportSuccess(null); // Ensure success message is cleared on error
         } finally {
             // Reset importing state and clear the file input
@@ -241,7 +248,7 @@ export default function EventParticipantsPage() {
                 return `${name}_${phone}`;
             }));
 
-            let addedParticipants: User[] = [];
+            const addedParticipants: User[] = [];
             let skippedCount = 0;
 
 
@@ -285,9 +292,13 @@ export default function EventParticipantsPage() {
             // Refresh current page data (optional)
             router.refresh();
 
-        } catch (saveErr: any) {
+        } catch (saveErr: unknown) {
             console.error("Save Error:", saveErr);
-            setSaveError(`Failed to save changes: ${saveErr.message || 'Unknown error during save'}`);
+            if (saveErr instanceof Error) {
+                setSaveError(`Failed to save changes: ${saveErr.message || 'Unknown error during save'}`);
+            } else {
+                setSaveError('Failed to save changes: Unknown error during save');
+            }
         } finally {
             setIsSaving(false); // End saving state
         }
@@ -339,7 +350,7 @@ export default function EventParticipantsPage() {
                 return `${name}_${phone}`;
             }));
 
-            let addedParticipants: typeof uploadedParticipants = [];
+            const addedParticipants: typeof uploadedParticipants = [];
             let skippedCount = 0;
 
             uploadedParticipants.forEach((newP) => {
@@ -383,9 +394,13 @@ export default function EventParticipantsPage() {
             // Refresh current page data (optional)
             router.refresh();
 
-        } catch (saveErr: any) {
+        } catch (saveErr: unknown) {
             console.error("Save Error:", saveErr);
-            setSaveError(`Failed to save changes: ${saveErr.message || 'Unknown error during save'}`);
+            if (saveErr instanceof Error) {
+                setSaveError(`Failed to save changes: ${saveErr.message || 'Unknown error during save'}`);
+            } else {
+                setSaveError('Failed to save changes: Unknown error during save');
+            }
         } finally {
             setIsSaving(false); // End saving state
         }
@@ -482,12 +497,6 @@ export default function EventParticipantsPage() {
     }, [participants, filterType, filterValue]); // Re-filter when participants, type, or value changes
 
 
-    // --- Sorting Handler (Keep as is) ---
-    const handleSort = (key: SortKey) => {
-        if (sortKey === key) { setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc'); }
-        else { setSortKey(key); setSortDirection('asc'); }
-    };
-
     // --- Apply Sorting Logic (on the filtered list) ---
     const sortedParticipants = useMemo(() => {
         // Sort the FILTERED participants list
@@ -517,7 +526,7 @@ export default function EventParticipantsPage() {
                 const stringA = String(aValue);
                 const stringB = String(bValue);
                 return sortDirection === 'asc' ? stringA.localeCompare(stringB) : stringB.localeCompare(stringA);
-            } catch (e) {
+            } catch {
                 // Fallback if string conversion fails for some reason
                 return 0;
             }

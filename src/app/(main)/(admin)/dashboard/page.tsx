@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     LineChart,
     Line,
@@ -32,9 +32,18 @@ const Dashboard = () => {
     const [startDateTime, setStartDateTime] = useState<string>(formatDate(thirtyDaysAgo));
     const [endDateTime, setEndDateTime] = useState<string>(formatDate(today));
 
+    const fetchDashboardData = useCallback(async () => {
+        try {
+            const response = await adminService.getDashboardData(startDateTime, endDateTime);
+            setDashboard(response);
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        }
+    }, [startDateTime, endDateTime]);
+
     useEffect(() => {
         fetchDashboardData();
-    }, [startDateTime, endDateTime]);
+    }, [fetchDashboardData]);
 
     const pieColors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899'];
     const primaryColor = '#2563eb';
@@ -43,31 +52,22 @@ const Dashboard = () => {
     // Calculate average events per month (based on completed events as they represent actual activity)
     const avgEventsPerMonth = dashboard?.summary ? (dashboard.summary.totalCompletedEvents / 6).toFixed(1) : '0.0'; // 6 months of data
 
-    const fetchDashboardData = async () => {
-        try {
-
-    
-            const response = await adminService.getDashboardData(startDateTime, endDateTime);
-            setDashboard(response);
-            console.debug('Dashboard data:', dashboard);
-        } catch (error) {
-            console.error('Error fetching dashboard data:', error);
-        }
-    };
-
     // Format the month for display in the line chart
     const formattedMonthlyGrowth = dashboard?.monthlyGrowth?.map((item: { month: string; events: number }) => ({
         ...item,
         month: new Date(item.month + '-01').toLocaleString('default', { month: 'short', year: 'numeric' })
     })) ?? [];
 
-    const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
+    const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: unknown[]; label?: string }) => {
         if (active && payload && payload.length) {
             return (
                 <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
                     <p className="text-sm font-medium text-gray-900">{label}</p>
                     <p className="text-sm text-gray-600">
-                        {payload[0].name}: {payload[0].value}
+                        {payload[0] && typeof payload[0] === 'object' && 'name' in payload[0] && 'value' in payload[0] 
+                            ? `${String(payload[0].name)}: ${String(payload[0].value)}`
+                            : 'No data'
+                        }
                     </p>
                 </div>
             );

@@ -46,10 +46,10 @@ const CheckEmailPage: React.FC = () => {
             // }).toString();
             // router.push(`/sign-up?${query}`);
    
-        } catch (err: any) {
-            if (err.message === 'UserAlreadyRegistered') {
+        } catch (err: unknown) {
+            if (err instanceof Error && err.message === 'UserAlreadyRegistered') {
                 setError('User with this email is already registered. Please log in instead.');
-            } else if (err.message === 'EmailNotFound') {
+            } else if (err instanceof Error && err.message === 'EmailNotFound') {
                 setError('Email not found in the university database. Please use a valid UTEM email.');
             } else {
                 setError('An unexpected error occurred.');

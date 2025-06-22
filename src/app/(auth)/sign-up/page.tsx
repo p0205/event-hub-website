@@ -11,8 +11,8 @@ const SignUpPage: React.FC = () => {
   const router = useRouter();
   const { checkAuth } = useAuth();
 
-  const [name, setName] = useState(searchParams.get('name') || '');
-  const [email, setEmail] = useState(searchParams.get('email') || '');
+  const [name] = useState(searchParams.get('name') || '');
+  const [email] = useState(searchParams.get('email') || '');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [phoneNumber, setPhoneNumber] = useState<string>('');
@@ -46,8 +46,12 @@ const SignUpPage: React.FC = () => {
       await authService.signUp(email, phoneNumber, password);
       await checkAuth(); // Check auth status after successful sign-up
       router.replace('/'); // Redirect to home page
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'An unexpected error occurred.');
+      } else {
+        setError('An unexpected error occurred.');
+      }
     } finally {
       setIsLoading(false);
     }

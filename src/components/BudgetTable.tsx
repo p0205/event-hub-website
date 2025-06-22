@@ -2,12 +2,11 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { EventBudget } from '@/types/event'; // adjust if needed
 
 interface BudgetTableProps {
     budgets: EventBudget[];
-
 }
 
 const BudgetTable: React.FC<BudgetTableProps> = ({ budgets }) => {

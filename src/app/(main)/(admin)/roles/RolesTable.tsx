@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Role } from '@/types/event';
 import { FaTrash } from 'react-icons/fa';
 

@@ -1,8 +1,8 @@
 "use client";
 import budgetCategoryService from "@/services/budgetCategoryService";
 import { BudgetCategory } from "@/types/event";
-import { useEffect, useState } from "react";
-import { FaPlus, FaTrash, FaSearch, FaSpinner } from "react-icons/fa";
+import { useEffect, useState, useCallback } from "react";
+import { FaPlus, FaSearch, FaSpinner } from "react-icons/fa";
 import BudgetCategoriesTable from "./BudgetCategoriesTable";
 import styles from './budget.module.css';
 
@@ -10,7 +10,6 @@ export default function ManageBudgetPage() {
     const [budgets, setBudgets] = useState<BudgetCategory[]>([]);
     const [newBudgetName, setNewBudgetName] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
-    const [loading, setLoading] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
 
@@ -21,10 +20,26 @@ export default function ManageBudgetPage() {
     const [totalPages, setTotalPages] = useState(0);
     const [offset, setOffset] = useState(0);
 
+    const fetchBudgets = useCallback(async () => {
+        try {
+            const data = await budgetCategoryService.fetchBudgetCategoriesByPage(currentPage, pageSize);
+            setBudgets(data.content);
+            setTotalItems(data.totalElements);
+            setTotalPages(data.totalPages);
+            setOffset(data.pageable.offset+1);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                alert(error.message || "Failed to fetch budgets");
+            } else {
+                alert("Failed to fetch budgets");
+            }
+        }
+    }, [currentPage, pageSize]);
+
     // Fetch budgets on initial load
     useEffect(() => {
         fetchBudgets();
-    }, [currentPage, pageSize]);
+    }, [fetchBudgets]);
 
     const handlePageChange = (newPage: number) => {
         setCurrentPage(newPage);
@@ -33,22 +48,6 @@ export default function ManageBudgetPage() {
     const handlePageSizeChange = (newSize: number) => {
         setPageSize(newSize);
         setCurrentPage(0); // Reset to the first page on page size change
-    };
-
-    
-    const fetchBudgets = async () => {
-        try {
-            setLoading(true);
-            const data = await budgetCategoryService.fetchBudgetCategoriesByPage(currentPage, pageSize);
-            setBudgets(data.content);
-            setTotalItems(data.totalElements);
-            setTotalPages(data.totalPages);
-            setOffset(data.pageable.offset+1);
-        } catch (error: any) {
-            alert(error.message || "Failed to fetch budgets");
-        } finally {
-            setLoading(false);
-        }
     };
 
     const handleAddBudget = async () => {
@@ -72,14 +71,18 @@ export default function ManageBudgetPage() {
             setNewBudgetName("");
             await fetchBudgets();
             alert("Budget added successfully");
-        } catch (error: any) {
-            alert(error.message || "Failed to add budget");
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                alert(error.message || "Failed to add budget");
+            } else {
+                alert("Failed to add budget");
+            }
         } finally {
             setIsAdding(false);
         }
     };
 
-    const handleSearch = async () => {
+    const handleSearch = useCallback(async () => {
         if (!searchQuery.trim()) {
             fetchBudgets();
             return;
@@ -88,33 +91,37 @@ export default function ManageBudgetPage() {
             setIsSearching(true);
             const data = await budgetCategoryService.fetchBudgetCategoryByName(searchQuery);
             setBudgets(data);
-        } catch (error: any) {
-            alert(error.message || "Failed to search budgets");
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                alert(error.message || "Failed to search budgets");
+            } else {
+                alert("Failed to search budgets");
+            }
         } finally {
             setIsSearching(false);
         }
-    };
+    }, [searchQuery, fetchBudgets]);
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             handleSearch();
         }, 1000);
         return () => clearTimeout(delayDebounce);
-    }, [searchQuery]);
-
+    }, [handleSearch]);
 
     const handleDeleteBudget = async (id: number) => {
         if (!confirm("Are you sure you want to delete this budget?")) return;
 
         try {
-            setLoading(true);
             await budgetCategoryService.deleteBudgetCategory(id);
             await fetchBudgets();
             alert("Budget is deleted successfully");
-        } catch (error: any) {
-            alert(error.message || "Failed to delete budget");
-        } finally {
-            setLoading(false);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                alert(error.message || "Failed to delete budget");
+            } else {
+                alert("Failed to delete budget");
+            }
         }
     };
 

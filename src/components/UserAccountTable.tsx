@@ -1,6 +1,5 @@
-import { formatDate, formatDateAndTime, formatDateTime } from "@/helpers/eventHelpers";
+import { formatDateAndTime } from "@/helpers/eventHelpers";
 import { User, UserAccountStatus } from "@/types/user";
-import { useState } from "react";
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
 interface UserAccountTableProps {
@@ -10,7 +9,6 @@ interface UserAccountTableProps {
     currentPage: number;
     pageSize: number;
     totalItems: number;
-    offset: number;
     totalPages: number;
     onPageChange: (page: number) => void;
     onPageSizeChange: (size: number) => void;
@@ -24,7 +22,6 @@ const UserAccountTable: React.FC<UserAccountTableProps> = ({
     pageSize,
     totalItems,
     totalPages,
-    offset,
     onPageChange,
     onPageSizeChange,
 }) => {

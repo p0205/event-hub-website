@@ -1,9 +1,9 @@
 // src/app/my-events/[id]/reports/page.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
+// import Link from 'next/link';
 
 // Assuming event data includes status (active/completed)
 interface EventDetails {
@@ -37,14 +37,14 @@ import styles from './reports.module.css'; // Create this CSS module
 const mockEventCompleted = {
     id: 'mock-event-1',
     name: 'Completed Event Report',
-    status: 'Completed' as 'Completed', // Simulate a completed event
+    status: 'Completed' as const, // Simulate a completed event
     // ... other event data
 };
 
 const mockEventActive = {
     id: 'mock-event-2',
     name: 'Active Event Report',
-    status: 'Active' as 'Active', // Simulate an active event
+    status: 'Active' as const, // Simulate an active event
     // ... other event data
 };
 
@@ -104,9 +104,13 @@ export default function EventReportsPage() {
                 setReportAvailability(mockReportData);
 
 
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error("Error loading mock report data:", e);
-                setError(`Failed to load mock report data: ${e.message || 'Unknown error'}`);
+                if (e instanceof Error) {
+                    setError(`Failed to load mock report data: ${e.message || 'Unknown error'}`);
+                } else {
+                    setError('Failed to load mock report data: Unknown error');
+                }
             } finally {
                 setLoading(false);
             }
@@ -132,22 +136,22 @@ export default function EventReportsPage() {
     };
 
     // Handle exporting a report (often same as view URL for PDF)
-    const handleExportReport = (reportUrl: string | undefined, reportType: string) => {
-        if (reportUrl) {
-            console.log(`Exporting ${reportType} report: ${reportUrl}`);
-            // Trigger download (can be same as view, or use download attribute)
-            const link = document.createElement('a');
-            link.href = reportUrl;
-            link.download = `${reportType.toLowerCase().replace(/\s+/g, '-')}-event-${eventId}.pdf`; // Suggest a filename
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+    // const handleExportReport = (reportUrl: string | undefined, reportType: string) => {
+    //     if (reportUrl) {
+    //         console.log(`Exporting ${reportType} report: ${reportUrl}`);
+    //         // Trigger download (can be same as view, or use download attribute)
+    //         const link = document.createElement('a');
+    //         link.href = reportUrl;
+    //         link.download = `${reportType.toLowerCase().replace(/\s+/g, '-')}-event-${eventId}.pdf`; // Suggest a filename
+    //         document.body.appendChild(link);
+    //         link.click();
+    //         document.body.removeChild(link);
 
-        } else {
-            console.warn(`${reportType} report URL is not available for export.`);
-            // TODO: Show user feedback
-        }
-    };
+    //     } else {
+    //         console.warn(`${reportType} report URL is not available for export.`);
+    //         // TODO: Show user feedback
+    //     }
+    // };
 
     // Handle opening customization options (Placeholder)
     // const handleOpenCustomization = () => {

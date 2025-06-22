@@ -3,16 +3,6 @@ import { EventStatus, SimpleEvent } from '@/types/event';
 import Link from 'next/link';
 import React from 'react';
 
-// Define the minimum data needed for the card display
-interface EventCardProps {
-  id: string;
-  title: string;
-  status: 'active' | 'pending_approval' | 'completed' | string; // Include other statuses if needed
-  // Add other relevant summary info here if you want to display it on the card,
-  // e.g., next session date, number of sessions, visibility icon, etc.
-  // Example: nextSessionDate?: string;
-}
-
 export default function EventCard({ event }: { event: SimpleEvent }) {
   // Determine a simple visual representation (like initials) based on the title
   const initials = event.name.split(' ')

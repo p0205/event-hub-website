@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import styles from './users.module.css';
 import { FaSearch, FaUserPlus } from 'react-icons/fa';
 import { User } from '@/types/user';
@@ -13,7 +13,6 @@ import { toast } from 'sonner';
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -26,25 +25,26 @@ export default function UsersPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [offset, setOffset] = useState(0);
 
-  // Fetch users on initial load and page change
-  useEffect(() => {
-    fetchUsers();
-  }, [currentPage, pageSize]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
-      setLoading(true);
       const data = await userService.getAllUsers(currentPage, pageSize);
       setUsers(data.content);
       setTotalItems(data.totalElements);
       setTotalPages(data.totalPages);
       setOffset(data.pageable.offset);
-    } catch (error: any) {
-      alert(error.message || "Failed to fetch users");
-    } finally {
-      setLoading(false);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert(error.message || "Failed to fetch users");
+      } else {
+        alert("Failed to fetch users");
+      }
     }
-  };
+  }, [currentPage, pageSize]);
+
+  // Fetch users on initial load and page change
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -64,16 +64,14 @@ export default function UsersPage() {
       setIsSearching(true);
       const data = await userService.getUserByNameOrEmail(searchQuery);
       setUsers(data);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to search users");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || "Failed to search users");
+      } else {
+        toast.error("Failed to search users");
+      }
     } finally {
       setIsSearching(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch();
     }
   };
 
@@ -92,8 +90,12 @@ export default function UsersPage() {
       await userService.deleteUser(Number(id));
       toast.success('User deleted successfully');
       fetchUsers(); // Refresh the user list
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete user');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to delete user');
+      } else {
+        toast.error('Failed to delete user');
+      }
     }
   };
 
@@ -162,7 +164,6 @@ export default function UsersPage() {
         pageSize={pageSize}
         totalItems={totalItems}
         totalPages={totalPages}
-        offset={offset}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
       />

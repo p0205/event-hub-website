@@ -4,13 +4,9 @@ import EventSubmenuSidebar from '@/components/organizers/events/ActiveEventSideB
 // Layout for individual event pages (/events/[id] and its sub-routes)
 export default function EventDetailLayout({
   children, // This will be the nested page components (e.g., overview/page.tsx, participants/page.tsx)
-  params, // Get the event ID from the route parameters
 }: {
   children: React.ReactNode;
-  params: { id: string }; // Define params type
 }) {
-//   const eventId = params.id; // Access the event ID
-
   // Return the layout structure directly, without <html> or <body>
   return (
     <div className="flex items-stretch flex-1 event-content-panel-wrapper">

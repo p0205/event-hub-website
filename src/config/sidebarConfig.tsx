@@ -2,7 +2,7 @@
 import React from 'react'; // Still need React for JSX compilation in some setups
 // Import the IconType as well, although it's not used directly in the interface,
 // it might help TS understand the imports are component types.
-import { FaHome, FaCalendarAlt, FaUsers, FaChartBar, FaCog, FaDollarSign,FaUser, FaChartLine, FaCalendarPlus } from 'react-icons/fa';
+import { FaHome, FaCalendarAlt, FaUsers, FaChartBar, FaDollarSign,FaUser, FaChartLine, FaCalendarPlus } from 'react-icons/fa';
 
 
 // Define the structure for a navigation item

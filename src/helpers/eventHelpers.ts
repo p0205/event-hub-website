@@ -1,5 +1,3 @@
-import venueService from "@/services/venueService";
-import { CreateSessionData, Venue } from "@/types/event";
 import { Time } from "@internationalized/date";
 
 // Helper function to format date and time
@@ -67,9 +65,8 @@ export const parseTimeString = (timeString: string): Time | undefined => {
     return undefined;
 };
 
-
- // Format dates to include time
- export  const convertToLocalDateTime = (dateStr: string) => {
+// Format dates to include time
+export const convertToLocalDateTime = (dateStr: string) => {
     const date = new Date(dateStr);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
