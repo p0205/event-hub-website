@@ -177,9 +177,9 @@ export default function EventsLandingPage() {
       </div>
 
       {/* Pending Events Section */}
-      <div className="events-section">
-        <div className="section-header"> {/* Container for title and button */}
-          {/* Collapse Button */}
+      {/* <div className="events-section">
+        <div className="section-header"> 
+         
           <button
             className="collapse-button"
             onClick={() => toggleSectionExpansion(EventStatus.PENDING)}
@@ -187,12 +187,12 @@ export default function EventsLandingPage() {
           >
             {isPendingExpanded ? '▼' : '►'}
           </button>
-          {/* Section Title as Link */}
+        
           <Link href="/my-events/pending" style={styles.sectionTitleLink}>
           <h2>Pending Approval</h2>
           </Link>
         </div>
-        {/* Conditionally render the grid based on state */}
+      
         {isPendingExpanded && (
           pendingEvents.length === 0 ? (
             <p className="no-events-message">No events pending approval.</p>
@@ -204,7 +204,7 @@ export default function EventsLandingPage() {
             </div>
           )
         )}
-      </div>
+      </div> */}
 
       {/* Completed Events Section */}
       <div className="events-section">
