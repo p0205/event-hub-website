@@ -154,16 +154,49 @@
 }
 /* Styles for the container div */
 .dropdownContainer {
-  display: flex; /* Makes the container a flex container */
-  justify-content: flex-end; /* Aligns items to the end (right) of the main axis */
-  padding-bottom: 1rem; 
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  border-radius: 0.75rem;
+
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
 }
 
-/* Optional: Styles specific to the select element if you move them from inline */
-.dropdownContainer select {
+.dropdownContainer label {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: #374151;
+  font-size: 1rem;
+  gap: 0.5rem;
+}
+
+.dropdownContainer input[type="date"] {
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   border: 1px solid #e5e7eb;
   font-size: 1rem;
-  /* You might want to remove the inline style once you have this class */
+  background: #fff;
+  color: #111827;
+  transition: border 0.2s;
+}
+
+.dropdownContainer input[type="date"]:focus {
+  border: 1.5px solid #2563eb;
+  outline: none;
+}
+
+@media (max-width: 700px) {
+  .dropdownContainer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  .dropdownContainer label {
+    font-size: 0.98rem;
+  }
 }

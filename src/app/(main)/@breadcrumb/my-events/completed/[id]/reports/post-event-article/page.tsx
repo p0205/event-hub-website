@@ -98,7 +98,15 @@ export default function ParticipantsBreadcrumbSlot() {
 
 
             <BreadcrumbItem>
-                <BreadcrumbPage>Reports</BreadcrumbPage> {/* Hardcoded page name */}
+            <BreadcrumbLink href={`/my-events/completed/${eventId}/reports`}>
+                   Reports
+                 </BreadcrumbLink>
+            </BreadcrumbItem>
+
+            <BreadcrumbSeparator />
+
+            <BreadcrumbItem>
+                <BreadcrumbPage>Post Event Article</BreadcrumbPage> {/* Hardcoded page name */}
             </BreadcrumbItem>
 
         </BreadcrumbList>

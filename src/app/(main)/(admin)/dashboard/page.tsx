@@ -22,14 +22,14 @@ import adminService from '@/services/adminService';
 
 const Dashboard = () => {
     const today = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(today.getDate() - 30);
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(today.getMonth() - 6);
 
     // Format as yyyy-MM-dd for input type="date"
     const formatDate = (date: Date) => date.toISOString().slice(0, 10);
 
     const [dashboard, setDashboard] = useState<AdminDashboardData>();
-    const [startDateTime, setStartDateTime] = useState<string>(formatDate(thirtyDaysAgo));
+    const [startDateTime, setStartDateTime] = useState<string>(formatDate(sixMonthsAgo));
     const [endDateTime, setEndDateTime] = useState<string>(formatDate(today));
 
     const fetchDashboardData = useCallback(async () => {

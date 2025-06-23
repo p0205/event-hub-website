@@ -48,9 +48,13 @@ export default function EventBudgetPage() {
 
             setEventBudgets(mappedData);
             console.log("Event Budgets loaded:", data);
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error("Error loading budget data:", e);
-            setError(`Failed to load budget data: ${e.message || 'Unknown error'}`);
+            if (e instanceof Error) {
+                setError(`Failed to load budget data: ${e.message || 'Unknown error'}`);
+            } else {
+                setError('Failed to load budget data: Unknown error');
+            }
         } finally {
             setLoading(false);
         }
@@ -103,18 +107,97 @@ export default function EventBudgetPage() {
     }, [categoryBudgetSummary]);
 
     // --- Helper Functions ---
-    const getBudgetStatus = (percentage: number) => {
-        if (percentage <= 70) return { status: 'good', label: 'On Track' };
-        if (percentage <= 90) return { status: 'warning', label: 'Watch Closely' };
-        if (percentage <= 100) return { status: 'warning', label: 'Nearly Exceeded' };
-        return { status: 'exceeded', label: 'Over Budget' };
-    };
+    // const getBudgetStatus = (percentage: number) => {
+    //     if (percentage <= 70) return { status: 'good', label: 'On Track' };
+    //     if (percentage <= 90) return { status: 'warning', label: 'Watch Closely' };
+    //     if (percentage <= 100) return { status: 'warning', label: 'Nearly Exceeded' };
+    //     return { status: 'exceeded', label: 'Over Budget' };
+    // };
 
     const formatCurrency = (amount: number) => {
         return `RM${amount.toFixed(2)}`;
     };
 
-    
+    // --- Handlers ---
+    const handleOpenAddExpenseForm = () => {
+        // Only open if there are budget categories to select from
+        if (eventBudgets.length > 0) {
+            setIsAddExpenseFormOpen(true);
+            setNewExpenseData({
+                budgetCategoryId: '',
+                amount: '',
+            });
+            setAddExpenseError(null); // Clear previous errors
+        } else {
+            alert("Please add budget categories before adding expenses. You can usually do this in Event Settings.");
+        }
+    };
+
+    const handleCloseAddExpenseForm = () => {
+        setIsAddExpenseFormOpen(false);
+        setNewExpenseData({ budgetCategoryId: '', amount: '' });
+        setAddExpenseError(null);
+    };
+
+    const handleNewExpenseInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        console.log(name);
+        console.log(value);
+        setNewExpenseData(prevData => ({ ...prevData, [name]: value }));
+        console.log("New Expense");
+        console.log(newExpenseData.budgetCategoryId);
+        console.log(newExpenseData.amount);
+    };
+
+    const handleAddExpense = async () => {
+        // Basic frontend validation
+        if (!newExpenseData?.amount || !newExpenseData.budgetCategoryId) {
+            setAddExpenseError("Please select a category and enter an amount.");
+            return;
+        }
+
+        const expenseAmount = parseFloat(newExpenseData.amount);
+        if (isNaN(expenseAmount) || expenseAmount <= 0) {
+            setAddExpenseError("Please enter a valid positive amount for the expense.");
+            return;
+        }
+
+        // Ensure categoryId is a number for the service call
+        const selectedBudgetCategoryId = Number(newExpenseData.budgetCategoryId); // Convert string to number
+
+        if (isNaN(selectedBudgetCategoryId)) {
+            setAddExpenseError("Invalid category selected.");
+            return;
+        }
+
+        const payload: AddExpensePayload = {
+            budgetCategoryId: selectedBudgetCategoryId,
+            amount: expenseAmount, // Convert to number for the payload to the service
+            // Add description if you have it in your form and AddExpensePayload
+        };
+
+        setIsSubmittingExpense(true);
+        setAddExpenseError(null); // Clear previous errors
+
+        try {
+            await eventBudgetService.recordExpense(Number(eventId), payload);
+
+            // After successful API call, reload budget data to reflect changes
+            await loadBudgetData();
+
+            handleCloseAddExpenseForm(); // Close modal on success
+            alert('Expense recorded successfully!'); // Provide user feedback
+        } catch (e: unknown) {
+            console.error("Failed to record expense:", e);
+            if (e instanceof Error) {
+                setAddExpenseError(e.message || "Failed to record expense.");
+            } else {
+                setAddExpenseError("Failed to record expense.");
+            }
+        } finally {
+            setIsSubmittingExpense(false);
+        }
+    };
 
     // --- Render Logic ---
     if (loading) {
@@ -153,7 +236,16 @@ export default function EventBudgetPage() {
                         Track and manage your event expenses across all categories
                     </p>
                 </div>
-            
+                {hasBudgetCategories && ( // Only show button if there are categories to add expenses to
+                    <button
+                        className={styles['add-expense-button']}
+                        onClick={handleOpenAddExpenseForm}
+                        title="Add New Expense"
+                        disabled={isSubmittingExpense} // Disable button if expense is being submitted
+                    >
+                        +
+                    </button>
+                )}
             </div>
 
             {/* --- Overall Budget Summary --- */}
@@ -246,7 +338,7 @@ export default function EventBudgetPage() {
             {hasBudgetCategories && (
                 <div>
                     {categoryBudgetSummary.map(category => {
-                        const statusInfo = getBudgetStatus(category.percentage); // Removed as it's not used in display currently
+                        // const statusInfo = getBudgetStatus(category.percentage); // Removed as it's not used in display currently
 
                         return (
                             <div key={category.id} className={styles['category-card']}>
@@ -308,7 +400,84 @@ export default function EventBudgetPage() {
                 </div>
             )}
 
-          
+            {/* --- Modal for Add New Expense --- */}
+            {isAddExpenseFormOpen && (
+                <div className={styles.modalOverlay} onClick={handleCloseAddExpenseForm}>
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h3>Add New Expense</h3>
+                            <button className={styles.closeButton} onClick={handleCloseAddExpenseForm}>
+                                ×
+                            </button>
+                        </div>
+
+                        <div className={styles.modalBody}>
+                            <div className="form-group">
+                                <label htmlFor="expenseCategory">
+                                    Category <span style={{ color: '#ef4444' }}>*</span>
+                                </label>
+                                <select
+                                    id="expenseCategory"
+                                    name="budgetCategoryId"
+                                    value={newExpenseData.budgetCategoryId ?? ''}
+                                    onChange={handleNewExpenseInputChange}
+                                    required
+                                    className="form-input"
+                                    disabled={isSubmittingExpense} // Disable while submitting
+                                >
+                                    <option value="">-- Select Category --</option>
+                                    {eventBudgets.map(budget => (
+                                        // Use budget.budgetCategoryId for the value, as that's what the backend expects
+                                        <option key={budget.id} value={budget.budgetCategoryId?.toString()}>
+                                            {budget.budgetCategoryName || `Category ${budget.budgetCategoryId}`}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="expenseAmount">
+                                    Amount (RM) <span style={{ color: '#ef4444' }}>*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    id="expenseAmount"
+                                    name="amount"
+                                    value={newExpenseData?.amount}
+                                    onChange={handleNewExpenseInputChange}
+                                    required
+                                    step="0.01"
+                                    min="0.01"
+                                    className="form-input"
+                                    placeholder="0.00"
+                                    disabled={isSubmittingExpense} // Disable while submitting
+                                />
+                            </div>
+
+                        </div>
+
+                        <div className={styles.modalFooter}>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', paddingBottom: '24px' }}>
+                                <button
+                                    className="button-secondary"
+                                    onClick={handleCloseAddExpenseForm}
+                                    disabled={isSubmittingExpense}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="button-primary"
+                                    onClick={handleAddExpense}
+                                    disabled={isSubmittingExpense}
+                                >
+                                    {isSubmittingExpense ? 'Saving...' : 'Save Expense'}
+                                </button>
+                            </div>
+                        </div>
+                        {addExpenseError && <p className="error-message" style={{ textAlign: 'center', marginTop: '10px' }}>{addExpenseError}</p>}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

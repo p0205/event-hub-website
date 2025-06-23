@@ -23,7 +23,7 @@ const navigationItems: SidebarNavItem[] = [
     // { label: 'Notifications', href: '/notifications', icon: <FaBell />, roles: ['Admin', 'Event Organizer', 'Participant'] },
    
     { label: 'Budgets', href: '/budgets', icon: <FaDollarSign />, roles: ['ADMIN'] },
-    { label: 'Roles', href: '/roles', icon: <FaUser />, roles: ['ADMIN'] },
+    { label: 'Team Roles', href: '/roles', icon: <FaUser />, roles: ['ADMIN'] },
     { label: 'Reports', href: '/reports', icon: <FaChartBar />, roles: ['ADMIN'] },
     { label: 'Users', href: '/users', icon: <FaUsers />, roles: ['ADMIN'] },
    

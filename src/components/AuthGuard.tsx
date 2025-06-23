@@ -13,8 +13,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const isAuthPage = (path: string | null) => { // Ensure path can be null
     return path?.includes('/sign-in') || 
            path?.includes('/sign-up') || 
-           path?.includes('/public') || 
+      
            path?.includes('/check-email');
+  };
+
+  const isPublicPage = (path: string | null) => { // Ensure path can be null
+    return  path?.includes('/public');
   };
 
   // Effect 1: Handle countdown timer for redirect message
@@ -44,11 +48,18 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (!isAuthenticated && !isAuthPage(pathname)) {
+    if (isPublicPage(pathname)) {
+      console.log("THis is public");
+      return;
+    } 
+    else if (!isAuthenticated && !isAuthPage(pathname)) {
+      console.log("sign-in");
       if (countdown === 0) {
         router.replace('/sign-in');
       }
     } else if (isAuthenticated && isAuthPage(pathname)) {
+
+      console.log("isAuthenticated ");
       if(user?.role == 'ADMIN'){
         router.replace('/dashboard')
       }else{

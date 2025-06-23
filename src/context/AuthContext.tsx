@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isAuthPage = useCallback((path: string) => {
     return path?.includes('/sign-in') ||
       path?.includes('/sign-up') ||
-      path?.includes('/public') ||
+
       path?.includes('/check-email')
   }, [])
 

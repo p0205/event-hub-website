@@ -457,18 +457,18 @@ export default function EventBudgetPage() {
                         </div>
 
                         <div className={styles.modalFooter}>
-                            <div className={styles['form-buttons']}>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', paddingBottom: '24px' }}>
                                 <button
                                     className="button-secondary"
                                     onClick={handleCloseAddExpenseForm}
-                                    disabled={isSubmittingExpense} // Disable while submitting
+                                    disabled={isSubmittingExpense}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     className="button-primary"
                                     onClick={handleAddExpense}
-                                    disabled={isSubmittingExpense} // Disable while submitting
+                                    disabled={isSubmittingExpense}
                                 >
                                     {isSubmittingExpense ? 'Saving...' : 'Save Expense'}
                                 </button>

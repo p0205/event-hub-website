@@ -985,7 +985,7 @@ export default function CreateEventPage() {
                             className="button-primary"
                             disabled={isLoading}
                         >
-                            {isLoading ? 'Submitting...' : 'Submit for Approval'}
+                            {isLoading ? 'Submitting...' : 'Submit'}
                         </button>
                     </div>
                 </form>

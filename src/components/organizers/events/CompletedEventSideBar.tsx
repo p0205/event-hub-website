@@ -52,7 +52,7 @@ export default function CompletedEventSubmenuSidebar() {
             <nav>
                 <ul className="event-submenu-nav-list">
                     {eventManagementItems.map(item => (
-                        <li key={item.name} className={`event-submenu-nav-item ${isSubmenuLinkActive(item.hrefSegment) ? 'completed' : ''}`}>
+                        <li key={item.name} className={`event-submenu-nav-item ${isSubmenuLinkActive(item.hrefSegment) ? 'active' : ''}`}>
                             {/* Link to the specific event management sub-page */}
                             <Link href={`${eventBasePath}/${item.hrefSegment}`} className="event-submenu-nav-link">
                                 {/* Optional: Add icons for each submenu item */}

@@ -10,6 +10,7 @@ export enum EventStatus {
     CANCELLED = 'CANCELLED',
   
 }
+
 export enum EventType {
     TALK = 'TALK',
     SEMINAR = 'SEMINAR',
@@ -31,7 +32,7 @@ export enum EventType {
     EXHIBITION = 'EXHIBITION',
     FESTIVAL = 'FESTIVAL',
     CULTURAL_EVENT = 'CULTURAL_EVENT',
-  }
+}
 
   
 export interface CalendarEvent {
@@ -199,13 +200,20 @@ export interface EventReportOverview {
     feedback: FeedbackOverview;
 }
 
-
-
 /**
-/**
- * Interface for data needed to create a new Event.
+ * DTO for manual inputs required to generate a post-event article.
  */
-// src/types/event.ts
+export interface ArticleManualInputsDto {
+    organizingBody: string;
+    creditIndividuals: string;
+    eventObjectives: string;
+    activitiesConducted: string;
+    targetAudience: string;
+    perceivedImpact: string;
+    acknowledgements: string;
+    appreciationMessage: string;
+    language: string; // 'en' for English, 'ms' for Bahasa Melayu
+}
 
 /**
  * Interface for data needed to create a new Event.

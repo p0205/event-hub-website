@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import styles from './reports.module.css'; // Create this CSS module
 import { EventReportOverview } from '@/types/event';
 import eventReportService from '@/services/eventReportService';
@@ -41,6 +41,7 @@ export default function EventReportsPage() {
 
     const params = useParams();
     const eventId = params.id as string; // eventId will be a string, convert to number for service calls
+    const router = useRouter();
 
 
     const [dateRange, setDateRange] = useState({
@@ -83,7 +84,7 @@ export default function EventReportsPage() {
         try {
             const commentsLimit = showLatestComments ? latestCommentsCount : undefined;
             const pdfBlob = await eventReportService.generateFeedbackReport(Number(eventId), commentsLimit);
-            
+
             // Create a URL for the blob and open in new tab
             const url = window.URL.createObjectURL(pdfBlob);
             window.open(url, '_blank');
@@ -123,7 +124,7 @@ export default function EventReportsPage() {
         );
     };
 
-   
+
     return (
         <div className={styles["page-container"]}>
 
@@ -136,7 +137,7 @@ export default function EventReportsPage() {
                     <div className={styles["report-header"]}>
                         <h2>📊 Attendance Report</h2>
                         <span className={`${styles["status-badge"]} ${styles["status-generated"]}`}>
-                            Automatically generated on {formatDate(reportOverview?.attendance.attendanceReport.generatedAt)}
+                            Generated on {formatDate(reportOverview?.attendance.attendanceReport.generatedAt)}
                         </span>
                     </div>
 
@@ -175,7 +176,7 @@ export default function EventReportsPage() {
                     <div className={styles["report-header"]}>
                         <h2>💰 Budget Report</h2>
                         <span className={`${styles["status-badge"]} ${styles["status-generated"]}`}>
-                            Automatically generated on {formatDate(reportOverview?.budget.budgetReport.generatedAt)}
+                            Generated on {formatDate(reportOverview?.budget.budgetReport.generatedAt)}
                         </span>
                     </div>
                     <div className={styles["report-content"]}>
@@ -204,7 +205,6 @@ export default function EventReportsPage() {
                                 Download PDF Report
                             </button>
                         </a>
-
 
                     </div>
                 </div>
@@ -281,7 +281,7 @@ export default function EventReportsPage() {
 
                                 {/* Comment Selection Options */}
                                 <div className={styles["comment-options"]}>
-                                
+
                                     <div className={styles["option-group"]}>
                                         <label className={styles["checkbox-label"]}>
                                             <input
@@ -314,7 +314,7 @@ export default function EventReportsPage() {
                                     </div>
                                 </div>
 
-                                <button 
+                                <button
                                     className={`${styles["download-btn"]} button-primary`}
                                     onClick={handleGenerateFeedbackReport}
                                     disabled={isGeneratingReport}
@@ -327,7 +327,36 @@ export default function EventReportsPage() {
                         </>
                     )}
                 </div>
+
+
+                {/* Budget Report Card */}
+                <div className={styles["report-card"]}>
+                    <div className={styles["report-header"]}>
+                        <h2>🤖 AI-generated Post Event Article</h2>
+
+                    </div>
+                    <div className={styles["report-content"]}>
+                        <div className={styles["report-summary"]}>
+                            <p>Generate a comprehensive post-event article using AI. You can review and edit the article for your event bulletin or report.</p>
+
+                        </div>
+                        <a
+                           
+                            onClick={() => router.push(`/my-events/completed/${params.id}/reports/post-event-article`)}
+                        >
+                            <button className={`${styles["download-btn"]} button-primary`}>
+                                Generate Article
+                            </button>
+                        </a>
+
+
+                    </div>
+                </div>
+
+
+
             </div>
+            {/* AI-generated Post Event Article Card */}
         </div>
 
 

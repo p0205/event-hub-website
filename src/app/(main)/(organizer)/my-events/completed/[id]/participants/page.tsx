@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation'; // From URL get event ID, for navigation
-import { v4 as uuidv4 } from 'uuid'; // For temporary IDs for new participants
+// import { v4 as uuidv4 } from 'uuid'; // For temporary IDs for new participants
 
 // Import Recharts components (ensure these are installed: npm install recharts)
 import {
@@ -51,8 +51,17 @@ export default function EventParticipantsPage() {
     const [isLoadingInitial, setIsLoadingInitial] = useState(true); // Loading initial saved data
     const [initialLoadError, setInitialLoadError] = useState<string | null>(null); // Error loading initial data
 
+    const [isImporting, setIsImporting] = useState(false); // File import process
+    const [uploadedParticipants, setUploadedParticipants] = useState<User[]>([]);
+    const [importError, setImportError] = useState<string | null>(null);
+    const [importSuccess, setImportSuccess] = useState<string | null>(null);
+
     const [isSaving, setIsSaving] = useState(false); // Final save process
     const [saveError, setSaveError] = useState<string | null>(null); // Error during final save
+
+
+    // --- State for "Add Participant" Modal ---
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // --- State for Sorting ---
     const [sortKey, setSortKey] = useState<SortKey>(null);
@@ -65,7 +74,6 @@ export default function EventParticipantsPage() {
     // --- State for team members pagination
     const [currentPageNo, setCurrentPageNo] = useState(0);
     const [pageSize, setPageSize] = useState(5);
-    const [sortBy, setSortBy] = useState<string>("participant.name");
     const [totalPages, setTotalPages] = useState(0);
     const [totalParticipants, setTotalParticipants] = useState(0);
     const [offset, setOffset] = useState(0);
@@ -85,7 +93,7 @@ export default function EventParticipantsPage() {
             return;
         }
         fetchSavedParticipants();
-    }, [eventId, currentPageNo, pageSize, sortBy]); // Re-run effect if eventId changes
+    }, [eventId, currentPageNo, pageSize]); // Re-run effect if eventId changes
 
 
     // --- Recalculate Demographics whenever participants list changes ---
@@ -97,6 +105,20 @@ export default function EventParticipantsPage() {
         }
     }, [participants]); // Recalculate when participants state updates
 
+    useEffect(() => {
+        // Prevent body scrolling when overlay is open
+        if (uploadedParticipants.length > 0) {
+            document.body.style.overflow = "hidden"; // Disable background scroll
+        } else {
+            document.body.style.overflow = "auto"; // Re-enable scroll when overlay is closed
+        }
+
+        return () => {
+            document.body.style.overflow = "auto"; // Ensure scroll is re-enabled on component unmount
+        };
+
+
+    }, [uploadedParticipants]); // Run the effect when uploadedParticipants changes
 
     const fetchDemographics = async () => {
         try {
@@ -115,19 +137,24 @@ export default function EventParticipantsPage() {
         setIsLoadingInitial(true);
         setInitialLoadError(null);
         // Clear other status messages on initial load
-
+        setImportError(null);
+        setImportSuccess(null);
         setSaveError(null);
         try {
             // Call your service to get participants already saved for this event
-            const response = await eventService.getParticipantsByEventId(Number(eventId), currentPageNo, pageSize, sortBy);
+            const response = await eventService.getParticipantsByEventId(Number(eventId), currentPageNo, pageSize);
             setParticipants(response.content); // Set the main participants state
             setCurrentPageNo(response.pageable.pageNumber);
             setTotalPages(response.totalPages);
             setTotalParticipants(response.totalElements);
             setOffset(response.pageable.offset + 1);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Failed to fetch initially saved participants:", err);
-            setInitialLoadError(`Failed to load existing participants: ${err.message || 'Unknown error'}`);
+            if (err instanceof Error) {
+                setInitialLoadError(`Failed to load existing participants: ${err.message || 'Unknown error'}`);
+            } else {
+                setInitialLoadError('Failed to load existing participants: Unknown error');
+            }
             setParticipants([]); // Display empty list on error
         } finally {
             setIsLoadingInitial(false);
@@ -145,38 +172,240 @@ export default function EventParticipantsPage() {
         setPageSize(newPageSize);
     }
 
-    // Handle exporting attendance data (e.g., as CSV)
-    const handleExportAttendance = async () => {
-        if (!eventId) {
-            console.error("Cannot export: Event ID missing.");
+
+
+
+    // --- Handle CSV File Import ---
+    const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || !eventId) {
+            setIsImporting(false);
+            setImportError(file ? "Event ID is missing." : null); // Error if no eventId
             return;
         }
 
+        // Reset import status messages for the new attempt
+        setImportError(null);
+        setImportSuccess(null);
+        setSaveError(null); // Clear save errors too
+        setIsImporting(true);
+
+        // --- File Type Validation ---
+        const expectedType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        const expectedExtension = '.xlsx';
+        if (file.type !== expectedType && !file.name.toLowerCase().endsWith(expectedExtension)) {
+            setImportError(`Invalid file type. Please upload an Excel (.xlsx) file.`);
+            setIsImporting(false);
+            event.target.value = ''; // Clear the file input
+            return;
+        }
+        // --- End Validation ---
+
+        // --- Call the backend service to import and return the list ---
         try {
-            // Show loading state if needed
-            const xlsxBlob = await eventService.exportParticipantsXLSX(Number(eventId));
+            // Call the service function that sends the file to the backend API
+            // and GETS BACK the list of participants found in the file.
+            // Assumes backend process includes saving the data and returning the saved list.
+            const importedList = await eventService.importParticipantsInfo(Number(eventId), file);
 
-            // Create a download link
-            const url = window.URL.createObjectURL(xlsxBlob);
-            const link = document.createElement('a');
-            link.href = url;
+            // --- SUCCESS: Update the participant list state with the imported list ---
+            // This replaces the current list (initial saved data or previous import)
+            // with the newly imported list for review.
+            setUploadedParticipants(importedList);
 
-            // Set the filename using the session name if available
-            const filename =  `participants-${eventId.replace(/\s+/g, '_')}.xlsx`;
-            link.download = filename;
 
-            // Trigger the download
-            document.body.appendChild(link);
-            link.click();
-
-            // Cleanup
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        } catch (error: any) {
-            console.error("Failed to export participant data:", error);
-            // You might want to show an error message to the user here
+        } catch (importErr: unknown) {
+            console.error("Import Error:", importErr);
+            if (importErr instanceof Error) {
+                setImportError(`Import failed: ${importErr.message || 'Unknown error during import'}`);
+            } else {
+                setImportError('Import failed: Unknown error during import');
+            }
+            setImportSuccess(null); // Ensure success message is cleared on error
+        } finally {
+            // Reset importing state and clear the file input
+            setIsImporting(false);
+            event.target.value = '';
         }
     };
+
+
+    const handleAddParticipant = async (participant: User | null) => {
+        if (!participant) return;
+        setIsModalOpen(false);
+        setIsSaving(true); // Start saving state
+        setSaveError(null); // Clear previous save errors
+        setImportError(null); // Clear import errors too
+
+        try {
+            const updatedParticipants = [...participants];
+
+            // Build a fast lookup set for existing participants
+            const existingEmails = new Set(participants.map(p => p.email.toLowerCase()));
+            const existingNamePhonePairs = new Set(participants.map(p => {
+                const name = p.name.trim().toLowerCase();
+                const phone = (p.phoneNo ?? '').replace(/\D/g, '');
+                return `${name}_${phone}`;
+            }));
+
+            const addedParticipants: User[] = [];
+            let skippedCount = 0;
+
+
+            const emailKey = participant.email.toLowerCase();
+            const namePhoneKey = `${participant.name.trim().toLowerCase()}_${(participant.phoneNo ?? '').replace(/\D/g, '')}`;
+
+            const isDuplicate = existingEmails.has(emailKey) || existingNamePhonePairs.has(namePhoneKey);
+
+            if (!isDuplicate) {
+                updatedParticipants.push(participant);
+                addedParticipants.push(participant);
+                existingEmails.add(emailKey);
+                existingNamePhonePairs.add(namePhoneKey);
+            } else {
+                skippedCount++;
+            }
+
+
+            if (addedParticipants.length > 0) {
+                console.log("Saving newly added participants:", addedParticipants);
+                const success = await eventService.saveParticipants(Number(eventId), addedParticipants);
+
+                if (success) {
+                    setParticipants(updatedParticipants); // Only update if save succeeded
+                    setUploadedParticipants([]); // Clear upload buffer
+                    // Update import status messages
+
+                    toast.success(`${addedParticipants.length} new participants added.`);
+                } else {
+                    throw new Error('Save operation did not report success.');
+                }
+            } else {
+
+                toast.info('No new participants to save.');
+            }
+
+            if (skippedCount > 0) {
+                toast.warning(`${skippedCount} participants skipped (already exist).`);
+            }
+
+            // Refresh current page data (optional)
+            router.refresh();
+
+        } catch (saveErr: unknown) {
+            console.error("Save Error:", saveErr);
+            if (saveErr instanceof Error) {
+                setSaveError(`Failed to save changes: ${saveErr.message || 'Unknown error during save'}`);
+            } else {
+                setSaveError('Failed to save changes: Unknown error during save');
+            }
+        } finally {
+            setIsSaving(false); // End saving state
+        }
+    };
+
+
+    // --- Handle Deleting a Participant by ID ---
+    const handleDeleteParticipant = (id: number | string) => {
+
+        try {
+            eventService.deleteParticipants(Number(eventId), Number(id));
+            setParticipants(participants.filter(p => p.id !== id));
+        } catch (deleteErr) {
+            console.error("DeleteError:", deleteErr);
+        }
+        // Use filter to create a new array excluding the participant with the given id
+        // Optional: Reset filter/sort if deleting might make current view inconsistent
+        setFilterType('all');
+        setFilterValue(null);
+        setSortKey(null);
+    };
+
+    const handleDeleteUploaded = (id: string) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this participant?");
+        if (!confirmDelete) return;
+
+        setUploadedParticipants(uploadedParticipants.filter(p => String(p.id) !== id));
+    };
+
+
+
+
+    const handleConfirmSave = async () => {
+        if (uploadedParticipants.length === 0) return;
+        if (!eventId) { setSaveError("Event ID is missing. Cannot save."); return; }
+
+        setIsSaving(true); // Start saving state
+        setSaveError(null); // Clear previous save errors
+        setImportError(null); // Clear import errors too
+
+        try {
+            const updatedParticipants = [...participants];
+
+            // Build a fast lookup set for existing participants
+            const existingEmails = new Set(participants.map(p => p.email.toLowerCase()));
+            const existingNamePhonePairs = new Set(participants.map(p => {
+                const name = p.name.trim().toLowerCase();
+                const phone = (p.phoneNo ?? '').replace(/\D/g, '');
+                return `${name}_${phone}`;
+            }));
+
+            const addedParticipants: typeof uploadedParticipants = [];
+            let skippedCount = 0;
+
+            uploadedParticipants.forEach((newP) => {
+                const emailKey = newP.email.toLowerCase();
+                const namePhoneKey = `${newP.name.trim().toLowerCase()}_${(newP.phoneNo ?? '').replace(/\D/g, '')}`;
+
+                const isDuplicate = existingEmails.has(emailKey) || existingNamePhonePairs.has(namePhoneKey);
+
+                if (!isDuplicate) {
+                    updatedParticipants.push(newP);
+                    addedParticipants.push(newP);
+                    existingEmails.add(emailKey);
+                    existingNamePhonePairs.add(namePhoneKey);
+                } else {
+                    skippedCount++;
+                }
+            });
+
+            if (addedParticipants.length > 0) {
+                console.log("Saving newly added participants:", addedParticipants);
+                const success = await eventService.saveParticipants(Number(eventId), addedParticipants);
+
+                if (success) {
+                    setParticipants(updatedParticipants); // Only update if save succeeded
+                    setUploadedParticipants([]); // Clear upload buffer
+                    // Update import status messages
+
+                    toast.success(`${addedParticipants.length} new participants added.`);
+                } else {
+                    throw new Error('Save operation did not report success.');
+                }
+            } else {
+
+                toast.info('No new participants to save.');
+            }
+
+            if (skippedCount > 0) {
+                toast.warning(`${skippedCount} participants skipped (already exist).`);
+            }
+
+            // Refresh current page data (optional)
+            router.refresh();
+
+        } catch (saveErr: unknown) {
+            console.error("Save Error:", saveErr);
+            if (saveErr instanceof Error) {
+                setSaveError(`Failed to save changes: ${saveErr.message || 'Unknown error during save'}`);
+            } else {
+                setSaveError('Failed to save changes: Unknown error during save');
+            }
+        } finally {
+            setIsSaving(false); // End saving state
+        }
+    };
+
 
     // --- Filter Options (Derived from participants data) ---
     const filterOptions = useMemo(() => {
@@ -268,12 +497,6 @@ export default function EventParticipantsPage() {
     }, [participants, filterType, filterValue]); // Re-filter when participants, type, or value changes
 
 
-    // --- Sorting Handler (Keep as is) ---
-    const handleSort = (key: SortKey) => {
-        if (sortKey === key) { setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc'); }
-        else { setSortKey(key); setSortDirection('asc'); }
-    };
-
     // --- Apply Sorting Logic (on the filtered list) ---
     const sortedParticipants = useMemo(() => {
         // Sort the FILTERED participants list
@@ -303,7 +526,7 @@ export default function EventParticipantsPage() {
                 const stringA = String(aValue);
                 const stringB = String(bValue);
                 return sortDirection === 'asc' ? stringA.localeCompare(stringB) : stringB.localeCompare(stringA);
-            } catch (e) {
+            } catch {
                 // Fallback if string conversion fails for some reason
                 return 0;
             }
@@ -353,27 +576,120 @@ export default function EventParticipantsPage() {
                 </div>
             </div>
 
+            {/* --- Import XLSX Section --- */}
+            <div className="form-container" style={{ marginBottom: '30px', padding: '15px', border: '1px solid #ccc', borderRadius: '8px', background: '#f9f9f9' }}>
+                <h3>Import Participants from XLSX File</h3>
+                <div className="form-group">
+                    <label htmlFor="xlsxFileInput"
+                        style={{
+                            padding: '10px 15px', backgroundColor: isImporting ? '#cccccc' : '#f0f0f0', // Grey out when importing
+                            border: '1px solid #ccc', borderRadius: '4px',
+                            cursor: isImporting ? 'not-allowed' : 'pointer',
+                            display: 'inline-block',
+                            opacity: isImporting ? 0.6 : 1, // Reduce opacity when disabled
+                        }}>
+                        {isImporting ? 'Processing...' : 'Choose .xlsx File'}
+                    </label>
+                    <input
+                        type="file"
+                        id="xlsxFileInput"
+                        accept=".xlsx"
+                        onChange={handleImportCSV}
+                        disabled={isImporting || isSaving} // Disable file input while importing or saving
+                        style={{ display: 'none' }}
+                    />
+                    {isImporting && <span style={{ marginLeft: '10px', color: '#007bff' }}>Importing...</span>}
+                    {importError && <p className="error-message" style={{ marginTop: '10px', color: '#dc3545' }}>{importError}</p>}
+                    {importSuccess && <p className="success-message" style={{ marginTop: '10px', color: '#28a745' }}>{importSuccess}</p>}
+                </div>
+            </div>
+
             {/* --- Participants List & Actions Section --- */}
             <div className="form-container" style={{ marginBottom: '30px', padding: '15px', border: '1px solid #ccc', borderRadius: '8px', background: '#fff' }}> {/* Keep form-container for card styling */}
 
                 {/* List Title and Add Button */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
                     <h3>Participants List ({sortedParticipants.length} of {participants.length})</h3> {/* Show count of filtered/total */}
-                    {/* Export Button */}
-                    {participants && (
-                        <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
-                            <button className="button-secondary" onClick={handleExportAttendance}>
-                                Export Participants (XLSX)
-                            </button>
-                        </div>
-                    )}
+                    <button
+                        onClick={() => setIsModalOpen(true)} // Open the Add modal
+                        disabled={isSaving || isImporting} // Disable while importing or saving
+                        style={{ padding: '8px 15px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: isSaving || isImporting ? 'not-allowed' : 'pointer' }}
+                    >
+                        + Add Participant
+                    </button>
                 </div>
+
+
+                {/* Uploaded Participants Overlay */}
+                {uploadedParticipants.length > 0 && (
+                    <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-xl max-w-4xl w-full">
+                            <h2 className="text-xl font-bold mb-4">New Uploaded Participants</h2>
+
+                            <div className="overflow-x-auto mb-4">
+                                <table className="min-w-full bg-white rounded-lg overflow-hidden">
+                                    <thead className="bg-gray-100">
+                                        <tr>
+                                            <th className="text-left px-4 py-2">No</th>
+                                            <th className="text-left px-4 py-2">Name</th>
+                                            <th className="text-left px-4 py-2">Email</th>
+                                            <th className="text-left px-4 py-2">Phone No</th>
+                                            <th className="text-left px-4 py-2">Faculty</th>
+                                            <th className="text-left px-4 py-2">Course</th>
+                                            <th className="text-left px-4 py-2">Year</th>
+                                            <th className="text-left px-4 py-2">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {uploadedParticipants.map((p, index) => (
+                                            <tr key={p.id} className="border-t">
+                                                <td className="px-4 py-2">{index + 1}</td>
+                                                <td className="px-4 py-2">{p.name}</td>
+                                                <td className="px-4 py-2">{p.email}</td>
+                                                <td className="px-4 py-2">{p.phoneNo}</td>
+                                                <td className="px-4 py-2">{p.faculty || "-"}</td>
+                                                <td className="px-4 py-2">{p.course || "-"}</td>
+                                                <td className="px-4 py-2">{p.year || "-"}</td>
+                                                <td className="px-4 py-2">
+                                                    <button
+                                                        className="text-red-600 hover:underline"
+                                                        onClick={() => handleDeleteUploaded(String(p.id))}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Save Button */}
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                                    onClick={() => setUploadedParticipants([])}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                    onClick={handleConfirmSave}
+                                    disabled={isSaving}
+                                >
+                                    <Save className="w-5 h-5" />
+                                    {isSaving ? "Saving..." : "Save Uploaded"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
 
                 {/* Filter Controls */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
                     <span>Filter by:</span>
-                    <select value={filterType} onChange={handleFilterTypeChange}>
+                    <select value={filterType} onChange={handleFilterTypeChange} disabled={isSaving || isImporting}>
                         <option value="all">All</option>
                         <option value="faculty">Faculty</option>
                         <option value="course">Course</option>
@@ -384,35 +700,35 @@ export default function EventParticipantsPage() {
 
                     {/* Filter Value Dropdown (Conditionally Rendered based on filterType) */}
                     {(filterType === 'faculty' && filterOptions.faculties) && (
-                        <select value={filterValue?.toString() || ''} onChange={handleFilterValueChange}>
+                        <select value={filterValue?.toString() || ''} onChange={handleFilterValueChange} disabled={isSaving || isImporting}>
                             {filterOptions.faculties.map(option => (
                                 <option key={option || ''} value={option || ''}>{option || 'N/A'}</option>
                             ))}
                         </select>
                     )}
                     {(filterType === 'course' && filterOptions.courses) && (
-                        <select value={filterValue?.toString() || ''} onChange={handleFilterValueChange} >
+                        <select value={filterValue?.toString() || ''} onChange={handleFilterValueChange} disabled={isSaving || isImporting}>
                             {filterOptions.courses.map(option => (
                                 <option key={option || ''} value={option || ''}>{option || 'N/A'}</option>
                             ))}
                         </select>
                     )}
                     {(filterType === 'year' && filterOptions.years) && (
-                        <select value={filterValue?.toString() || ''} onChange={handleFilterValueChange}>
+                        <select value={filterValue?.toString() || ''} onChange={handleFilterValueChange} disabled={isSaving || isImporting}>
                             {filterOptions.years.map(option => (
                                 <option key={option || ''} value={option || ''}>{option || 'N/A'}</option>
                             ))}
                         </select>
                     )}
                     {(filterType === 'gender' && filterOptions.genders) && (
-                        <select value={filterValue?.toString() || ''} onChange={handleFilterValueChange}>
+                        <select value={filterValue?.toString() || ''} onChange={handleFilterValueChange} disabled={isSaving || isImporting}>
                             {filterOptions.genders.map(option => (
                                 <option key={option || ''} value={option || ''}>{option || 'N/A'}</option>
                             ))}
                         </select>
                     )}
                     {(filterType === 'role' && filterOptions.roles) && (
-                        <select value={filterValue?.toString() || ''} onChange={handleFilterValueChange}>
+                        <select value={filterValue?.toString() || ''} onChange={handleFilterValueChange} disabled={isSaving || isImporting}>
                             {filterOptions.roles.map(option => (
                                 <option key={option || ''} value={option || ''}>{option || 'N/A'}</option>
                             ))}
@@ -434,7 +750,7 @@ export default function EventParticipantsPage() {
                         {/* ParticipantsTable component handles rendering the table structure */}
                         <ParticipantsTable
                             participants={sortedParticipants} // Pass the sorted and filtered list
-                            onDeleteParticipant={null as unknown as (id: string | number) => void} // Type assertion to satisfy TypeScript
+                            onDeleteParticipant={handleDeleteParticipant} // Pass delete handler
                             currentPage={currentPageNo}
                             pageSize={pageSize}
                             totalParticipants={totalParticipants}
@@ -518,6 +834,12 @@ export default function EventParticipantsPage() {
             )}
 
 
+            {/* --- Add Participant Modal --- */}
+            <AddParticipantModal
+                open={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
+                onConfirm={handleAddParticipant}
+            />
 
         </div> // End page-content-wrapper
     );
