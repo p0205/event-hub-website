@@ -92,7 +92,7 @@ const BudgetCategoriesTable: React.FC<BudgetCategoryTableProps> = ({
                     ) : (
                         // Message when the current page is empty (e.g., last page has no items)
                         <tr>
-                            <td colSpan={8} style={{ textAlign: 'center' }}>No role found.</td>
+                            <td colSpan={8} style={{ textAlign: 'center' }}>No category found.</td>
                         </tr>
                     )}
                 </tbody>
