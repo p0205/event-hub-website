@@ -131,7 +131,7 @@ const Dashboard = () => {
                                 type="date"
                                 value={endDateTime}
                                 min={startDateTime}
-                                max={formatDate(today)}
+                            
                                 onChange={e => setEndDateTime(e.target.value)}
                                 style={{ marginLeft: '0.5rem' }}
                             />

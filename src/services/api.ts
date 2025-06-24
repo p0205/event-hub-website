@@ -34,7 +34,7 @@ api.interceptors.response.use(
         const currentPath = window.location.pathname
         const isAuthPage = currentPath.includes('/sign-in') || 
                           currentPath.includes('/sign-up') || 
-                          currentPath.includes('/public') || 
+                          // currentPath.includes('/public') || 
                           currentPath.includes('/check-email')
         
         const isAuthApiCall = error.config?.url?.includes('/auth/me') ||

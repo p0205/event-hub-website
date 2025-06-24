@@ -57,6 +57,23 @@ const attendanceService = {
             console.error('Error exporting attendance data:', error);
             throw new Error(error.response?.data?.message || 'Failed to export attendance data');
         }
+    },
+
+    // Add new method for QR code check-in
+    checkIn: async (qrCodePayload: string, email: string): Promise<any> => {
+        try {
+            const response = await api.post('/check_in', {
+                qrCodePayload,
+                email
+            });
+            if (response.status !== HttpStatusCode.Ok && response.status !== HttpStatusCode.Created) {
+                throw new Error(response.data?.message || 'Failed to check in');
+            }
+            return response.data;
+        } catch (error: any) {
+            console.error('Error during check-in:', error);
+            throw new Error(error.response?.data?.message || 'Failed to check in');
+        }
     }
 };
 

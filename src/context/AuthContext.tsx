@@ -145,10 +145,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Check auth only on initial mount
   useEffect(() => {
-    if (!initialized) {
+    // Don't check auth if on a public page
+    if (!initialized && !pathname?.startsWith('/public')) {
       checkAuth()
     }
-  }, [checkAuth, initialized])
+  }, [checkAuth, initialized, pathname])
 
   // Handle pathname changes for authenticated users
   // useEffect(() => {

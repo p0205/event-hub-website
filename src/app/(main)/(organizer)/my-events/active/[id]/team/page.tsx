@@ -353,11 +353,11 @@ export default function EventTeamPage() {
                         {totalMembers > 0 && (
                             <div className="pagination-container">
                                 <div className="pagination-info">
-                                    Showing {startIndex} - {endIndex} of {totalMembers} participants
+                                    Showing {startIndex} - {endIndex} of {totalMembers} members
                                 </div>
                                 {/* Page Size Selector */}
                                 <div className="page-size-selector">
-                                    Participants per page:
+                                    Members per page:
                                     <select value={pageSize} onChange={(e) => onPageSizeChange(Number(e.target.value))}>
                                         <option value={5}>5</option>
                                         <option value={10}>10</option> {/* Default */}
@@ -372,7 +372,7 @@ export default function EventTeamPage() {
                         <ul>
                             {teamMembers.map(member => (
                                 <li key={member.userId} className={styles["team-member-item"]}>
-                                    <img src={'/default-avatar.png'} alt={member.name} className={styles["profile-image"]} width={40} height={40} />
+                                    {/* <img src={'/default-avatar.png'} alt={member.name} className={styles["profile-image"]} width={40} height={40} /> */}
                                     <div className={styles["user-info"]}>
                                         <div className={styles["user-name"]}>{member.name}</div>
                                         <div className={styles["user-email"]}>{member.email}</div>

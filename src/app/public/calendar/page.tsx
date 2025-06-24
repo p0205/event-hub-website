@@ -414,7 +414,7 @@ const CalendarPage = () => {
                 {/* Right Column - Sidebar */}
                 <div className={styles.rightColumn}>
                     {/* Search Bar */}
-                    <div className={styles.searchContainer}>
+                    {/* <div className={styles.searchContainer}>
                         <div className={styles.searchBar}>
                             <Search className={styles.searchIcon} />
                             <input
@@ -425,7 +425,7 @@ const CalendarPage = () => {
                                 className={styles.searchInput}
                             />
                         </div>
-                    </div>
+                    </div> */}
                     {/* Today's Events Section */}
                     <div className={styles.todayContainer}>
                         <h2 className={styles.sectionTitle}>Happening Today</h2>

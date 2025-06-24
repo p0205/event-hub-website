@@ -47,69 +47,69 @@ export default function CreateEventPage() {
     const [formError, setFormError] = useState<string | null>(null);
 
     const [venues, setVenues] = useState<Venue[]>([]);
-    const [showAllVenues, setShowAllVenues] = useState<boolean[]>([false]);
+    // const [showAllVenues, setShowAllVenues] = useState<boolean[]>([false]);
+    const [showAllVenues, setShowAllVenues] = useState<Record<string, boolean>>({});
+    const [venuesLoading, setVenuesLoading] = useState(true);
+    const [budgetCategoriesLoading, setBudgetCategoriesLoading] = useState(true);
     const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
     const [resetEndTimeInputs, setResetEndTimeInputs] = useState<Record<string, boolean>>({});
 
-    const toggleShowAllVenues = (venueIndex: number) => {
-        setShowAllVenues((prev) => {
-            const updated = [...prev];
-            updated[venueIndex] = !updated[venueIndex];
-            return updated;
-        });
+    // const toggleShowAllVenues = (venueIndex: number) => {
+    //     setShowAllVenues((prev) => {
+    //         const updated = [...prev];
+    //         updated[venueIndex] = !updated[venueIndex];
+    //         return updated;
+    //     });
+    // };
+
+    const toggleShowAllVenues = (sessionId: string, venueIndex: number) => {
+        const key = `${sessionId}-${venueIndex}`;
+        setShowAllVenues((prev) => ({
+            ...prev,
+            [key]: !prev[key]
+        }));
     };
 
+
+    // Update your existing useEffect
     useEffect(() => {
         console.log("Fetching venues...");
 
-        // Define the asynchronous function that will perform the fetch
         const fetchVenues = async () => {
             console.log("Inside fetchVenues");
             try {
                 console.log("Calling venueService.fetchVenues()");
-                // Call the service function to get venues from the backend API.
-                // 'await' pauses execution until the Promise resolves with the fetched data.
-                const fetchedVenues = await venueService.fetchVenues(); // Assumes eventService.getVenues() exists and works
-                // Update the 'venues' state with the data received from the API
-
+                const fetchedVenues = await venueService.fetchVenues();
                 console.log("Fetched venues:", fetchedVenues);
                 setVenues(fetchedVenues);
             } catch (err: unknown) {
-                // If an error occurs during the fetch, log it and set the error state
                 console.error("Failed to fetch venues:", err);
                 if (err instanceof Error) {
                     console.error(`Failed to load venues: ${err.message || 'Unknown error'}`);
                 }
-                // Optionally clear venues state on error if you don't want to show partial data
-                // setVenues([]);
+            } finally {
+                setVenuesLoading(false); // Set loading to false regardless of success/failure
             }
         };
 
         const fetchBudgetCategories = async () => {
             console.log("Inside fetchBudgetCategories");
             try {
-                console.log("Calling budgetCategoryService.fetchVenues()");
-                // Call the service function to get venues from the backend API.
-                // 'await' pauses execution until the Promise resolves with the fetched data.
-                const fetchBudgetCategories = await budgetCategoryService.fetchBudgetCategories(); // Assumes eventService.getVenues() exists and works
-                // Update the 'venues' state with the data received from the API
-
+                console.log("Calling budgetCategoryService.fetchBudgetCategories()");
+                const fetchBudgetCategories = await budgetCategoryService.fetchBudgetCategories();
                 setBudgetCategories(fetchBudgetCategories);
             } catch (err: unknown) {
-                // If an error occurs during the fetch, log it and set the error state
                 console.error("Failed to fetch budget categories:", err);
                 if (err instanceof Error) {
                     console.error(`Failed to load budget categories: ${err.message || 'Unknown error'}`);
                 }
-                // Optionally clear venues state on error if you don't want to show partial data
-                // setVenues([]);
+            } finally {
+                setBudgetCategoriesLoading(false);
             }
         };
 
-        // Call the fetch function immediately when the effect runs (on mount)
         fetchVenues();
         fetchBudgetCategories();
-
     }, []);
 
     // --- Initialize with one default session on client mount ---
@@ -126,7 +126,7 @@ export default function CreateEventPage() {
             // If sessions array is not empty (e.g., after state reset, HMR), do nothing
             return prev;
         });
-         
+
     }, []);
 
     const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
@@ -149,7 +149,7 @@ export default function CreateEventPage() {
                     endDateTime: '',   // These will be calculated on submit
                 }];
 
-             
+
                 return {
                     ...prev,
                     eventVenues: initialVenues,
@@ -507,7 +507,7 @@ export default function CreateEventPage() {
             // --- Success Handling ---
             const newEventId = createdEvent.id; // Assuming the response contains the new event's ID
             setSubmitSuccess("Event submitted for approval successfully!"); // Trigger success message/overlay
-          
+
             router.push(`/my-events/active/${newEventId}`); // Navigate to a relevant page
 
         } catch (error: unknown) {
@@ -891,84 +891,92 @@ export default function CreateEventPage() {
                                     </div>
                                 </div> {/* End Inline Group */}
 
-                                {/* Venue Selection(s) */}
-                                <div className="form-group" style={{ marginTop: '10px' }}> {/* Wrap venue selects in a form-group */}
-                                    <label className="form-label">Venues:</label> {/* Label for the venue section */}
+                                <div className="form-group" style={{ marginTop: '10px' }}>
+                                    <label className="form-label">Venues:</label>
 
-                                    {/* Map over the venueIds array to render multiple selects */}
-                                    {((session.venueIds || [])).map((venueId, venueIndex) => (
-                                        <div key={venueIndex} className="form-group-item" style={{ marginBottom: '10px' }}>
-                                            {/* Venue Select Row */}
-                                            <div className="flex items-center gap-4 mb-2">
-                                                <select
-                                                    id={`venue-${session.id}-${venueIndex}`}
-                                                    name={`venue-${session.id}-${venueIndex}`}
-                                                    value={venueId}
-                                                    onChange={(e) => handleVenueSelectChange(session.id, venueIndex, e.target.value)}
-                                                    required
-                                                    className="form-input"
-                                                    style={{ flexGrow: 1 }}
-                                                >
-                                                    <option value="">Select a Venue ({showAllVenues[venueIndex] ? 'All' : 'Recommended'})</option>
-                                                    {showAllVenues[venueIndex] ? venues.map((venue) => (
-                                                        <option key={venue.id} value={String(venue.id)}>
-                                                            {venue.name} (Capacity: {venue.capacity})
-                                                        </option>
-                                                    )) :
-                                                        recommendedVenues.map((venue) => (
-                                                            <option key={venue.id} value={String(venue.id)}>
-                                                                {venue.name} (Capacity: {venue.capacity})
+                                    {venuesLoading ? (
+                                        <p>Loading venues...</p>
+                                    ) : (
+                                        <>
+                                            {/* Map over the venueIds array to render multiple selects */}
+                                            {((session.venueIds || [])).map((venueId, venueIndex) => (
+                                                <div key={venueIndex} style={{ marginBottom: '10px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+                                                        {/* Venue Select Dropdown */}
+                                                        <select
+                                                            id={`venue-${session.id}-${venueIndex}`}
+                                                            name={`venue-${session.id}-${venueIndex}`}
+                                                            value={venueId}
+                                                            onChange={(e) => handleVenueSelectChange(session.id, venueIndex, e.target.value)}
+                                                            required
+                                                            className="form-input"
+                                                            style={{ flex: '1', minWidth: '200px' }}
+                                                            disabled={isLoading || venues.length === 0}
+                                                        >
+                                                            <option value="">
+                                                                Select a Venue ({showAllVenues[`${session.id}-${venueIndex}`] ? 'All' : 'Recommended'})
                                                             </option>
-                                                        ))
-                                                    }
-                                                </select>
+                                                            {showAllVenues[`${session.id}-${venueIndex}`]
+                                                                ? venues.map((venue) => (
+                                                                    <option key={venue.id} value={String(venue.id)}>
+                                                                        {venue.name} (Capacity: {venue.capacity})
+                                                                    </option>
+                                                                ))
+                                                                : recommendedVenues.map((venue) => (
+                                                                    <option key={venue.id} value={String(venue.id)}>
+                                                                        {venue.name} (Capacity: {venue.capacity})
+                                                                    </option>
+                                                                ))
+                                                            }
+                                                        </select>
 
-                                                {/* Remove button for this specific venue select */}
-                                                {(session.venueIds || []).length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveVenueFromSession(session.id, venueIndex)}
-                                                        className="delete-button"
-                                                        disabled={isLoading}
-                                                        style={{ flexShrink: 0 }}
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
-                                                )}
-                                            </div>
+                                                        {/* Checkbox and Label */}
+                                                        <input
+                                                            type="checkbox"
+                                                            id={`show-all-venues-${session.id}-${venueIndex}`}
+                                                            checked={showAllVenues[`${session.id}-${venueIndex}`] ?? false}
+                                                            onChange={() => toggleShowAllVenues(session.id, venueIndex)}
+                                                            disabled={isLoading || venues.length === 0}
+                                                        />
+                                                        <label
+                                                            htmlFor={`show-all-venues-${session.id}-${venueIndex}`}
+                                                            style={{ fontSize: '14px', whiteSpace: 'nowrap' }}
+                                                        >
+                                                            Show all venues
+                                                        </label>
 
-                                            {/* Checkbox Row - Separate from the select and trash button */}
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
-                                                    id={`show-all-venues-${session.id}-${venueIndex}`}
-                                                    checked={showAllVenues[venueIndex] ?? false}
-                                                    onChange={() => toggleShowAllVenues(venueIndex)}
-                                                    disabled={isLoading || venues.length === 0}
-                                                />
-                                                <label htmlFor={`show-all-venues-${session.id}-${venueIndex}`}>
-                                                    Show all venues
-                                                </label>
-                                            </div>
-                                        </div>
-                                    ))}
+                                                        {/* Remove button */}
+                                                        {(session.venueIds || []).length > 1 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveVenueFromSession(session.id, venueIndex)}
+                                                                className="delete-button"
+                                                                disabled={isLoading}
+                                                                style={{ flexShrink: 0, padding: '6px' }}
+                                                            >
+                                                                <FaTrash />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
 
-                                    {/* Add Venue Button (below the list of venue selects) */}
-                                    <button
-                                        type="button"
-                                        onClick={() => handleAddVenueToSession(session.id)}
-                                        className="button-secondary"
-                                        style={{ marginTop: '5px' }}
-                                        disabled={isLoading || venues.length === 0}
-                                    >
-                                        + Add Venue for this Session
-                                    </button>
+                                            {/* Add Venue Button */}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleAddVenueToSession(session.id)}
+                                                className="button-secondary"
+                                                style={{ marginTop: '5px' }}
+                                                disabled={isLoading || venues.length === 0 || venuesLoading}
+                                            >
+                                                + Add Venue for this Session
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
 
                             </div>
-
-                        )
-                        )}
+                        ))}
                     </div>
                     {/* --- Action Buttons --- */}
                     < div className="form-actions" >
