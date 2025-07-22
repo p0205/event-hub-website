@@ -506,7 +506,7 @@ export default function CreateEventPage() {
 
             // --- Success Handling ---
             const newEventId = createdEvent.id; // Assuming the response contains the new event's ID
-            setSubmitSuccess("Event submitted for approval successfully!"); // Trigger success message/overlay
+            setSubmitSuccess("Event submitted successfully!"); // Trigger success message/overlay
 
             router.push(`/my-events/active/${newEventId}`); // Navigate to a relevant page
 

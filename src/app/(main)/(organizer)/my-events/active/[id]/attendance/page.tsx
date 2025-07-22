@@ -610,13 +610,13 @@ export default function EventAttendancePage() {
                     <h3>Participants Attendance - {selectedSession?.sessionName || 'Selected Session'}</h3> {/* Display selected session name */}
 
                     {/* Export Button */}
-                    {participants && (
+                    {/* {participants && (
                         <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
                             <button className="button-secondary" onClick={handleExportAttendance}>
                                 Export Attendance (CSV)
                             </button>
                         </div>
-                    )}
+                    )} */}
 
                     {/* Render the new ParticipantAttendanceTable component */}
                     <AttendanceTable

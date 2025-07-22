@@ -264,7 +264,7 @@ const CalendarPage = () => {
         setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
     };
 
-    const getSelectedDateEvents = () => {
+    const getSelectedDateEvents = (): CalendarEvent[] => {
         const dateString = selectedDateForEvents.getFullYear() + '-' +
             String(selectedDateForEvents.getMonth() + 1).padStart(2, '0') + '-' +
             String(selectedDateForEvents.getDate()).padStart(2, '0');
@@ -339,100 +339,17 @@ const CalendarPage = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Selected Date Events Section */}
-                    <div className={styles.upcomingContainer}>
-                        <div className={styles.sectionHeader}>
-                            <button onClick={prevDate} className={styles.dateNav}>
-                                <ChevronLeft className={styles.navIcon} />
-                            </button>
-                            <h2 className={styles.sectionTitle}>Events on {formatSelectedDate(selectedDateForEvents)}</h2>
-                            <button onClick={nextDate} className={styles.dateNav}>
-                                <ChevronRight className={styles.navIcon} />
-                            </button>
-                        </div>
-                        <div className={styles.upcomingEvents}>
-                            {getSelectedDateEvents().length > 0 ? (
-                                getSelectedDateEvents().map((event) => (
-                                    <div key={event.eventId} className={styles.upcomingEvent}>
-                                        <div className={styles.upcomingEventDate}>
-                                            <div className={styles.eventDay}>
-                                                {new Date(event.startDateTime).getDate()}
-                                            </div>
-                                            <div className={styles.eventMonth}>
-                                                {new Date(event.startDateTime).toLocaleDateString('en-US', { month: 'short' })}
-                                            </div>
-                                        </div>
-                                        <div className={styles.upcomingEventContent}>
-                                            <div className={styles.eventHeader}>
-                                                <span
-                                                    className={styles.eventType}
-                                                    style={{ backgroundColor: getEventTypeColor(event.eventType || 'default') }}
-                                                >
-                                                    {event.eventType}
-                                                </span>
-                                            </div>
-                                            <h3 className={styles.upcomingEventTitle}>{event.eventName}</h3>
-                                            <p className={styles.sessionName}>
-                                                <strong>Session:</strong> {event.sessionName}
-                                            </p>
-                                            <div className={styles.upcomingEventMeta}>
-                                                <span className={styles.upcomingEventDateTime}>
-                                                    <Calendar className={styles.metaIcon} />
-                                                    {new Date(event.startDateTime).toLocaleDateString('en-US', {
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    })}, {formatTime(event.startDateTime, event.endDateTime)}
-                                                </span>
-                                                <span className={styles.upcomingEventLocation}>
-                                                    <MapPin className={styles.metaIcon} />
-                                                    {event.venueNames}
-                                                </span>
-                                            </div>
-                                            <p className={styles.eventDescription}>
-                                                {event.description}
-                                            </p>
-                                        </div>
-                                        <button 
-                                            className={styles.upcomingViewButton}
-                                            onClick={() => router.push(`/public/calendar/${event.eventId}`)}
-                                        >
-                                            <Eye className={styles.buttonIcon} />
-                                            View Details
-                                        </button>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className={styles.emptyState}>
-                                    <p>No events scheduled for {formatSelectedDate(selectedDateForEvents)}. Select another date or check the calendar!</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
                 </div>
 
                 {/* Right Column - Sidebar */}
                 <div className={styles.rightColumn}>
-                    {/* Search Bar */}
-                    {/* <div className={styles.searchContainer}>
-                        <div className={styles.searchBar}>
-                            <Search className={styles.searchIcon} />
-                            <input
-                                type="text"
-                                placeholder="Search events..."
-                                value={searchKeyword}
-                                onChange={(e) => setSearchKeyword(e.target.value)}
-                                className={styles.searchInput}
-                            />
-                        </div>
-                    </div> */}
-                    {/* Today's Events Section */}
+                    {/* Date Modal Trigger Section */}
                     <div className={styles.todayContainer}>
-                        <h2 className={styles.sectionTitle}>Happening Today</h2>
+                        <h2 className={styles.sectionTitle}>Events on {formatSelectedDate(selectedDateForEvents)}</h2>
                         <div className={styles.todayEvents}>
-                            {getTodayEvents().length > 0 ? (
-                                getTodayEvents().map((event) => (
-                                    <div key={event.eventId} className={styles.todayEventCard}>
+                            {getSelectedDateEvents().length > 0 ? (
+                                getSelectedDateEvents().map((event: CalendarEvent) => (
+                                    <div key={event.sessionId} className={styles.todayEventCard}>
                                         <div className={styles.eventHeader}>
                                             <span
                                                 className={styles.eventType}
@@ -472,72 +389,70 @@ const CalendarPage = () => {
                                 ))
                             ) : (
                                 <div className={styles.emptyState}>
-                                    <p>No events scheduled for today. Check the calendar for other events!</p>
+                                    <p>No events scheduled for {formatSelectedDate(selectedDateForEvents)}. Select another date or check the calendar!</p>
                                 </div>
                             )}
                         </div>
+                       
                     </div>
-
-                   
+                    {/* Date Modal */}
+                    {showDateModal && (
+                        <div className={styles.modalOverlay} onClick={() => setShowDateModal(false)}>
+                            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                                <h3 className={styles.modalTitle}>
+                                    Events for {selectedDate.toLocaleDateString('en-US', {
+                                        weekday: 'long',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </h3>
+                                <div className={styles.modalEvents}>
+                                    {selectedDateEvents.length > 0 ? (
+                                        selectedDateEvents.map((event) => (
+                                            <div key={event.sessionId} className={styles.modalEvent}>
+                                                <h4 className={styles.modalEventTitle}>{event.eventName}</h4>
+                                                <div className={styles.modalEventMeta}>
+                                                    <span>{new Date(event.startDateTime).toLocaleDateString('en-US', {
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}, {formatTime(event.startDateTime, event.endDateTime)}</span>
+                                                    <span>{event.venueNames}</span>
+                                                    <span
+                                                        className={styles.eventType}
+                                                        style={{ backgroundColor: getEventTypeColor(event.eventType || 'default') }}
+                                                    >
+                                                        {event.eventType}
+                                                    </span>
+                                                </div>
+                                                <p className={styles.modalEventDescription}>
+                                                    <strong>Session:</strong> {event.sessionName}<br />
+                                                    {event.description}
+                                                </p>
+                                                <button 
+                                                    className={styles.modalViewButton}
+                                                    onClick={() => router.push(`/public/calendar/${event.eventId}`)}
+                                                >
+                                                    <Eye className={styles.buttonIcon} />
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className={styles.modalEmpty}>No events scheduled for this date.</p>
+                                    )}
+                                </div>
+                                <button
+                                    className={styles.modalClose}
+                                    onClick={() => setShowDateModal(false)}
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
-
-            {/* Date Modal */}
-            {showDateModal && (
-                <div className={styles.modalOverlay} onClick={() => setShowDateModal(false)}>
-                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                        <h3 className={styles.modalTitle}>
-                            Events for {selectedDate.toLocaleDateString('en-US', {
-                                weekday: 'long',
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                            })}
-                        </h3>
-                        <div className={styles.modalEvents}>
-                            {selectedDateEvents.length > 0 ? (
-                                selectedDateEvents.map((event) => (
-                                    <div key={event.eventId} className={styles.modalEvent}>
-                                        <h4 className={styles.modalEventTitle}>{event.eventName}</h4>
-                                        <div className={styles.modalEventMeta}>
-                                            <span>{new Date(event.startDateTime).toLocaleDateString('en-US', {
-                                                month: 'long',
-                                                day: 'numeric'
-                                            })}, {formatTime(event.startDateTime, event.endDateTime)}</span>
-                                            <span>{event.venueNames}</span>
-                                            <span
-                                                className={styles.eventType}
-                                                style={{ backgroundColor: getEventTypeColor(event.eventType || 'default') }}
-                                            >
-                                                {event.eventType}
-                                            </span>
-                                        </div>
-                                        <p className={styles.modalEventDescription}>
-                                            <strong>Session:</strong> {event.sessionName}<br />
-                                            {event.description}
-                                        </p>
-                                        <button 
-                                            className={styles.modalViewButton}
-                                            onClick={() => router.push(`/public/calendar/${event.eventId}`)}
-                                        >
-                                            <Eye className={styles.buttonIcon} />
-                                            View Details
-                                        </button>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className={styles.modalEmpty}>No events scheduled for this date.</p>
-                            )}
-                        </div>
-                        <button
-                            className={styles.modalClose}
-                            onClick={() => setShowDateModal(false)}
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            )}
 
             {/* Footer */}
             <footer className={styles.footer}>
