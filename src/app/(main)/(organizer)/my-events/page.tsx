@@ -23,7 +23,7 @@ const styles = {
 export default function EventsLandingPage() {
   const { user } = useAuth();
   const [activeEvents, setActiveEvents] = useState<SimpleEvent[]>([]);
-  const [pendingEvents, setPendingEvents] = useState<SimpleEvent[]>([]);
+  // const [pendingEvents, setPendingEvents] = useState<SimpleEvent[]>([]);
   const [completedEvents, setCompletedEvents] = useState<SimpleEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,20 +39,6 @@ export default function EventsLandingPage() {
     setSearchTerm(e.target.value);
   };
 
-  // --- Filtering Logic ---
-  // Filter each event list based on the search term
-  const filteredActiveEvents = activeEvents.filter(event =>
-    event.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const filteredPendingEvents = pendingEvents.filter(event =>
-    event.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const filteredCompletedEvents = completedEvents.filter(event =>
-    event.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  // --- End Filtering Logic ---
 
   // Function to toggle the expansion state of a section
   const toggleSectionExpansion = (section: EventStatus.ACTIVE | EventStatus.PENDING | EventStatus.COMPLETED) => {
@@ -82,19 +68,19 @@ export default function EventsLandingPage() {
         if (!user) return; // Do nothing if user is null
         const eventList = await eventService.fetchEvents(Number(user.id)); // Pass the organizerId if needed
         setActiveEvents(eventList.activeEvents);
-        setPendingEvents(eventList.pendingEvents);
+        // setPendingEvents(eventList.pendingEvents);
         setCompletedEvents(eventList.completedEvents);
 
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error("Failed to fetch events:", e);
-        setError(`Failed to load events: ${e.message || 'Unknown error'}`);
+        setError(`Failed to load events: ${e || 'Unknown error'}`);
       } finally {
         setLoading(false);
       }
     };
 
     fetchEvents();
-  }, []); // Empty dependency array means run once on mount
+  }, [user]); // Empty dependency array means run once on mount
 
   if (loading) {
     return (

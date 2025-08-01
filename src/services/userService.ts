@@ -3,15 +3,6 @@ import api from "./api";
 import { PageData } from "@/types/api";
 import { HttpStatusCode } from "axios";
 
-interface PaginatedResponse<T> {
-    content: T[];
-    pageNumber: number;
-    pageSize: number;
-    totalElements: number;
-    totalPages: number;
-    last: boolean;
-    first: boolean;
-}
 
 const userService = {
 
@@ -21,8 +12,9 @@ const userService = {
             const response = await api.post(`/users`, createData);
 
             return response.data;
-        } catch (error: any) {
-            throw new Error(error.response?.data || 'Failed to create new user. Please try again.');
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { data?: string } };
+            throw new Error(errorResponse.response?.data || 'Failed to create new user. Please try again.');
         }
     },
 
@@ -34,11 +26,12 @@ const userService = {
             if (response.status !== HttpStatusCode.NoContent) {
                 throw new Error('Failed to delete user');
             }
-        } catch (error: any) {
-            if (error.response?.status === HttpStatusCode.NotFound) {
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number; data?: string } };
+            if (errorResponse.response?.status === HttpStatusCode.NotFound) {
                 throw new Error(`User not found with ID: ${userId}`);
             }
-            throw new Error(error.response?.data || 'Error deleting user');
+            throw new Error(errorResponse.response?.data || 'Error deleting user');
         }
     },
 
@@ -59,14 +52,15 @@ const userService = {
             }
 
             return response.data;
-        } catch (error: any) {
-            if (error.response?.status === HttpStatusCode.BadRequest) {
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number; data?: string } };
+            if (errorResponse.response?.status === HttpStatusCode.BadRequest) {
                 throw new Error('Invalid phone number format');
             }
-            if (error.response?.status === HttpStatusCode.NotFound) {
+            if (errorResponse.response?.status === HttpStatusCode.NotFound) {
                 throw new Error(`User not found with ID: ${userId}`);
             }
-            throw new Error(error.response?.data || 'Error updating user information');
+            throw new Error(errorResponse.response?.data || 'Error updating user information');
         }
     },
 
@@ -122,8 +116,9 @@ const userService = {
                 params: { query: query }
             });
             return response.data;
-        } catch (error: any) {
-            if (error.response?.status === HttpStatusCode.NotFound) {
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number } };
+            if (errorResponse.response?.status === HttpStatusCode.NotFound) {
                 throw new Error('No User found');
             }
             throw new Error('Failed to get users');

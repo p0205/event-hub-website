@@ -41,11 +41,12 @@ export default function ParticipantsBreadcrumbSlot() {
                 console.log("Fetching event name for participants breadcrumb (Client Component), ID:", numericEventId);
                 const name = await eventService.getEventNameById(numericEventId);
                 setEventName(name);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error(`Failed to fetch event name for breadcrumb ${numericEventId}/participants:`, err);
-                if (err.isAxiosError && err.response?.status === 404) {
+                const errorResponse = err as { isAxiosError?: boolean; response?: { status?: number } };
+                if (errorResponse.isAxiosError && errorResponse.response?.status === 404) {
                     setError("Event name not found.");
-                } else if (err.isAxiosError && err.response?.status === 403) {
+                } else if (errorResponse.isAxiosError && errorResponse.response?.status === 403) {
                     setError("Access Denied (403).");
                 } else {
                     setError('Error Loading Event Name');
@@ -90,7 +91,7 @@ export default function ParticipantsBreadcrumbSlot() {
             {/* Link to the specific event page, using the fetched name */}
             <BreadcrumbItem>
                 <BreadcrumbLink href={`/my-events/completed/${eventId}`}>
-                    {eventName} {/* Use the fetched name */}
+                    {displayEventName} {/* Use the fetched name */}
                 </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

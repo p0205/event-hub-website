@@ -33,12 +33,13 @@ export default function BreadcrumbSlot() {
             try {
                 const name = await eventService.getEventNameById(eventId);
                 setEventName(name);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error(`Failed to fetch event name for breadcrumb ${eventId}:`, err);
-                if (err.isAxiosError && err.response?.status === 404) {
+                const errorResponse = err as { isAxiosError?: boolean; response?: { status?: number } };
+                if (errorResponse.isAxiosError && errorResponse.response?.status === 404) {
                     setError("Event name not found.");
                     router.push("/404"); // Optional, navigate to a 404 page if needed
-                } else if (err.isAxiosError && err.response?.status === 403) {
+                } else if (errorResponse.isAxiosError && errorResponse.response?.status === 403) {
                     setError("Access Denied (403).");
                 } else {
                     setError("Error Loading Event Name");
@@ -48,7 +49,7 @@ export default function BreadcrumbSlot() {
 
         fetchEventName();
 
-    }, [params.id]);
+    }, [params.id, router]);
 
     // Render Error State
     if (error) {

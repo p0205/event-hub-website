@@ -4,9 +4,9 @@
 import { authService } from '@/services';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent,Suspense } from 'react';
 
-const SignUpPage: React.FC = () => {
+const SignUpForm: React.FC = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { checkAuth } = useAuth();
@@ -237,6 +237,14 @@ const SignUpPage: React.FC = () => {
       </div>
 
     </>
+  );
+};
+
+const SignUpPage: React.FC = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignUpForm />
+    </Suspense>
   );
 };
 

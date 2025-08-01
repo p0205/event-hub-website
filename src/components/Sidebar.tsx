@@ -7,8 +7,8 @@ import React from 'react';
 import { FaSignOutAlt } from 'react-icons/fa';
 
 // Import the navigation items configuration
-import navigationItems, { SidebarNavItem } from '@/config/sidebarConfig';
-import { useRouter } from 'next/navigation';
+import navigationItems from '@/config/sidebarConfig';
+
 import { useAuth } from '@/context/AuthContext'
 
 // Define valid roles type
@@ -16,7 +16,7 @@ type ValidRole = 'ADMIN' | 'EVENT ORGANIZER' | 'Participant' | 'Guest';
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
+
   const { signOut, user } = useAuth();
 
   const handleLogout = async () => {

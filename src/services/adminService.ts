@@ -31,9 +31,10 @@ const adminService = {
 
             console.log(response.data);
             return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error generating venue utilization report:', error);
-            throw new Error(error.response?.data?.message || 'Failed to generate venue utilization report');
+            const errorResponse = error as { response?: { data?: { message?: string } } };
+            throw new Error(errorResponse.response?.data?.message || 'Failed to generate venue utilization report');
         }
     },
 
@@ -54,9 +55,10 @@ const adminService = {
             }
 
             return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error generating venue utilization report:', error);
-            throw new Error(error.response?.data?.message || 'Failed to generate venue utilization report');
+            const errorResponse = error as { response?: { data?: { message?: string } } };
+            throw new Error(errorResponse.response?.data?.message || 'Failed to generate venue utilization report');
         }
     },
 
@@ -75,9 +77,10 @@ const adminService = {
             }
 
             return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error generating event types performance report:', error);
-            throw new Error(error.response?.data?.message || 'Failed to generate event types performance report');
+            const errorResponse = error as { response?: { data?: { message?: string } } };
+            throw new Error(errorResponse.response?.data?.message || 'Failed to generate event types performance report');
         }
     }
 };

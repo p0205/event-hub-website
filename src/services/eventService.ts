@@ -6,25 +6,6 @@ import { User } from '@/types/user';
 import { PageData } from '@/types/api';
 
 /**
- * Represents the expected successful response structure from the create event API.
- * Adjust this based on what your backend actually returns.
- */
-interface CreateEventSuccessResponse {
-  eventId: number; // Example: ID of the newly created event
-  message: string; // Example: Confirmation message
-  // Include other relevant data returned by the API
-  // e.g., final event details, approval status, etc.
-}
-
-interface GetEventSuccessResponse {
-
-  message: string; // Example: Confirmation message
-  event: Event; // Example: Event object containing all details
-  // Include other relevant data returned by the API
-  // e.g., final event details, approval status, etc.
-}
-
-/**
 * Represents the expected error response structure from the API.
 * Adjust this based on how your backend formats errors.
 */
@@ -146,7 +127,7 @@ const eventService: EventService = {
 
         console.error('API Error Response:', errorData || response.statusText);
         // Throw an error that includes details if available
-        const error = new Error(errorMessage) as Error & { details?: any; statusCode?: number; };
+        const error = new Error(errorMessage) as Error & { details?: unknown; statusCode?: number; };
         error.details = errorData; // Attach full error details if parsed
         error.statusCode = response.status;
         throw error;
@@ -164,7 +145,7 @@ const eventService: EventService = {
 
       // Re-throw the error so the calling component can handle it (e.g., update UI)
       // If it's not already a detailed error, wrap it
-      if (error instanceof Error && !(error as any).statusCode) {
+      if (error instanceof Error && !(error as { statusCode?: number }).statusCode) {
         throw new Error(`Network error or client-side issue: ${error.message}`);
       }
       throw error; // Re-throw the original (potentially detailed) error
@@ -322,9 +303,10 @@ const eventService: EventService = {
             }
 
             return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error exporting attendance data:', error);
-            throw new Error(error.response?.data?.message || 'Failed to export attendance data');
+            const errorResponse = error as { response?: { data?: { message?: string } } };
+            throw new Error(errorResponse.response?.data?.message || 'Failed to export attendance data');
         }
     }
 }

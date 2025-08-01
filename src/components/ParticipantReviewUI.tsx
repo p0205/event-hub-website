@@ -6,7 +6,6 @@ import React, { useState } from 'react';
 import ParticipantsTable from '@/components/ParticipantsTable'; // Adjust path
 import AddParticipantModal from '@/components/AddParticipantModal'; // Adjust path
 import { User } from '@/types/user'; // Import Participant for Omit
-import { v4 as uuidv4 } from 'uuid'; // Library to generate unique string IDs for new participants
 import { useRouter } from 'next/navigation'; // For navigation after save
 
 interface ParticipantReviewUIProps {
@@ -54,29 +53,15 @@ const ParticipantReviewUI: React.FC<ParticipantReviewUIProps> = ({ initialPartic
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
     const router = useRouter();
 
     const handleDeleteParticipant = (id: number | string) => {
         setParticipants(participants.filter(p => p.id !== id));
     };
 
-    // Changed parameter type to Omit<Participant, 'id'>
-    const handleAddParticipant = (newParticipantData: Omit<User, 'id'>) => {
-        // Generate a temporary string ID for the new participant in the frontend state
-        const tempId = uuidv4();
-        const newParticipant: User = {
-             ...newParticipantData,
-             id: tempId, // Assign the generated unique string ID
-             // Ensure nullable fields are explicitly null if empty string from form (already done in modal, but belt-and-suspenders)
-             phoneNo: newParticipantData.phoneNo || null,
-             gender: newParticipantData.gender || null,
-             faculty: newParticipantData.faculty || null,
-             course: newParticipantData.course || null,
-             year: newParticipantData.year || null,
-             role: newParticipantData.role || null,
-        };
-        setParticipants([...participants, newParticipant]);
-    };
+   
 
     const handleConfirmSave = async () => {
         if (!eventId) { setError("Event ID is missing."); return; }
@@ -90,13 +75,36 @@ const ParticipantReviewUI: React.FC<ParticipantReviewUIProps> = ({ initialPartic
             } else {
                  throw new Error('Save operation did not report success.');
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("[ParticipantReviewUI] Failed to save participants:", err);
-            setError(`Failed to save participants: ${err.message || 'Unknown error'}`);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            setError(`Failed to save participants: ${errorMessage}`);
         } finally {
             setIsSaving(false);
         }
     };
+
+    const handleModalConfirm = (selectedParticipant: { id: number | string; name: string; email: string } | null) => {
+        if (selectedParticipant) {
+            const newParticipant: User = {
+                id: selectedParticipant.id,
+                name: selectedParticipant.name,
+                email: selectedParticipant.email,
+                phoneNo: null,
+                gender: null,
+                faculty: null,
+                course: null,
+                year: null,
+                role: null,
+            };
+            setParticipants([...participants, newParticipant]);
+        }
+        setIsModalOpen(false);
+    };
+
+    const totalParticipants = participants.length;
+    const totalPages = Math.ceil(totalParticipants / pageSize);
+    const offset = currentPage * pageSize;
 
     return (
         <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
@@ -108,8 +116,15 @@ const ParticipantReviewUI: React.FC<ParticipantReviewUIProps> = ({ initialPartic
             </button>
 
             <ParticipantsTable
-                participants={participants}
+                participants={participants.slice(offset, offset + pageSize)}
                 onDeleteParticipant={handleDeleteParticipant}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                totalParticipants={totalParticipants}
+                totalPages={totalPages}
+                offset={offset}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
             />
 
             {error && (
@@ -134,9 +149,9 @@ const ParticipantReviewUI: React.FC<ParticipantReviewUIProps> = ({ initialPartic
             </div>
 
             <AddParticipantModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSave={handleAddParticipant} // Pass the updated handler
+                open={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
+                onConfirm={handleModalConfirm}
             />
         </div>
     );

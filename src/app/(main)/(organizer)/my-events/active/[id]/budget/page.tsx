@@ -1,6 +1,6 @@
 // src/app/my-events/[id]/budget/page.tsx
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid'; // Ensure uuid is installed: npm install uuid @types/uuid
 import ProgressBar from '@/components/ProgressBar';
@@ -27,9 +27,8 @@ export default function EventBudgetPage() {
     const [isSubmittingExpense, setIsSubmittingExpense] = useState(false);
     const [addExpenseError, setAddExpenseError] = useState<string | null>(null);
 
-
     // --- Data Loading ---
-    const loadBudgetData = async () => {
+    const loadBudgetData = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -58,13 +57,13 @@ export default function EventBudgetPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [eventId]);
 
     useEffect(() => {
         if (eventId) {
             loadBudgetData();
         }
-    }, [eventId]); // Dependency on eventId ensures re-fetch if ID changes
+    }, [eventId, loadBudgetData]); // Now loadBudgetData is memoized and won't change unless eventId changes
 
     // --- Derived Data ---
     const categoryBudgetSummary = useMemo(() => {
@@ -330,7 +329,7 @@ export default function EventBudgetPage() {
                 <div className={styles['empty-state']}>
                     <div className={styles['empty-state-icon']}>📊</div>
                     <h3>No Budget Found</h3>
-                    
+
                 </div>
             )}
 

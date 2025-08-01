@@ -2,6 +2,7 @@
 'use client'; // This is a client component for interactivity and data fetching
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 // No useParams or Link needed on a general settings page
 
 
@@ -23,18 +24,6 @@ interface User {
 import styles from './settings.module.css'; // <-- Updated import path and file name
 
 
-// --- Define Mock Data ---
-
-// Mock data for different user types
-const mockStudentUser: User = {
-    id: 'student-user-456',
-    name: 'Jane Smith',
-    email: 'jane.smith@example.com',
-    profileImageUrl: 'https://i.pravatar.cc/150?u=jane.smith@example.com', // Example mock profile image URL
-    faculty: 'Engineering',
-    course: 'Civil Engineering',
-    year: 2,
-};
 
 const mockLecturerUser: User = {
     id: 'lecturer-user-789',
@@ -44,16 +33,6 @@ const mockLecturerUser: User = {
     faculty: 'Science',
     course: null, // Lecturer might not have a specific 'Course' in this context
     year: null,    // Lecturer might not have a 'Year'
-};
-
-const mockBasicUser: User = {
-     id: 'basic-user-010',
-     name: 'Basic User',
-     email: 'basic.user@platform.com',
-     profileImageUrl: undefined, // No profile image initially
-     faculty: undefined,
-     course: undefined,
-     year: undefined,
 };
 
 
@@ -102,13 +81,13 @@ export default function SettingsPage() { // <-- Updated component name
                 const userData: User = mockLecturerUser; // <-- Choose which mock user to load here for testing
                 setUser(userData);
 
-                 // Set the initial profile image URL to display
-                 setDisplayProfileImageUrl(userData.profileImageUrl);
+                // Set the initial profile image URL to display
+                setDisplayProfileImageUrl(userData.profileImageUrl);
 
 
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error("Error loading user data:", e); // <-- Updated console log
-                setError(`Failed to load user data: ${e.message || 'Unknown error'}`);
+                setError(`Failed to load user data: ${e || 'Unknown error'}`);
             } finally {
                 setLoading(false);
             }
@@ -129,15 +108,15 @@ export default function SettingsPage() { // <-- Updated component name
         setProfileImageUploadSuccess(null);
 
         if (file) {
-             // Display a preview of the selected image instantly
-             const reader = new FileReader();
-             reader.onloadend = () => {
-                 setDisplayProfileImageUrl(reader.result as string); // Set the preview URL
-             };
-             reader.readAsDataURL(file);
+            // Display a preview of the selected image instantly
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setDisplayProfileImageUrl(reader.result as string); // Set the preview URL
+            };
+            reader.readAsDataURL(file);
         } else {
-             // If file selection is cancelled, revert to the current user's image
-             setDisplayProfileImageUrl(user?.profileImageUrl);
+            // If file selection is cancelled, revert to the current user's image
+            setDisplayProfileImageUrl(user?.profileImageUrl);
         }
     };
 
@@ -164,32 +143,32 @@ export default function SettingsPage() { // <-- Updated component name
         //     body: formData, // FormData handles content type
         // });
 
-         // --- Simulate State Update After Successful Upload ---
-         try {
+        // --- Simulate State Update After Successful Upload ---
+        try {
 
-              // Simulate the backend returning the new image URL
-              const simulatedNewImageUrl = `simulated-upload-url/${user.id}-${Date.now()}-${newProfileImageFile.name}`;
+            // Simulate the backend returning the new image URL
+            const simulatedNewImageUrl = `simulated-upload-url/${user.id}-${Date.now()}-${newProfileImageFile.name}`;
 
-              // Update the user state with the new image URL
-              setUser(prevUser => prevUser ? { ...prevUser, profileImageUrl: simulatedNewImageUrl } : null);
-              setDisplayProfileImageUrl(simulatedNewImageUrl); // Ensure the displayed image is updated
+            // Update the user state with the new image URL
+            setUser(prevUser => prevUser ? { ...prevUser, profileImageUrl: simulatedNewImageUrl } : null);
+            setDisplayProfileImageUrl(simulatedNewImageUrl); // Ensure the displayed image is updated
 
-              setProfileImageUploadSuccess("Profile image updated successfully!"); // Show success message
-              setNewProfileImageFile(null); // Clear the selected file state
-              // Reset the file input visually (requires ref or direct DOM access)
-              const fileInput = document.getElementById('profileImage') as HTMLInputElement;
-              if (fileInput) fileInput.value = '';
+            setProfileImageUploadSuccess("Profile image updated successfully!"); // Show success message
+            setNewProfileImageFile(null); // Clear the selected file state
+            // Reset the file input visually (requires ref or direct DOM access)
+            const fileInput = document.getElementById('profileImage') as HTMLInputElement;
+            if (fileInput) fileInput.value = '';
 
 
-         } catch (e: any) {
-             // In a real app, catch API errors here
-             console.error("Simulated profile image upload error:", e); // <-- Updated console log
-             setProfileImageUploadError(`Failed to upload image: ${e.message || 'Unknown error'}`);
-             setProfileImageUploadSuccess(null); // Ensure success message is cleared
-         } finally {
-             setIsUploadingProfileImage(false);
-         }
-         // --- End Simulated State Update ---
+        } catch (e: unknown) {
+            // In a real app, catch API errors here
+            console.error("Simulated profile image upload error:", e); // <-- Updated console log
+            setProfileImageUploadError(`Failed to upload image: ${e || 'Unknown error'}`);
+            setProfileImageUploadSuccess(null); // Ensure success message is cleared
+        } finally {
+            setIsUploadingProfileImage(false);
+        }
+        // --- End Simulated State Update ---
     };
 
 
@@ -213,7 +192,7 @@ export default function SettingsPage() { // <-- Updated component name
             setPasswordChangeError("New password and confirmation do not match.");
             return;
         }
-         // TODO: Add more complex password strength validation if needed
+        // TODO: Add more complex password strength validation if needed
 
 
         setIsChangingPassword(true);
@@ -238,21 +217,21 @@ export default function SettingsPage() { // <-- Updated component name
         // In a real app, you would do this inside the .then() or try block of your fetch call
         // The backend API should return success or a specific error (e.g., 'invalid current password')
         try {
-             // Simulate a delay for the API call
-             await new Promise(resolve => setTimeout(resolve, 1500));
+            // Simulate a delay for the API call
+            await new Promise(resolve => setTimeout(resolve, 1500));
 
-              // Simulate a successful password change
-             setPasswordChangeSuccess("Password changed successfully!"); // Show success message
-             // Clear the password form fields on success
-             setPasswordFormData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+            // Simulate a successful password change
+            setPasswordChangeSuccess("Password changed successfully!"); // Show success message
+            // Clear the password form fields on success
+            setPasswordFormData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
 
-             // If the backend returned an error (e.g., incorrect current password),
-             // you would catch it here and set setPasswordChangeError accordingly.
+            // If the backend returned an error (e.g., incorrect current password),
+            // you would catch it here and set setPasswordChangeError accordingly.
 
-        } catch (e: any) {
+        } catch (e: unknown) {
             // In a real app, catch API errors here
             console.error("Simulated change password error:", e); // <-- Updated console log
-            setPasswordChangeError(`Failed to change password: ${e.message || 'Unknown error'}`);
+            setPasswordChangeError(`Failed to change password: ${e || 'Unknown error'}`);
             setPasswordChangeSuccess(null); // Ensure success message is cleared
         } finally {
             setIsChangingPassword(false);
@@ -285,7 +264,7 @@ export default function SettingsPage() { // <-- Updated component name
     // Added a check for !user here, though the error state should cover it
     if (!user) {
         return (
-             <div className="page-content-wrapper">
+            <div className="page-content-wrapper">
                 <h2 className="page-title">Settings</h2>{/* <-- Updated Title */}
                 <p className="error-message">User data not available.</p>
             </div>
@@ -299,175 +278,176 @@ export default function SettingsPage() { // <-- Updated component name
             <h2 className="page-title">Settings</h2>{/* <-- Updated Title */}
 
             {/* --- Profile Information Section (Read-only except for image) --- */}
-             {/* Reuse form-container for card styling */}
-             <div className="form-container">
-                 <h3>Profile Information</h3>
-                  {/* Use CSS Module for layout of this section */}
-                  <div className={styles["profile-section"]}>
+            {/* Reuse form-container for card styling */}
+            <div className="form-container">
+                <h3>Profile Information</h3>
+                {/* Use CSS Module for layout of this section */}
+                <div className={styles["profile-section"]}>
 
-                     {/* Profile Picture Area */}
-                     {/* Use CSS Module for layout within this area */}
-                     <div className={styles["profile-picture-area"]}>
-                         {/* The profile image display */}
-                         <img
-                             src={displayProfileImageUrl || '/default-avatar.png'} // Display the current or preview image, or default
-                             alt={`${user.name}'s profile picture`}
-                             className={styles["profile-image"]} // Use CSS Module for styling
-                             width={100} // Set desired display size for image
-                             height={100}
-                         />
+                    {/* Profile Picture Area */}
+                    {/* Use CSS Module for layout within this area */}
+                    <div className={styles["profile-picture-area"]}>
+                        {/* The profile image display */}
+                   
+                        <Image
+                            src={displayProfileImageUrl || '/default-avatar.png'}
+                            alt={`${user.name}'s profile picture`}
+                            className={styles["profile-image"]}
+                            width={100}
+                            height={100}
+                        />
 
-                          {/* File input and button for uploading new profile picture */}
-                           <div className="form-group" style={{ marginTop: '10px' }}>
-                               {/* Styled label acting as a button */}
-                               <label htmlFor="profileImage" className="button-secondary" style={{ cursor: isUploadingProfileImage ? 'not-allowed' : 'pointer' }}>
-                                    {isUploadingProfileImage ? 'Uploading...' : 'Change Photo'}
-                               </label>
-                                {/* Hidden actual file input */}
-                                <input
-                                   type="file"
-                                   id="profileImage"
-                                   accept="image/*" // Specify accepted file types (images)
-                                   onChange={handleProfileImageSelect}
-                                    disabled={isUploadingProfileImage} // Disable input while uploading
-                                   style={{ display: 'none' }} // Hide the default browser file input
-                                />
-                                 {/* Display the name of the selected file */}
-                                 {newProfileImageFile && (
-                                     <span style={{ marginLeft: '10px', fontSize: '0.9em' }}>{newProfileImageFile.name} selected</span>
-                                 )}
-                           </div>
-                            {/* Upload button for the selected file */}
+                        {/* File input and button for uploading new profile picture */}
+                        <div className="form-group" style={{ marginTop: '10px' }}>
+                            {/* Styled label acting as a button */}
+                            <label htmlFor="profileImage" className="button-secondary" style={{ cursor: isUploadingProfileImage ? 'not-allowed' : 'pointer' }}>
+                                {isUploadingProfileImage ? 'Uploading...' : 'Change Photo'}
+                            </label>
+                            {/* Hidden actual file input */}
+                            <input
+                                type="file"
+                                id="profileImage"
+                                accept="image/*" // Specify accepted file types (images)
+                                onChange={handleProfileImageSelect}
+                                disabled={isUploadingProfileImage} // Disable input while uploading
+                                style={{ display: 'none' }} // Hide the default browser file input
+                            />
+                            {/* Display the name of the selected file */}
                             {newProfileImageFile && (
-                                 <button
-                                     className="button-primary"
-                                     onClick={handleUploadProfileImage}
-                                     disabled={isUploadingProfileImage}
-                                     style={{ marginTop: '10px' }}
-                                 >
-                                     Upload Photo
-                                 </button>
+                                <span style={{ marginLeft: '10px', fontSize: '0.9em' }}>{newProfileImageFile.name} selected</span>
                             )}
+                        </div>
+                        {/* Upload button for the selected file */}
+                        {newProfileImageFile && (
+                            <button
+                                className="button-primary"
+                                onClick={handleUploadProfileImage}
+                                disabled={isUploadingProfileImage}
+                                style={{ marginTop: '10px' }}
+                            >
+                                Upload Photo
+                            </button>
+                        )}
 
 
-                            {/* Profile Image Upload Feedback Messages */}
-                            {profileImageUploadError && <p className="error-message" style={{ marginTop: '10px' }}>{profileImageUploadError}</p>}
-                            {profileImageUploadSuccess && <p className="success-message" style={{ marginTop: '10px' }}>{profileImageUploadSuccess}</p>}
+                        {/* Profile Image Upload Feedback Messages */}
+                        {profileImageUploadError && <p className="error-message" style={{ marginTop: '10px' }}>{profileImageUploadError}</p>}
+                        {profileImageUploadSuccess && <p className="success-message" style={{ marginTop: '10px' }}>{profileImageUploadSuccess}</p>}
 
-                     </div>
+                    </div>
 
 
-                     {/* Profile Details (Read-only Display) */}
-                     {/* Use CSS Module for layout of the displayed fields */}
-                     <div className={styles["profile-details-display"]}> {/* Changed class name as it's display, not a form */}
+                    {/* Profile Details (Read-only Display) */}
+                    {/* Use CSS Module for layout of the displayed fields */}
+                    <div className={styles["profile-details-display"]}> {/* Changed class name as it's display, not a form */}
 
                         {/* Name Display */}
                         {/* Reuse global form-group style for layout/spacing */}
                         <div className="form-group">
-                             <label>Name:</label> {/* Use label for clarity */}
-                              <p>{user.name}</p> {/* Display name directly */}
+                            <label>Name:</label> {/* Use label for clarity */}
+                            <p>{user.name}</p> {/* Display name directly */}
                         </div>
 
-                         {/* Email Display */}
-                         <div className="form-group">
-                              <label>Email:</label>
-                              <p>{user.email}</p> {/* Display email directly */}
-                         </div>
+                        {/* Email Display */}
+                        <div className="form-group">
+                            <label>Email:</label>
+                            <p>{user.email}</p> {/* Display email directly */}
+                        </div>
 
-                         {/* Academic Details (Conditionally Rendered Display) */}
-                         {/* Only render if data exists and is not empty/null */}
-                         {(user.faculty !== undefined && user.faculty !== null) && ( // Render if faculty exists and is not null/undefined
-                              <div className="form-group">
-                                   <label>Faculty:</label>
-                                   <p>{user.faculty || 'N/A'}</p> {/* Display faculty or 'N/A' if it was explicitly null */}
-                              </div>
-                         )}
-                         {(user.course !== undefined && user.course !== null) && ( // Render if course exists and is not null/undefined
-                               <div className="form-group">
-                                   <label>Course:</label>
-                                   <p>{user.course || 'N/A'}</p> {/* Display course or 'N/A' */}
-                              </div>
-                         )}
-                         {(user.year !== undefined && user.year !== null) && ( // Render if year exists and is not null/undefined
-                               <div className="form-group">
-                                   <label>Year:</label>
-                                   <p>{user.year}</p> {/* Display year */}
-                              </div>
-                         )}
+                        {/* Academic Details (Conditionally Rendered Display) */}
+                        {/* Only render if data exists and is not empty/null */}
+                        {(user.faculty !== undefined && user.faculty !== null) && ( // Render if faculty exists and is not null/undefined
+                            <div className="form-group">
+                                <label>Faculty:</label>
+                                <p>{user.faculty || 'N/A'}</p> {/* Display faculty or 'N/A' if it was explicitly null */}
+                            </div>
+                        )}
+                        {(user.course !== undefined && user.course !== null) && ( // Render if course exists and is not null/undefined
+                            <div className="form-group">
+                                <label>Course:</label>
+                                <p>{user.course || 'N/A'}</p> {/* Display course or 'N/A' */}
+                            </div>
+                        )}
+                        {(user.year !== undefined && user.year !== null) && ( // Render if year exists and is not null/undefined
+                            <div className="form-group">
+                                <label>Year:</label>
+                                <p>{user.year}</p> {/* Display year */}
+                            </div>
+                        )}
 
 
-                         {/* Removed Save Profile Button */}
+                        {/* Removed Save Profile Button */}
 
-                     </div>
+                    </div>
 
-                  </div>
-             </div>
+                </div>
+            </div>
 
 
             {/* --- Change Password Section --- */}
-             {/* Reuse form-container */}
-             <div className="form-container">
-                 <h3>Change Password</h3>
-                  {/* Use CSS Module for layout of the password form inputs */}
-                  <div className={styles["change-password-form"]}>
+            {/* Reuse form-container */}
+            <div className="form-container">
+                <h3>Change Password</h3>
+                {/* Use CSS Module for layout of the password form inputs */}
+                <div className={styles["change-password-form"]}>
 
-                     <div className="form-group"> {/* Reuse global form-group */}
-                         <label htmlFor="currentPassword">Current Password:</label>
-                         <input
+                    <div className="form-group"> {/* Reuse global form-group */}
+                        <label htmlFor="currentPassword">Current Password:</label>
+                        <input
                             type="password" // Use type="password" to hide input
                             id="currentPassword"
                             name="currentPassword" // Match state key
                             value={passwordFormData.currentPassword}
                             onChange={handlePasswordInputChange}
-                             disabled={isChangingPassword} // Disable input while changing password
-                         />
-                     </div>
+                            disabled={isChangingPassword} // Disable input while changing password
+                        />
+                    </div>
 
-                     <div className="form-group"> {/* Reuse global form-group */}
-                         <label htmlFor="newPassword">New Password:</label>
-                         <input
+                    <div className="form-group"> {/* Reuse global form-group */}
+                        <label htmlFor="newPassword">New Password:</label>
+                        <input
                             type="password" // Use type="password" to hide input
                             id="newPassword"
                             name="newPassword" // Match state key
                             value={passwordFormData.newPassword}
                             onChange={handlePasswordInputChange}
-                             disabled={isChangingPassword} // Disable input while changing password
-                         />
-                     </div>
+                            disabled={isChangingPassword} // Disable input while changing password
+                        />
+                    </div>
 
-                      <div className="form-group"> {/* Reuse global form-group */}
-                         <label htmlFor="confirmNewPassword">Confirm New Password:</label>
-                         <input
+                    <div className="form-group"> {/* Reuse global form-group */}
+                        <label htmlFor="confirmNewPassword">Confirm New Password:</label>
+                        <input
                             type="password" // Use type="password" to hide input
                             id="confirmNewPassword"
                             name="confirmNewPassword" // Match state key
                             value={passwordFormData.confirmNewPassword}
                             onChange={handlePasswordInputChange}
-                             disabled={isChangingPassword} // Disable input while changing password
-                         />
-                     </div>
+                            disabled={isChangingPassword} // Disable input while changing password
+                        />
+                    </div>
 
-                     {/* Change Password Button */}
-                      <button
-                         className="button-primary" // Reuse global button style
-                         onClick={handleChangePassword}
-                          disabled={isChangingPassword} // Disable button while changing password
-                      >
-                          {isChangingPassword ? 'Changing...' : 'Change Password'}
-                      </button>
+                    {/* Change Password Button */}
+                    <button
+                        className="button-primary" // Reuse global button style
+                        onClick={handleChangePassword}
+                        disabled={isChangingPassword} // Disable button while changing password
+                    >
+                        {isChangingPassword ? 'Changing...' : 'Change Password'}
+                    </button>
 
-                     {/* Change Password Feedback Messages */}
-                     {passwordChangeError && <p className="error-message" style={{ marginTop: '10px' }}>{passwordChangeError}</p>}
-                     {passwordChangeSuccess && <p className="success-message" style={{ marginTop: '10px' }}>{passwordChangeSuccess}</p>} {/* Reuse global success style */ }
+                    {/* Change Password Feedback Messages */}
+                    {passwordChangeError && <p className="error-message" style={{ marginTop: '10px' }}>{passwordChangeError}</p>}
+                    {passwordChangeSuccess && <p className="success-message" style={{ marginTop: '10px' }}>{passwordChangeSuccess}</p>} {/* Reuse global success style */}
 
-                  </div>
-             </div>
+                </div>
+            </div>
 
 
             {/* --- Other Optional Sections (Placeholders) --- */}
             {/* Include other sections here if needed, following the form-container pattern */}
-            
-        
+
+
 
 
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { User, UserAccountStatus } from '@/types/user';
 import { X, User as UserIcon, Mail, Phone, GraduationCap, BookOpen, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,7 +17,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
     onClose,
     onCreate
 }) => {
-    const initialFormData: Partial<User> = {
+    const initialFormData: Partial<User> = useMemo(() => ({
         name: '',
         email: '',
         phoneNo: '',
@@ -28,7 +28,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
         status: UserAccountStatus.ACTIVE,
         mustChangePassword: 1,
         role: null
-    };
+    }), []);
 
     const [formData, setFormData] = useState<Partial<User>>(initialFormData);
     const [loading, setLoading] = useState(false);
@@ -49,7 +49,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isOpen]);
+    }, [isOpen, initialFormData]);
 
     if (!isOpen) return null;
 
@@ -58,9 +58,6 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData(prev => ({ ...prev, mustChangePassword: e.target.checked ? 1 : 0 }));
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

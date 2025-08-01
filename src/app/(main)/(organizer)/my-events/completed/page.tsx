@@ -38,6 +38,7 @@ export default function CompletedEventsPage() {
 
     // Effect 1: Fetch main event details
     useEffect(() => {
+      if (!user?.id) return;
       // Only fetch if eventId is a valid number
       const fetchCompletedEvents = async () => {
         setLoading(true);
@@ -51,17 +52,28 @@ export default function CompletedEventsPage() {
           }
           console.log('Fetched Event:', completedEvents); // Debug log
           setCompletedEvents(completedEvents);
-        } catch (e: any) {
+        } catch (e: unknown) {
           console.error("Failed to fetch active events:", e);
-          setError(e.message || "Failed to fetch active events. Please try again.");
+          const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+          setError(errorMessage || "Failed to fetch active events. Please try again.");
         } finally {
           setLoading(false);
         }
       };
       fetchCompletedEvents();
-    }, []); 
+    }, [user?.id]); 
   
     // --- Conditional Rendering based on Fetch Result ---
+
+    // Loading state
+    if (loading) {
+        return (
+            <div className="page-container"> {/* Use global page container style */}
+                <h1>Completed Events</h1>
+                <p className="loading-message">Loading completed events...</p>
+            </div>
+        );
+    }
 
     // If there was an error during fetching, display an error message page.
     if (error) {

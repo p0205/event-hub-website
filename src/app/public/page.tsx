@@ -1,6 +1,7 @@
 'use client';
 
 import { Calendar} from 'lucide-react';
+import Image from 'next/image';
 import styles from './public.module.css';
 import { useRouter } from 'next/navigation';
 
@@ -17,7 +18,7 @@ const EventHub = () => {
         <div className={styles.heroContentRow}>
           {/* Left Content */}
           <div className={styles.heroLeft}>
-            <h1 className={styles.heroTitle}>Explore FTMK's Event Hub</h1>
+            <h1 className={styles.heroTitle}>Explore FTMK&apos;s Event Hub</h1>
             <p className={styles.heroSubtitle}>
               Dive into a diverse range of events designed to inspire, educate, and connect our university community and beyond.
             </p>
@@ -32,10 +33,10 @@ const EventHub = () => {
           {/* Right Content: QR Code Only */}
           <div className={styles.heroRight}>
             <h2 className={styles.qrHeroTitle}>Download the FTMK Event Hub</h2>
-            <img src="/app_download.png" alt="FTMK App QR Code" className={styles.heroQrImage} />
+            <Image src="/app_download.png" alt="FTMK App QR Code" width={200} height={200} className={styles.heroQrImage} />
             <p className={styles.heroQrText}>Scan this QR code to download the FTMK Event Hub Android App.</p>
             <p className={styles.heroQrAltDownload}>
-              Can't scan? Download <a href="https://drive.google.com/uc?export=download&id=183yl-lWcoYxu3ko_UsMSNYLUBRwihIW3" className="text-amber-700 hover:text-amber-800 font-semibold underline">Here</a>
+              Can&apos;t scan? Download <a href="https://drive.google.com/uc?export=download&id=183yl-lWcoYxu3ko_UsMSNYLUBRwihIW3" className="text-amber-700 hover:text-amber-800 font-semibold underline">Here</a>
             </p>
             <ul className={styles.heroFeatureList}>
               <li><span className={styles.heroFeatureIcon}>✔</span> View all events</li>
@@ -51,8 +52,8 @@ const EventHub = () => {
       <footer className={styles.footer}>
         <div className={styles.footerContentCentered}>
           <div className={styles.footerLogoRow}>
-            <img src="/utemLogo.png" alt="UTeM Logo" className={styles.footerLogo} />
-            <img src="/ftmkLogo.png" alt="FTMK Logo" className={styles.footerLogo} />
+            <Image src="/utemLogo.png" alt="UTeM Logo" width={120} height={40} className={styles.footerLogo} />
+            <Image src="/ftmkLogo.png" alt="FTMK Logo" width={120} height={40} className={styles.footerLogo} />
           </div>
          
         </div>

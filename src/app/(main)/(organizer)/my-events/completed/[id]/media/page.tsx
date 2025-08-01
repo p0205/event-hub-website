@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 import styles from './media.module.css'; // Create this CSS module
 import eventMediaService from '@/services/eventMediaService';
 import { EventMedia } from '@/types/event';
@@ -294,9 +295,11 @@ export default function EventMediaPage() {
                                 {/* The image itself */}
                                 {
                                     //   media.fileType.startsWith('image/') ? (
-                                    <img
+                                    <Image
                                         src={media.fileUrl}
                                         alt={media.filename}
+                                        width={300}
+                                        height={200}
                                         className={styles["media-image"]} // Use CSS Module
                                         onClick={() => setPreviewMedia(media)} // Show modal on click
                                         style={{ cursor: 'pointer' }}
@@ -345,7 +348,13 @@ export default function EventMediaPage() {
                         <button className={styles["close-button"]} onClick={() => setPreviewMedia(null)}>
                             &times;
                         </button>
-                        <img src={previewMedia.fileUrl} alt={previewMedia.filename} className={styles["modal-image"]} />
+                        <Image 
+                            src={previewMedia.fileUrl} 
+                            alt={previewMedia.filename} 
+                            width={800}
+                            height={600}
+                            className={styles["modal-image"]} 
+                        />
 
                     </div>
                 </div>

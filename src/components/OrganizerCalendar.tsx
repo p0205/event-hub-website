@@ -8,11 +8,12 @@ import { CalendarEvent } from '@/types/event';
 import { eventService } from '@/services';
 import { formatDateTime } from '@/helpers/eventHelpers';
 import { useAuth } from '@/context/AuthContext';
+import { EventClickArg, EventContentArg } from '@fullcalendar/core';
 
 export default function OrganizerCalendar() {
   const { user } = useAuth();
 
-  
+
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,23 +25,24 @@ export default function OrganizerCalendar() {
       try {
         const response = await eventService.getCalendarEvents(Number(user!.id));
         setEvents(response);
-      } catch (e: any) {
-        setError(`Failed to load events: ${e.message || 'Unknown error'}`);
+      } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+        setError(`Failed to load events: ${errorMessage}`);
       } finally {
         setLoading(false);
       }
     };
     fetchEvents();
-  }, []);
+  }, [user]);
 
 
-  const handleEventClick = (arg: any) => {
-    const clickedEvent = arg.event.extendedProps as CalendarEvent;
+  const handleEventClick = (arg: EventClickArg) => {
+        const clickedEvent = arg.event.extendedProps as CalendarEvent;
     const description = `${clickedEvent.eventName} (${clickedEvent.sessionName})\n\nStart Time: ${formatDateTime(clickedEvent.startDateTime)}\nEnd Time: ${formatDateTime(clickedEvent.endDateTime)}\nVenues: ${clickedEvent.venueNames}`;
     alert(description);
   };
 
-  const renderEventContent = (eventInfo: any) => {
+  const renderEventContent = (eventInfo: EventContentArg) => {
     return (
       <>
         {eventInfo.timeText && (

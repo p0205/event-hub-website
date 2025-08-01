@@ -1,5 +1,6 @@
 'use client'
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export default function Topbar() {
@@ -10,7 +11,7 @@ export default function Topbar() {
     <nav className="w-full h-16 bg-[#fcba03] shadow-md flex items-center justify-between px-6">
       {/* Left - Title */}
       <div className="font-bold text-xl text-black">
-        <img src="/ftmkLogo.png" alt="Logo" className="h-8 inline-block mr-2" />
+        <Image src="/ftmkLogo.png" alt="Logo" width={80} height={80} className="inline-block mr-2" />
         Event Hub
       </div>
 

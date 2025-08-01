@@ -1,5 +1,5 @@
 // src/app/layout.tsx
-import AuthGuard from '@/components/AuthGuard';
+
 import './globals.css'; // Make sure your global styles are imported here
 
 import { AuthProvider } from '@/context/AuthContext';

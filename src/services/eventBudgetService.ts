@@ -1,5 +1,5 @@
 // src/services/budgetService.ts
-import { AddExpensePayload, BudgetCategory, EventBudget } from '@/types/event';
+import { AddExpensePayload, EventBudget } from '@/types/event';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
 
@@ -26,10 +26,11 @@ const eventBudgetService = {
             }
             console.log('Expense recorded successfully:', response.data);
             // No need to return response.data if the Promise<void> indicates no return value is expected by the caller.
-        } catch (error: any) {
-            console.error('Error recording expense:', error.response?.data || error.message);
+        } catch (error: unknown) {
+            console.error('Error recording expense:', error);
+            const errorResponse = error as { response?: { data?: { message?: string } } };
             // Re-throw a more user-friendly error message for the component to handle.
-            throw new Error(error.response?.data?.message || 'Failed to record expense due to an unknown error.');
+            throw new Error(errorResponse.response?.data?.message || 'Failed to record expense due to an unknown error.');
         }
     },
 

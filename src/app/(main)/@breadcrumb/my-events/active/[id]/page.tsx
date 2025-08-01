@@ -42,12 +42,13 @@ export default function BreadcrumbSlot() {
                 } else {
                     setError("Event not found");
                 }
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error(`Failed to fetch event name for breadcrumb ${eventId}:`, err);
                 
-                if (err.isAxiosError && err.response?.status === 404) {
+                const errorResponse = err as { isAxiosError?: boolean; response?: { status?: number } };
+                if (errorResponse.isAxiosError && errorResponse.response?.status === 404) {
                     setError("Event not found");
-                } else if (err.isAxiosError && err.response?.status === 403) {
+                } else if (errorResponse.isAxiosError && errorResponse.response?.status === 403) {
                     setError("Access denied");
                 } else {
                     setError("Failed to load event");

@@ -16,9 +16,10 @@ const authService = {
 
       console.log(response.headers);
       return response.data; // e.g., user info or success message
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle login error (wrong credentials, server error, etc.)
-      throw new Error(error.response?.data?.message || 'Login failed');
+      const errorResponse = error as { response?: { data?: { message?: string } } };
+      throw new Error(errorResponse.response?.data?.message || 'Login failed');
     }
   },
 
@@ -32,28 +33,40 @@ const authService = {
       });
       console.log(response.headers);
       return response.data as User; // e.g., user info or success message
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle login error (wrong credentials, server error, etc.)
-      throw new Error(error.response?.data?.message || 'Login failed');
+      const errorResponse = error as { response?: { data?: { message?: string } } };
+      throw new Error(errorResponse.response?.data?.message || 'Login failed');
     }
   },
 
-  checkEmail: async (email: string): Promise<User | null> => {
+  checkEmail: async (email: string): Promise<boolean> => {
     try {
-      const response = await api.get('/auth/check-email', { params: { email } });
+      await api.get('/auth/check-email', { params: { email } });
       // If valid email found, backend returns userDTO
-      return response.data as UserSignUpDTO;
-    } catch (error: any) {
-      if (error.response) {
-        if (error.response.status === HttpStatusCode.Conflict) {
+      return true;
+    } catch (error: unknown) {
+      const errorResponse = error as { response?: { status?: number } };
+      if (errorResponse.response) {
+        if (errorResponse.response.status === HttpStatusCode.Conflict) {
           // User already registered
           throw new Error('UserAlreadyRegistered');
-        } else if (error.response.status === HttpStatusCode.NotFound) {
+        } else if (errorResponse.response.status === HttpStatusCode.NotFound) {
           // Email not found in university database
           throw new Error('EmailNotFound');
         }
       }
       throw new Error('Unknown error during email check');
+    }
+  },
+
+  verifyCode: async (email: string, code:string): Promise<User | null> => {
+    try {
+      const response = await api.get('/auth/verify-code', { params: { email,code } });
+      // If valid email found, backend returns userDTO
+      return response.data as UserSignUpDTO;
+    } catch (error: unknown) {
+      throw new Error('Invalid Verification Code');
     }
   },
 
@@ -66,8 +79,9 @@ const authService = {
         rawPassword: rawPassword
       });
       return response.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Sign up failed');
+    } catch (error: unknown) {
+      const errorResponse = error as { response?: { data?: { error?: string } } };
+      throw new Error(errorResponse.response?.data?.error || 'Sign up failed');
     }
   },
 
@@ -75,8 +89,9 @@ const authService = {
     try {
       // Call backend logout endpoint to clear the cookie
       await api.post('/auth/sign-out');
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Sign Out failed');
+    } catch (error: unknown) {
+      const errorResponse = error as { response?: { data?: { message?: string } } };
+      throw new Error(errorResponse.response?.data?.message || 'Sign Out failed');
     }
   },
 };

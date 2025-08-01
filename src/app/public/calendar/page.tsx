@@ -1,30 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Calendar, MapPin, Clock, Search, Filter, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Calendar, MapPin, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import Image from 'next/image';
 import styles from './calendar.module.css';
 import { CalendarEvent, EventType } from '@/types/event';
 import eventService from '@/services/eventService';
 import { useRouter } from 'next/navigation';
 
-interface Event {
-    eventId: number;
-    eventName: string;
-    eventType?: string;
-    sessionId: number;
-    sessionName: string;
-    startDateTime: string;
-    endDateTime: string;
-    venueNames: string;
-    description: string;
-}
-
 const CalendarPage = () => {
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-    const [filterType, setFilterType] = useState<string>('all');
-    const [searchKeyword, setSearchKeyword] = useState<string>('');
-    const [selectedDateEvents, setSelectedDateEvents] = useState<CalendarEvent[]>([]);
     const [showDateModal, setShowDateModal] = useState(false);
     const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [loading, setLoading] = useState(false);
@@ -33,7 +18,7 @@ const CalendarPage = () => {
     const router = useRouter();
 
     // Fetch events for the current month
-    const fetchEventsForMonth = async (month: Date) => {
+    const fetchEventsForMonth = useCallback(async (month: Date) => {
         const year = month.getFullYear();
         const monthNum = month.getMonth();
         
@@ -77,42 +62,14 @@ const CalendarPage = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [eventsCache]);
 
     // Fetch events when month changes
     useEffect(() => {
         fetchEventsForMonth(currentMonth);
     
-    }, [currentMonth]);
+    }, [currentMonth, fetchEventsForMonth]);
    
-
-    const getTodayEvents = () => {
-        const today = new Date();
-        const todayString = today.getFullYear() + '-' +
-            String(today.getMonth() + 1).padStart(2, '0') + '-' +
-            String(today.getDate()).padStart(2, '0');
-        return events.filter(event => event.startDateTime.split('T')[0] === todayString);
-    };
-
-    const getUpcomingEvents = () => {
-        const today = new Date();
-        return events
-            .filter(event => new Date(event.startDateTime) > today)
-            .sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())
-            .slice(0, 5);
-    };
-
-    const getFilteredEvents = () => {
-        return events.filter(event => {
-            const matchesType = filterType === 'all' || 
-                (event.eventType && event.eventType.toLowerCase() === filterType.toLowerCase());
-            const matchesKeyword = searchKeyword === '' || 
-                event.eventName.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-                event.sessionName.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-                event.description?.toLowerCase().includes(searchKeyword.toLowerCase());
-            return matchesType && matchesKeyword;
-        });
-    };
 
     const getEventsForDate = (date: Date) => {
         const dateString = date.getFullYear() + '-' +
@@ -123,23 +80,6 @@ const CalendarPage = () => {
 
     const handleDateClick = (date: Date) => {
         setSelectedDateForEvents(date);
-    };
-
-    const handleDateModalClick = (date: Date) => {
-        const dateEvents = getEventsForDate(date);
-        setSelectedDateEvents(dateEvents);
-        setSelectedDate(date);
-        setShowDateModal(true);
-    };
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
     };
 
     const formatTime = (startDateTime: string, endDateTime: string) => {
@@ -209,7 +149,6 @@ const CalendarPage = () => {
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth();
         const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
         const startDate = new Date(firstDay);
         startDate.setDate(startDate.getDate() - firstDay.getDay());
 
@@ -277,22 +216,6 @@ const CalendarPage = () => {
             day: 'numeric',
             year: 'numeric'
         });
-    };
-
-    const handleDateSelect = (date: Date) => {
-        setSelectedDateForEvents(date);
-    };
-
-    const nextDate = () => {
-        const next = new Date(selectedDateForEvents);
-        next.setDate(next.getDate() + 1);
-        setSelectedDateForEvents(next);
-    };
-
-    const prevDate = () => {
-        const prev = new Date(selectedDateForEvents);
-        prev.setDate(prev.getDate() - 1);
-        setSelectedDateForEvents(prev);
     };
 
     return (
@@ -400,7 +323,7 @@ const CalendarPage = () => {
                         <div className={styles.modalOverlay} onClick={() => setShowDateModal(false)}>
                             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                                 <h3 className={styles.modalTitle}>
-                                    Events for {selectedDate.toLocaleDateString('en-US', {
+                                    Events for {selectedDateForEvents.toLocaleDateString('en-US', {
                                         weekday: 'long',
                                         year: 'numeric',
                                         month: 'long',
@@ -408,8 +331,8 @@ const CalendarPage = () => {
                                     })}
                                 </h3>
                                 <div className={styles.modalEvents}>
-                                    {selectedDateEvents.length > 0 ? (
-                                        selectedDateEvents.map((event) => (
+                                    {getSelectedDateEvents().length > 0 ? (
+                                        getSelectedDateEvents().map((event) => (
                                             <div key={event.sessionId} className={styles.modalEvent}>
                                                 <h4 className={styles.modalEventTitle}>{event.eventName}</h4>
                                                 <div className={styles.modalEventMeta}>
@@ -458,8 +381,8 @@ const CalendarPage = () => {
             <footer className={styles.footer}>
                 <div className={styles.footerContentCentered}>
                     <div className={styles.footerLogoRow}>
-                        <img src="/utemLogo.png" alt="UTeM Logo" className={styles.footerLogo} />
-                        <img src="/ftmkLogo.png" alt="FTMK Logo" className={styles.footerLogo} />
+                        <Image src="/utemLogo.png" alt="UTeM Logo" width={120} height={40} className={styles.footerLogo} />
+                        <Image src="/ftmkLogo.png" alt="FTMK Logo" width={120} height={40} className={styles.footerLogo} />
                     </div>
 
                 </div>

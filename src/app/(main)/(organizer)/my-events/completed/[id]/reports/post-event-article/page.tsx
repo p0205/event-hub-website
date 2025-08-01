@@ -65,8 +65,9 @@ export default function GenerateArticlePage() {
       // Cast form to ArticleManualInputsDto for the API call
       const result = await eventReportService.getPostEventArticle(Number(eventId), form as ArticleManualInputsDto);
       setArticle(result);
-    } catch (err: any) {
-      setError(err.message || "Failed to generate article.");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(errorMessage || "Failed to generate article.");
     } finally {
       setLoading(false);
     }

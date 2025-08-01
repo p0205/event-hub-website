@@ -1,8 +1,9 @@
 // src/app/my-events/[id]/attendance/page.tsx
 'use client'; // This is a client component for interactivity and data fetching
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation'; // To get event ID from URL
+import Image from 'next/image';
 
 // We no longer need a client-side QR generation library like qrcode.react
 // import QRCode from 'qrcode.react';
@@ -72,9 +73,10 @@ export default function EventAttendancePage() {
                 } else {
                     setSelectedSessionId(null); // Ensure no session is selected if none exist
                 }
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error("Failed to fetch attendance data:", e);
-                setError(`Failed to load attendance data: ${e.message || 'Unknown error'}`);
+                const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+                setError(`Failed to load attendance data: ${errorMessage}`);
                 setSessions(null); // Ensure sessions is null on error
             } finally {
                 setLoading(false);
@@ -96,91 +98,7 @@ export default function EventAttendancePage() {
 
     }, [eventId]); // Rerun if eventId changes
 
-
-    // --- Effect to Fetch QR Code when Session Changes ---
-    useEffect(() => {
-        console.log("Enter useEffect of session change");
-
-        // Clear previous QR info and start loading specifically for this fetch
-        setQrCodeImageUrl(null); // Clear the previous image
-        setQrCodeError(null); // Clear previous errors
-
-        // Check if we have a session selected, event ID is valid, and sessions data is loaded
-        if (!selectedSessionId || !numericEventId || !sessions) {
-            setQrCodeLoading(false); // Ensure loading is false if conditions aren't met
-            return; // Do nothing if no session is selected or data isn't ready
-        }
-
-        console.log(selectedSession?.qrCodeImage);
-        if (selectedSession?.qrCodeImage == null) {
-            return;
-        }
-
-
-        // This effect fetches the QR code whenever the selected session changes
-
-
-        setQrCodeLoading(true); // Start loading indicator for this automatic fetch
-
-        // --- Fetch the QR code Blob ---
-        const fetchQrCode = async () => {
-            try {
-                // Call your backend service to generate/get the QR code Blob
-                const qrCodeBlob = await sessionService.generateQRCode(numericEventId, Number(selectedSessionId)); // Pass the local date-time string
-
-                if (qrCodeBlob instanceof Blob && qrCodeBlob.size > 0) {
-                    const url = URL.createObjectURL(qrCodeBlob);
-                    setQrCodeImageUrl(url); // Update state with the new URL
-                    setQrCodeError(null); // Clear any previous errors on success
-                } else {
-                    // If fetch was successful but returned no/empty blob
-                    setQrCodeImageUrl(null); // Explicitly ensure image is null
-                    throw new Error("Received empty or invalid response for QR code.");
-                }
-
-            } catch (e: any) {
-                console.error("Failed to auto-fetch QR code:", e);
-                setQrCodeError(`Failed to load QR code: ${e.message || 'Unknown error'}`);
-                setQrCodeImageUrl(null); // Ensure QR is cleared on error
-            } finally {
-                setQrCodeLoading(false); // Stop loading indicator
-            }
-        };
-
-        fetchQrCode(); // Execute the async fetch function
-
-        // --- Cleanup Function ---
-        // Revoke the previous object URL when the effect reruns (due to dependency change) or component unmounts
-        return () => {
-            console.log('useEffect cleanup (QR): potentially revoking URL', qrCodeImageUrl);
-            // This cleanup function "sees" the value of qrCodeImageUrl from the render
-            // when the effect *last ran*.
-            if (qrCodeImageUrl) {
-                URL.revokeObjectURL(qrCodeImageUrl);
-            }
-        };
-
-
-    }, [selectedSessionId,]); // Add qrCodeImageUrl to dependencies for cleanup correctness. Also sessionService if it's not stable.
-
-    useEffect(() => {
-        fetchParticipants(currentPage, pageSize);
-    }, [selectedSessionId, currentPage, pageSize]);
-
-    const handlePageChange = (newPage: number) => {
-        setCurrentPage(newPage);
-    };
-
-    const handlePageSizeChange = (newSize: number) => {
-        setPageSize(newSize);
-        setCurrentPage(1); // Reset to the first page on page size change
-    };
-
-    const handleManualAttendanceChange = (participantId: string, currentlyAttended: boolean) => {
-        console.log(`Attendance change for participant ${participantId} to ${currentlyAttended}`);
-    };
-
-    const fetchParticipants = async (page: number, size: number) => {
+    const fetchParticipants = useCallback(async (page: number, size: number) => {
         setLoading(true);
         try {
             const pageIndex = page - 1; // Convert to 0-based for backend
@@ -199,8 +117,7 @@ export default function EventAttendancePage() {
         } finally {
             setLoading(false);
         }
-    };
-
+    }, [eventId, selectedSessionId]);
 
     // Get the currently selected session object from the sessions list
     const selectedSession = useMemo(() => {
@@ -226,38 +143,81 @@ export default function EventAttendancePage() {
 
     }, [selectedSessionId, sessions]);
 
-    // // Generate the data structure for the attendance list table
-    // const participantAttendanceList = useMemo<ParticipantAttendanceStatus[]>(() => {
-    //     console.log("Enter useMemo for participantAttendanceList");
-    //     if (!event || !event.participants || !selectedSessionId || attendanceRecords.length === 0) {
-    //         console.log("useMemo participantAttendanceList returning empty array");
-    //         return [];
-    //     }
+    // --- Effect to Fetch QR Code when Session Changes ---
+    useEffect(() => {
+        console.log("Enter useEffect of session change");
 
-    //     const recordsForSelectedSession = attendanceRecords.filter(record => record.sessionId === selectedSessionId);
-    //     const attendedParticipantIds = new Set(recordsForSelectedSession.map(record => record.participantId));
+        // Clear previous QR info and start loading specifically for this fetch
+        setQrCodeImageUrl(null); // Clear the previous image
+        setQrCodeError(null); // Clear previous errors
 
-    //     const list = event.participants.map((participant: any) => {
-    //         const attended = attendedParticipantIds.has(participant.id);
-    //         const attendanceRecord = recordsForSelectedSession.find(record => record.participantId === participant.id);
+        // Check if we have a session selected, event ID is valid, and sessions data is loaded
+        if (!selectedSessionId || !numericEventId || !sessions) {
+            setQrCodeLoading(false); // Ensure loading is false if conditions aren't met
+            return; // Do nothing if no session is selected or data isn't ready
+        }
 
-    //         return {
-    //             id: participant.id,
-    //             name: participant.name,
-    //             email: participant.email,
-    //             faculty: participant.faculty,
-    //             course: participant.course,
-    //             year: participant.year,
-    //             attended: attended,
-    //             attendanceTime: attendanceRecord?.timestamp,
+        if (selectedSession?.qrCodeImage == null) {
+            return;
+        }
 
-    //         };
-    //     });
-    //     console.log("useMemo participantAttendanceList result count:", list.length);
-    //     return list;
+        // This effect fetches the QR code whenever the selected session changes
 
-    // }, [event, attendanceRecords, selectedSessionId]); // Depends on event, attendanceRecords, and selectedSessionId
+        setQrCodeLoading(true); // Start loading indicator for this automatic fetch
 
+        // --- Fetch the QR code Blob ---
+        const fetchQrCode = async () => {
+            try {
+                // Call your backend service to generate/get the QR code Blob
+                const qrCodeBlob = await sessionService.generateQRCode(numericEventId, Number(selectedSessionId)); // Pass the local date-time string
+
+                if (qrCodeBlob instanceof Blob && qrCodeBlob.size > 0) {
+                    const url = URL.createObjectURL(qrCodeBlob);
+                    setQrCodeImageUrl(url); // Update state with the new URL
+                    setQrCodeError(null); // Clear any previous errors on success
+                } else {
+                    // If fetch was successful but returned no/empty blob
+                    setQrCodeImageUrl(null); // Explicitly ensure image is null
+                    throw new Error("Received empty or invalid response for QR code.");
+                }
+
+            } catch (e: unknown) {
+                console.error("Failed to auto-fetch QR code:", e);
+                const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+                setQrCodeError(`Failed to load QR code: ${errorMessage}`);
+                setQrCodeImageUrl(null); // Ensure QR is cleared on error
+            } finally {
+                setQrCodeLoading(false); // Stop loading indicator
+            }
+        };
+
+        fetchQrCode(); // Execute the async fetch function
+
+        // --- Cleanup Function ---
+        // Revoke the previous object URL when the effect reruns (due to dependency change) or component unmounts
+        return () => {
+            console.log('useEffect cleanup (QR): potentially revoking URL', qrCodeImageUrl);
+            // This cleanup function "sees" the value of qrCodeImageUrl from the render
+            // when the effect *last ran*.
+            if (qrCodeImageUrl) {
+                URL.revokeObjectURL(qrCodeImageUrl);
+            }
+        };
+
+    }, [selectedSessionId, numericEventId, sessions, qrCodeImageUrl, selectedSession?.qrCodeImage]); // Add all dependencies for cleanup correctness
+
+    useEffect(() => {
+        fetchParticipants(currentPage, pageSize);
+    }, [fetchParticipants, currentPage, pageSize]);
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+    };
+
+    const handlePageSizeChange = (newSize: number) => {
+        setPageSize(newSize);
+        setCurrentPage(1); // Reset to the first page on page size change
+    };
 
     // --- Handlers ---
 
@@ -272,7 +232,6 @@ export default function EventAttendancePage() {
         setIsGeneratingQr(false);
         // qrCodeLoading and qrCodeError are handled by the effect now
     };
-
 
     // Handle opening the Generate QR Modal
     const handleOpenGenerateQrModal = () => {
@@ -317,7 +276,6 @@ export default function EventAttendancePage() {
         setIsGeneratingQr(false); // Ensure generating state is false
     };
 
-
     // Handle the actual QR code generation from the modal (using custom expiry)
     const handleGenerateQrCode = async () => {
         if (!numericEventId || !selectedSessionId) {
@@ -331,50 +289,6 @@ export default function EventAttendancePage() {
         setQrCodeError(null); // Clear previous errors
 
         // Determine the expiresAt value based on custom input (formatted as local date time string)
-        let expiresAtLocalString: string | undefined = undefined;
-
-        if (customExpiresAt) {
-            // If user provided a custom date/time from the datetime-local input,
-            // parse it and format it as a local date time string (YYYY-MM-DDTHH:mm:ss)
-            try {
-                // new Date('YYYY-MM-DDTHH:mm') parses as local time
-                const date = new Date(customExpiresAt);
-                if (!isNaN(date.getTime())) {
-                    // Manually format local date and time components
-                    const year = date.getFullYear();
-                    const month = (`0${date.getMonth() + 1}`).slice(-2); // Month is 0-indexed
-                    const day = (`0${date.getDate()}`).slice(-2);
-                    const hours = (`0${date.getHours()}`).slice(-2);
-                    const minutes = (`0${date.getMinutes()}`).slice(-2);
-                    const seconds = (`0${date.getSeconds()}`).slice(-2); // Add seconds for the desired format
-
-                    expiresAtLocalString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-
-                } else {
-                    throw new Error("Invalid custom date/time format.");
-                }
-            } catch (e: any) {
-                console.error("Invalid custom expiresAt:", customExpiresAt, e);
-                setQrCodeError(`Invalid expiration date/time: ${e.message || 'Please check the format.'}`);
-                setIsGeneratingQr(false);
-                // Don't close modal on validation error, let user fix
-                return;
-            }
-        } else if (selectedSession?.endDateTime) {
-            // If no custom date set but session has end time, use that as the default value shown in the input.
-            // The API call below will use the formatted customExpiresAt (which is empty if no custom date)
-            // If customExpiresAt is empty, expiresAtLocalString will be undefined at the end of the 'if' block.
-            // This branch is mostly for displaying the default in the modal input,
-            // the actual value sent to the API is determined by customExpiresAt.
-            console.log("Using session endDateTime as default for modal input, but sending customExpiresAt value to API.");
-            // The actual expiresAtLocalString sent will be undefined if customExpiresAt is empty.
-            // The formatting logic for selectedSession.endDateTime is handled in handleOpenGenerateQrModal
-        }
-        // If customExpiresAt is empty and selectedSession.endDateTime is not used for a custom value,
-        // expiresAtLocalString remains undefined, and the backend will use its default.
-
-        // We need to re-determine expiresAtLocalString based ONLY on the customExpiresAt input value for the API call.
-        // Let's simplify the logic here to just format customExpiresAt if present.
         let finalExpiresAtParam: string | undefined = undefined;
         if (customExpiresAt) {
             try {
@@ -390,21 +304,20 @@ export default function EventAttendancePage() {
                 } else {
                     throw new Error("Invalid custom date/time format.");
                 }
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error("Invalid custom expiresAt:", customExpiresAt, e);
-                setQrCodeError(`Invalid expiration date/time: ${e.message || 'Please check the format.'}`);
+                const errorMessage = e instanceof Error ? e.message : 'Please check the format.';
+                setQrCodeError(`Invalid expiration date/time: ${errorMessage}`);
                 setIsGeneratingQr(false);
-                return; // Stop on error
+                return;
             }
         }
-
 
         // Clean up previous QR code URL before fetching the new one triggered by this button click
         if (qrCodeImageUrl) {
             URL.revokeObjectURL(qrCodeImageUrl);
         }
         setQrCodeImageUrl(null); // Clear the previous image while loading
-
 
         try {
             // Log the format being sent
@@ -424,10 +337,10 @@ export default function EventAttendancePage() {
                 throw new Error("Received empty or invalid response from QR generation.");
             }
 
-
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error("Failed to generate QR code:", e);
-            setQrCodeError(`Failed to generate QR code: ${e.message || 'Unknown error'}`);
+            const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+            setQrCodeError(`Failed to generate QR code: ${errorMessage}`);
             // Ensure QR is cleared on error
             setQrCodeImageUrl(null);
             // Do NOT close the modal on error, let the user see the error or try again
@@ -436,7 +349,6 @@ export default function EventAttendancePage() {
             // qrCodeLoading is managed by the effect
         }
     };
-
 
     // Handle downloading the fetched QR code image
     const handleDownloadQRCode = () => {
@@ -461,60 +373,6 @@ export default function EventAttendancePage() {
         // Note: URL.revokeObjectURL is handled in the useEffect cleanup
         // It's automatically called when qrCodeImageUrl changes or component unmounts.
     };
-
-
-    // Handle manually marking attendance for a participant
-    const handleManualAttendance = (participantId: string, currentlyAttended: boolean) => {
-        console.log(`Attempting to manually mark participant ${participantId} for session ${selectedSessionId}`);
-        if (!selectedSessionId || !numericEventId) {
-            console.error("No session selected or event ID missing for manual attendance.");
-            // TODO: Provide user feedback
-            return;
-        }
-
-        // Determine the action: mark as attended or mark as not attended
-        const action = currentlyAttended ? 'unmark' : 'mark'; // Decide if you're marking or unmarking
-        const newAttendedStatus = !currentlyAttended; // The status it will become
-
-        // TODO: Implement API call to record manual attendance
-        // Example: fetch(`/api/events/${numericEventId}/attendance/manual`, {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({
-        //         participantId,
-        //         sessionId: selectedSessionId, // Use string ID here as per state
-        //         action: action, // 'mark' or 'unmark'
-        //         timestamp: new Date().toISOString(), // Record time on manual mark
-        //         method: 'Manual',
-        //     })
-        // });
-
-        // After a successful API call (within the .then() or try block):
-        // You should update the component's state (`attendanceRecords`) to reflect the change.
-        // This will cause `participantAttendanceList` to recalculate and the UI to update.
-        // Example of optimistic update (update state immediately, revert on error):
-        /*
-        // Find and update the specific record or add a new one
-        setAttendanceRecords(prevRecords => {
-            const updatedRecords = prevRecords.filter(r => !(r.participantId === participantId && r.sessionId === selectedSessionId)); // Remove existing record for this session/participant
-            if (newAttendedStatus) {
-                // Add the new record if marking as attended
-                updatedRecords.push({
-                     participantId: participant.id, // Ensure you have participant ID here
-                     sessionId: selectedSessionId,
-                     timestamp: new Date().toISOString(), // Use actual time from backend if possible
-                     method: 'Manual',
-                });
-            }
-            return updatedRecords; // Return the new array
-        });
-
-        // Then make the actual API call and handle success/error (e.g., revert state on error)
-        */
-        console.log(`Simulating API call to ${action} participant ${participantId}'s attendance.`);
-        // TODO: Implement the actual API call and state update logic here.
-    };
-
 
     // Handle exporting attendance data (e.g., as CSV)
     const handleExportAttendance = async () => {
@@ -545,12 +403,11 @@ export default function EventAttendancePage() {
             // Cleanup
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to export attendance data:", error);
             // You might want to show an error message to the user here
         }
     };
-
 
     // --- Render Logic ---
     if (loading) {
@@ -574,7 +431,6 @@ export default function EventAttendancePage() {
     const sessionsExist = sessions && sessions.length > 0;
     // Use event?.participants.length > 0 or similar if fetching event data
 
-
     return (
         <div className="page-content-wrapper"> {/* Wrapper for padding/spacing */}
             {/* --- Page Title --- */}
@@ -583,7 +439,7 @@ export default function EventAttendancePage() {
                 <div className={'page-title-section'}>
                     <h2>Attendance</h2>
                     <p className={'page-subtitle'}>
-                    Generate attendance codes per session and monitor participants' attendance
+                    Generate attendance codes per session and monitor participants&apos; attendance
                     </p>
                 </div>
             </div>
@@ -614,8 +470,6 @@ export default function EventAttendancePage() {
                 </div>
             )}
 
-
-
             {/* --- Attendance QR Code Section --- */}
             {/* Show QR code section if sessions exist */}
             {sessionsExist && (
@@ -636,10 +490,11 @@ export default function EventAttendancePage() {
                             // Case 4: Session is selected, QR code image is available, and no loading/error
                             <div className={styles["qr-code-section"]}>
                                 <div className={styles["qr-code-container"]}>
-                                    <img
+                                    <Image
                                         src={qrCodeImageUrl} // Use the dynamically generated object URL
                                         alt={`QR Code for ${selectedSession.sessionName}`}
-                                        style={{ width: 256, height: 256 }}
+                                        width={256}
+                                        height={256}
                                     />
                                 </div>
                                 <button className="button-secondary" onClick={handleDownloadQRCode}>
@@ -710,11 +565,6 @@ export default function EventAttendancePage() {
                 </div>
             )}
 
-
-
-
-            {/* --- Participants Attendance List Section --- */}
-            {/* Show list only if a session is selected */}
             {/* --- Participants Attendance List Section --- */}
             {/* Show list only if a session is selected */}
             {selectedSessionId && (
@@ -733,7 +583,6 @@ export default function EventAttendancePage() {
                     {/* Render the new ParticipantAttendanceTable component */}
                     <AttendanceTable
                         participants={participants}
-                        onManualAttendanceChange={handleManualAttendanceChange}
                         currentPage={currentPage}
                         pageSize={pageSize}
                         totalItems={totalItems}

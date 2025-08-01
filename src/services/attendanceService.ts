@@ -32,7 +32,7 @@ const attendanceService = {
 
         if (response.status !== HttpStatusCode.Ok) {
             // It's good practice to throw the actual error response if possible
-            const errorData = response.data as any; // Attempt to cast to any to access potential error body
+            const errorData = response.data as { message?: string }; // Attempt to cast to proper type to access potential error body
             const errorMessage = errorData?.message || `Failed to get attendees for session ${sessionId}. Status: ${response.status}`;
             throw new Error(errorMessage);
         }
@@ -53,14 +53,15 @@ const attendanceService = {
             }
 
             return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error exporting attendance data:', error);
-            throw new Error(error.response?.data?.message || 'Failed to export attendance data');
+            const errorResponse = error as { response?: { data?: { message?: string } } };
+            throw new Error(errorResponse.response?.data?.message || 'Failed to export attendance data');
         }
     },
 
     // Add new method for QR code check-in
-    checkIn: async (qrCodePayload: string, email: string): Promise<any> => {
+    checkIn: async (qrCodePayload: string, email: string): Promise<unknown> => {
         try {
             const response = await api.post('/check_in', {
                 qrCodePayload,
@@ -70,9 +71,10 @@ const attendanceService = {
                 throw new Error(response.data?.message || 'Failed to check in');
             }
             return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error during check-in:', error);
-            throw new Error(error.response?.data?.message || 'Failed to check in');
+            const errorResponse = error as { response?: { data?: { message?: string } } };
+            throw new Error(errorResponse.response?.data?.message || 'Failed to check in');
         }
     }
 };

@@ -175,7 +175,7 @@ export default function EventTeamPage() {
         } finally {
             setSearching(false);
         }
-    }, [searchQuery]);
+    }, [searchQuery, eventId, selectedRoleForAdd]);
 
     // Handle changing the role for the bulk add
     const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

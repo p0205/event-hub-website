@@ -73,7 +73,7 @@ export default function ActiveEventDetailsPage() {
     console.log("BUDGET");
     console.log(event?.eventBudgets[0].budgetCategoryName);
 
-  }, [eventId]); // Refetch if eventId changes
+  }, [eventId,event?.eventBudgets]); // Refetch if eventId changes
 
   // // Effect 2: Process sessions AFTER event data is loaded
   // useEffect(() => {

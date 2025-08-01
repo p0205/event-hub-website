@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation'; // To get route parameters (the event ID)
 import eventService from '@/services/eventService';
-import { Event, Session, TeamMember, Venue } from '@/types/event'; // Ensure Venue is imported
+import { Event, Venue } from '@/types/event'; // Ensure Venue is imported
 import { formatDate, formatDateTime } from '@/helpers/eventHelpers'; // Assuming this path is correct
 import BudgetTable from '@/components/BudgetTable';
 
@@ -21,16 +21,6 @@ export default function CompletedEventDetailsPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-
-  // State for QR Code display
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  // const [team, setTeam] = useState<TeamMember[]>([]); // Not used directly, event.team is used
-
-  // --- State for grouped sessions ---
-  // const [sessions, setSessions] = useState<Session[]>([]);
-  // const [loadingSessions, setLoadingSessions] = useState(false); // Loading state for sessions specifically
-  // const [sessionError, setSessionError] = useState<string | null>(null); // Error state for sessions
 
 
 
@@ -57,9 +47,10 @@ export default function CompletedEventDetailsPage() {
         }
         console.log('Fetched Event:', fetchedEvent); // Debug log
         setEvent(fetchedEvent);
-      } catch (e: any) {
-        console.error("Failed to fetch event details:", e);
-        setError(e.message || "Failed to load event details. Please try again.");
+      } catch (err: unknown) {
+        console.error("[ParticipantReviewUI] Failed to save participants:", err);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(errorMessage || "Failed to load event details. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -67,46 +58,7 @@ export default function CompletedEventDetailsPage() {
 
     fetchEventDetails();
 
-    console.log("BUDGET");
-    console.log(event?.eventBudgets[0].budgetCategoryName);
-
   }, [eventId]); // Refetch if eventId changes
-
-  // // Effect 2: Process sessions AFTER event data is loaded
-  // useEffect(() => {
-  //   // Only run if event data exists, has venues, and sessions aren't already loaded/loading
-  //   if (event && event.sessions && event.sessions.length > 0 && sessions.length === 0 && !loadingSessions) {
-  //     const processSessions = async () => {
-  //       setLoadingSessions(true);
-  //       setSessionError(null);
-  //       try {
-  //         // Call the async groupSessions function
-  //         const sessions = await groupSessions(event.eventVenues ?? []);
-  //         setGroupedSessionsData(sessions); // Store results in state
-  //       } catch (err: any) {
-  //         console.error("Error processing sessions:", err);
-  //         setSessionError("Failed to load session details."); // Set session-specific error
-  //       } finally {
-  //         setLoadingSessions(false);
-  //       }
-  //     };
-  //     processSessions();
-  //   } else if (event && (!event.eventVenues || event.eventVenues.length === 0)) {
-  //        // Handle case where event exists but has no venues
-  //        set([]);
-  //        setLoadingSessions(false);
-  //   }
-
-  //   // Intentionally NOT depending on groupedSessionsData to avoid loops
-  //   // Only depends on 'event' state changing and 'loadingSessions' state
-  // }, [event, loadingSessions]); // Rerun when event data is fetched or if loading state changes
-
-
-  // --- Handlers (Keep as they are, they correctly use async/await internally) ---
-  const handleEditClick = () => {
-    setIsEditing(!isEditing);
-    console.log('Edit Event clicked');
-  };
 
 
   // --- Rendering Logic ---

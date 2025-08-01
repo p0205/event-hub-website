@@ -66,7 +66,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace('/')
       }
     }
-  }, [loading, isAuthenticated, pathname, countdown, router]); // Removed isAuthPage from deps
+  }, [loading, isAuthenticated, pathname, countdown, router,user?.role]); // Removed isAuthPage from deps
 
   // Conditional Rendering Logic:
 

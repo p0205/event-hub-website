@@ -1,5 +1,5 @@
 // src/services/budgetService.ts
-import { ArticleManualInputsDto, EventMedia, EventReport, EventReportOverview } from '@/types/event';
+import { ArticleManualInputsDto, EventReport, EventReportOverview } from '@/types/event';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
 
@@ -44,9 +44,10 @@ const eventReportService = {
             }
 
             return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error generating feedback report:', error);
-            throw new Error(error.response?.data?.message || 'Failed to generate feedback report');
+            const errorResponse = error as { response?: { data?: { message?: string } } };
+            throw new Error(errorResponse.response?.data?.message || 'Failed to generate feedback report');
         }
     },
 
@@ -67,9 +68,10 @@ const eventReportService = {
             }
             // Axios will put the plain text response in response.data
             return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error generating post-event article:', error);
-            throw new Error(error.response?.data?.message || 'Failed to generate post-event article');
+            const errorResponse = error as { response?: { data?: { message?: string } } };
+            throw new Error(errorResponse.response?.data?.message || 'Failed to generate post-event article');
         }
     },
 

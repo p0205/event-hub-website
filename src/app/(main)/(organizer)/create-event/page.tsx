@@ -699,84 +699,92 @@ export default function CreateEventPage() {
                     {/* --- Budget Section --- */}
                     <div className="form-section">
                         <h2>Budget</h2>
-                        {/* Map over budget items to render each row */}
-                        {formData.eventBudgets.map((item) => (
-                            // This div wraps the category select, amount input, and remove button
-                            // The CSS for .budget-item-controls makes these children display as a flex row
-                            <div key={item.id} className="budget-item-controls">
-                                {/* Category Select */}
-                                {/* form-group-item helps manage flex growth within the row */}
-                                <div className="form-group-item">
-                                    {/* Use form-label-small for smaller labels if desired */}
-                                    <label htmlFor={`budget-category-${item.id}`} className="form-label form-label-small">Category:</label>
-                                    <select
-                                        id={`budget-category-${item.id}`}
-                                        name="categoryName" // Use categoryName to match handler
-                                        value={item.budgetCategoryName} // Use categoryName from state
-                                        onChange={(e) => handleBudgetChange(item.id, "categoryName", e.target.value)} // Pass categoryName
-                                        className="form-input"
-                                        required // Make category selection required
-                                        disabled={isLoading}
-                                    >
-                                        <option value="">Select Category</option>
-                                        {/* Map over your budget categories (mockBudgetCategories or fetched) */}
-                                        {budgetCategories.map((cat) => (
-                                            // Use category name as the value for the select option
-                                            <option key={cat.id} value={cat.name}>
-                                                {cat.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* Amount Input */}
-                                {/* form-group-item helps manage flex growth within the row */}
-                                <div className="form-group-item">
-                                    {/* Use form-label-small for smaller labels if desired */}
-                                    <label htmlFor={`budget-amount-${item.id}`} className="form-label form-label-small">Allocated (MYR):</label>
-                                    <input
-                                        type="number"
-                                        id={`budget-amount-${item.id}`}
-                                        name="amountAllocated" // Use amountAllocated to match handler
-                                        value={item.amountAllocated} // Use amountAllocated from state (string)
-                                        onChange={(e) => handleBudgetChange(item.id, "amountAllocated", e.target.value)} // Pass amount string
-                                        placeholder="e.g., 5000"
-                                        className="form-input"
-                                        min="0"
-                                        step="0.01"
-                                        required // Make amount required
-                                        disabled={isLoading}
-                                    />
-                                </div>
-
-                                {/* Remove Budget Item Button */}
-                                {/* Only show remove button if there's more than one budget item */}
-                                {formData.eventBudgets.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveBudget(item.id)}
-                                        className="button-remove-small" // Use the small remove button class
-                                        disabled={isLoading}
-                                        // Align button baseline with inputs using margin-top or margin-bottom
-                                        style={{ flexShrink: 0, marginBottom: '5px' }} // Add margin-bottom to align with input baseline
-                                    >
-                                        {/* Use React-icons FaTrash */}
-                                        <FaTrash />
-                                    </button>
-                                )}
+                        {budgetCategoriesLoading ? (
+                            <div style={{ padding: '20px', textAlign: 'center' }}>
+                                <p>Loading budget categories...</p>
                             </div>
-                        ))}
+                        ) : (
+                            <>
+                                {/* Map over budget items to render each row */}
+                                {formData.eventBudgets.map((item) => (
+                                    // This div wraps the category select, amount input, and remove button
+                                    // The CSS for .budget-item-controls makes these children display as a flex row
+                                    <div key={item.id} className="budget-item-controls">
+                                        {/* Category Select */}
+                                        {/* form-group-item helps manage flex growth within the row */}
+                                        <div className="form-group-item">
+                                            {/* Use form-label-small for smaller labels if desired */}
+                                            <label htmlFor={`budget-category-${item.id}`} className="form-label form-label-small">Category:</label>
+                                            <select
+                                                id={`budget-category-${item.id}`}
+                                                name="categoryName" // Use categoryName to match handler
+                                                value={item.budgetCategoryName} // Use categoryName from state
+                                                onChange={(e) => handleBudgetChange(item.id, "categoryName", e.target.value)} // Pass categoryName
+                                                className="form-input"
+                                                required // Make category selection required
+                                                disabled={isLoading}
+                                            >
+                                                <option value="">Select Category</option>
+                                                {/* Map over your budget categories (mockBudgetCategories or fetched) */}
+                                                {budgetCategories.map((cat) => (
+                                                    // Use category name as the value for the select option
+                                                    <option key={cat.id} value={cat.name}>
+                                                        {cat.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
 
-                        {/* Add Budget Row Button */}
-                        <button
-                            type="button"
-                            onClick={addBudgetRow}
-                            className="button-secondary" // Use secondary style for Add button
-                            style={{ marginTop: '10px' }} // Add space above the button
-                            disabled={isLoading}
-                        >
-                            + Add Budget Item
-                        </button>
+                                        {/* Amount Input */}
+                                        {/* form-group-item helps manage flex growth within the row */}
+                                        <div className="form-group-item">
+                                            {/* Use form-label-small for smaller labels if desired */}
+                                            <label htmlFor={`budget-amount-${item.id}`} className="form-label form-label-small">Allocated (MYR):</label>
+                                            <input
+                                                type="number"
+                                                id={`budget-amount-${item.id}`}
+                                                name="amountAllocated" // Use amountAllocated to match handler
+                                                value={item.amountAllocated} // Use amountAllocated from state (string)
+                                                onChange={(e) => handleBudgetChange(item.id, "amountAllocated", e.target.value)} // Pass amount string
+                                                placeholder="e.g., 5000"
+                                                className="form-input"
+                                                min="0"
+                                                step="0.01"
+                                                required // Make amount required
+                                                disabled={isLoading}
+                                            />
+                                        </div>
+
+                                        {/* Remove Budget Item Button */}
+                                        {/* Only show remove button if there's more than one budget item */}
+                                        {formData.eventBudgets.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveBudget(item.id)}
+                                                className="button-remove-small" // Use the small remove button class
+                                                disabled={isLoading}
+                                                // Align button baseline with inputs using margin-top or margin-bottom
+                                                style={{ flexShrink: 0, marginBottom: '5px' }} // Add margin-bottom to align with input baseline
+                                            >
+                                                {/* Use React-icons FaTrash */}
+                                                <FaTrash />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+
+                                {/* Add Budget Row Button */}
+                                <button
+                                    type="button"
+                                    onClick={addBudgetRow}
+                                    className="button-secondary" // Use secondary style for Add button
+                                    style={{ marginTop: '10px' }} // Add space above the button
+                                    disabled={isLoading}
+                                >
+                                    + Add Budget Item
+                                </button>
+                            </>
+                        )}
                     </div>
                     {/* --- File Upload Section --- */}
                     <div className="form-section">

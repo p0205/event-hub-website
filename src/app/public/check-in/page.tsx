@@ -1,10 +1,10 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState ,Suspense} from 'react';
 import styles from './checkin.module.css';
 import attendanceService from '@/services/attendanceService';
 import { useSearchParams } from 'next/navigation';
 
-const CheckinPage = () => {
+const CheckinPageForm = () => {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const qrCodePayload = searchParams.get('q');
@@ -25,8 +25,9 @@ const CheckinPage = () => {
       }
       await attendanceService.checkIn(qrCodePayload, email);
       setSubmitted(true);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+      setError(`Failed to check in: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -75,4 +76,12 @@ const CheckinPage = () => {
   );
 };
 
+
+const CheckinPage: React.FC = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckinPageForm />
+    </Suspense>
+  );
+};
 export default CheckinPage; 

@@ -2,7 +2,7 @@
 
 'use client'; // This is a Client Component, required for state, effects, and event handlers
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation'; // From URL get event ID, for navigation
 // import { v4 as uuidv4 } from 'uuid'; // For temporary IDs for new participants
 
@@ -84,56 +84,8 @@ export default function EventParticipantsPage() {
         setIsMounted(true);
     }, []);
 
-
-    // --- Data Fetching (Initial Load of Saved Participants) ---
-    useEffect(() => {
-        if (!eventId) {
-            setIsLoadingInitial(false);
-            setInitialLoadError("Event ID is missing.");
-            return;
-        }
-        fetchSavedParticipants();
-    }, [eventId, currentPageNo, pageSize]); // Re-run effect if eventId changes
-
-
-    // --- Recalculate Demographics whenever participants list changes ---
-    useEffect(() => {
-        if (participants) {
-            fetchDemographics();
-        } else {
-            setDemographics(null); // Or an empty summary
-        }
-    }, [participants]); // Recalculate when participants state updates
-
-    useEffect(() => {
-        // Prevent body scrolling when overlay is open
-        if (uploadedParticipants.length > 0) {
-            document.body.style.overflow = "hidden"; // Disable background scroll
-        } else {
-            document.body.style.overflow = "auto"; // Re-enable scroll when overlay is closed
-        }
-
-        return () => {
-            document.body.style.overflow = "auto"; // Ensure scroll is re-enabled on component unmount
-        };
-
-
-    }, [uploadedParticipants]); // Run the effect when uploadedParticipants changes
-
-    const fetchDemographics = async () => {
-        try {
-            const demographic = await eventService.getParticipantsDemographicsByEventId(Number(eventId));
-            setDemographics(demographic);
-        } catch (error) {
-            console.error("Failed to fetch initially saved participants:", error);
-            setDemographics(null);
-        }
-    };
-
-
-
     // Fetch data
-    const fetchSavedParticipants = async () => {
+    const fetchSavedParticipants = useCallback(async () => {
         setIsLoadingInitial(true);
         setInitialLoadError(null);
         // Clear other status messages on initial load
@@ -159,9 +111,52 @@ export default function EventParticipantsPage() {
         } finally {
             setIsLoadingInitial(false);
         }
-    };
+    }, [eventId, currentPageNo, pageSize]);
+
+    const fetchDemographics = useCallback(async () => {
+        try {
+            const demographic = await eventService.getParticipantsDemographicsByEventId(Number(eventId));
+            setDemographics(demographic);
+        } catch (error) {
+            console.error("Failed to fetch initially saved participants:", error);
+            setDemographics(null);
+        }
+    }, [eventId]);
+
+    // --- Data Fetching (Initial Load of Saved Participants) ---
+    useEffect(() => {
+        if (!eventId) {
+            setIsLoadingInitial(false);
+            setInitialLoadError("Event ID is missing.");
+            return;
+        }
+        fetchSavedParticipants();
+    }, [eventId,fetchSavedParticipants]); // Re-run effect if eventId changes
 
 
+    // --- Recalculate Demographics whenever participants list changes ---
+    useEffect(() => {
+        if (participants) {
+            fetchDemographics();
+        } else {
+            setDemographics(null); // Or an empty summary
+        }
+    }, [participants, fetchDemographics]); // Recalculate when participants state updates
+
+    useEffect(() => {
+        // Prevent body scrolling when overlay is open
+        if (uploadedParticipants.length > 0) {
+            document.body.style.overflow = "hidden"; // Disable background scroll
+        } else {
+            document.body.style.overflow = "auto"; // Re-enable scroll when overlay is closed
+        }
+
+        return () => {
+            document.body.style.overflow = "auto"; // Ensure scroll is re-enabled on component unmount
+        };
+
+
+    }, [uploadedParticipants]); // Run the effect when uploadedParticipants changes
 
     // Handle pagination
     const handlePageChange = (newPage: number) => {

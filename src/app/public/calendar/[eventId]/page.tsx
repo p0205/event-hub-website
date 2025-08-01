@@ -1,32 +1,29 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { 
     Calendar, 
     MapPin, 
-    Clock, 
     Navigation, 
     Phone,
     ArrowLeft,
     AlertCircle,
     Mail
 } from 'lucide-react';
+import Image from 'next/image';
 import styles from './event.module.css';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { EventDetails } from '@/types/event';
 import { eventService } from '@/services';
-import router from 'next/router';
-
-
 
 const EventDetailsPage = () => {
     const params = useParams();
+    const router = useRouter();
     const eventId = params.eventId;
     const [event, setEvent] = useState<EventDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showAppDialog, setShowAppDialog] = useState(false);
-
 
     useEffect(() => {
         // Simulate API call
@@ -39,7 +36,8 @@ const EventDetailsPage = () => {
                 
                 setEvent(response);
                 console.log('Event loaded:', response); // Debug log
-            } catch (err) {
+            } catch (error: unknown) {
+                console.error('Error fetching event details:', error);
                 setError('Failed to load event details. Please try again.');
             } finally {
                 setLoading(false);
@@ -75,7 +73,7 @@ const EventDetailsPage = () => {
         return `${startTime} - ${endTime}`;
     };
 
-    const handleGetDirections = (venue: string) => {
+    const handleGetDirections = () => {
         setShowAppDialog(true);
     };
 
@@ -153,7 +151,7 @@ const EventDetailsPage = () => {
                                                     <span>{venue.name}</span>
                                                     <button 
                                                         className={styles.getDirectionsButton}
-                                                        onClick={() => handleGetDirections(venue.id)}
+                                                        onClick={handleGetDirections}
                                                     >
                                                         <Navigation className={styles.buttonIcon} />
                                                         Get Directions
@@ -212,10 +210,10 @@ const EventDetailsPage = () => {
                                 <span className="text-2xl">&times;</span>
                             </button>
                         </div>
-                        <img src="/app_download.png" alt="FTMK App QR Code" className="w-40 h-40 mx-auto mb-4" />
+                        <Image src="/app_download.png" alt="FTMK App QR Code" width={160} height={160} className="w-40 h-40 mx-auto mb-4" />
                         <p className="text-center mb-2">Scan this QR code to download the FTMK Event Hub Android App.</p>
                         <p className="text-center mb-4">
-                            Can't scan? Download <a href="https://drive.google.com/uc?export=download&id=183yl-lWcoYxu3ko_UsMSNYLUBRwihIW3" className="text-amber-700 hover:text-amber-800 font-semibold underline">Here</a>
+                            Can&apos;t scan? Download <a href="https://drive.google.com/uc?export=download&id=183yl-lWcoYxu3ko_UsMSNYLUBRwihIW3" className="text-amber-700 hover:text-amber-800 font-semibold underline">Here</a>
                         </p>
                         <ul className="mb-4 text-sm text-gray-700 list-disc list-inside">
                             <li>✔ View all events</li>
@@ -231,8 +229,8 @@ const EventDetailsPage = () => {
             <footer className={styles.footer}>
                 <div className={styles.footerContentCentered}>
                     <div className={styles.footerLogoRow}>
-                        <img src="/utemLogo.png" alt="UTeM Logo" className={styles.footerLogo} />
-                        <img src="/ftmkLogo.png" alt="FTMK Logo" className={styles.footerLogo} />
+                        <Image src="/utemLogo.png" alt="UTeM Logo" width={120} height={40} className={styles.footerLogo} />
+                        <Image src="/ftmkLogo.png" alt="FTMK Logo" width={120} height={40} className={styles.footerLogo} />
                     </div>
                 </div>
 

@@ -1,41 +1,12 @@
 // src/app/organizer/my-events/completed/reports/page.tsx
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import styles from './reports.module.css'; // Create this CSS module
 import { EventReportOverview } from '@/types/event';
 import eventReportService from '@/services/eventReportService';
-import { formatDate, formatDateTime } from '@/helpers/eventHelpers';
-
-
-const mockReports = {
-    // attendance: {
-    //     generated: true,
-    //     generatedDate: "2024-12-16",
-    //     registeredAttendees: 280,
-    //     actualAttendees: 250,
-    //     attendanceRate: 89.3
-    // },
-    // budget: {
-    //     generated: true,
-    //     generatedDate: "2024-12-16",
-    //     totalBudget: 50000,
-    //     totalExpenses: 47500,
-    //     remaining: 2500
-    // },
-    // feedback: {
-    //     averageRating: 3.4,
-    //     feedbackCount: 80,
-    //     ratingBreakdown: {
-    //         5: 35,
-    //         4: 28,
-    //         3: 18,
-    //         2: 6,
-    //         1: 2
-    //     }
-    // }
-};
+import { formatDate } from '@/helpers/eventHelpers';
 
 export default function EventReportsPage() {
 
@@ -43,40 +14,35 @@ export default function EventReportsPage() {
     const eventId = params.id as string; // eventId will be a string, convert to number for service calls
     const router = useRouter();
 
-
-    const [dateRange, setDateRange] = useState({
-        startDate: '',
-        endDate: ''
-    });
     const [reportOverview, setReportOverview] = useState<EventReportOverview>();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // Changed to true for initial loading
     const [error, setError] = useState<string | null>(null);
     const [showAllComments, setShowAllComments] = useState(true);
     const [showLatestComments, setShowLatestComments] = useState(false);
     const [latestCommentsCount, setLatestCommentsCount] = useState(5);
     const [showDetails, setShowDetails] = useState(false);
-    const [enableDateFilter, setEnableDateFilter] = useState(false);
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
-    useEffect(() => {
-        loadEventReportOverview();
-    }, [eventId]);
-
     // --- Data Loading ---
-    const loadEventReportOverview = async () => {
+    const loadEventReportOverview = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
             const data = await eventReportService.getEventReportOverview(Number(eventId));
             setReportOverview(data);
             console.log("Event Report Overview loaded:", data);
-        } catch (e: any) {
-            console.error("Error loading budget data:", e);
-            setError(`Failed to load report overview data: ${e.message || 'Unknown error'}`);
+        } catch (e: unknown) {
+            const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+            console.error("Error loading budget data:", errorMessage);
+            setError(`Failed to load report overview data: ${errorMessage}`);
         } finally {
             setLoading(false);
         }
-    };
+    }, [eventId]);
+
+    useEffect(() => {
+        loadEventReportOverview();
+    }, [loadEventReportOverview]);
 
     const handleGenerateFeedbackReport = async () => {
         setIsGeneratingReport(true);
@@ -92,9 +58,9 @@ export default function EventReportsPage() {
             setTimeout(() => {
                 window.URL.revokeObjectURL(url);
             }, 1000);
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error("Error generating feedback report:", e);
-            setError(`Failed to generate feedback report: ${e.message || 'Unknown error'}`);
+            setError(`Failed to generate feedback report: ${e || 'Unknown error'}`);
         } finally {
             setIsGeneratingReport(false);
         }
@@ -124,7 +90,81 @@ export default function EventReportsPage() {
         );
     };
 
+    // --- Loading State ---
+    if (loading) {
+        return (
+            <div className="page-content-wrapper">
+                <div className='page-header'>
+                    <div className='page-title-section'>
+                        <h2>Event Reports</h2>
+                        <p className={'page-subtitle'}>
+                            View and generate comprehensive event reports
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading event reports...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
+    // --- Error State ---
+    if (error) {
+        return (
+            <div className="page-content-wrapper">
+                <div className='page-header'>
+                    <div className='page-title-section'>
+                        <h2>Event Reports</h2>
+                        <p className={'page-subtitle'}>
+                            View and generate comprehensive event reports
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                        <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Reports</h3>
+                        <p className="text-gray-600 mb-4">{error}</p>
+                        <button 
+                            onClick={loadEventReportOverview}
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- No Data State ---
+    if (!reportOverview) {
+        return (
+            <div className="page-content-wrapper">
+                <div className='page-header'>
+                    <div className='page-title-section'>
+                        <h2>Event Reports</h2>
+                        <p className={'page-subtitle'}>
+                            View and generate comprehensive event reports
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                        <div className="text-gray-400 text-6xl mb-4">📊</div>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-2">No Reports Available</h3>
+                        <p className="text-gray-600">No report data found for this event.</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- Main Content ---
     return (
         <div className={styles["page-container"]}>
 

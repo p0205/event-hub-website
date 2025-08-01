@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, UserAccountStatus } from '@/types/user';
 import userService from '@/services/userService';
-import { X, User as UserIcon, Mail, Phone, GraduationCap, BookOpen, Calendar, Shield } from 'lucide-react';
+import { X, User as UserIcon, Mail, Phone, GraduationCap, BookOpen, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface EditUserDialogProps {
@@ -60,8 +60,9 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
             toast.success(`User updated successfully!`);
             onUpdate();
             onClose();
-        } catch (err: any) {
-            setError(err.message || 'Failed to update user');
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            setError(`Failed to update user: ${errorMessage}`);
         } finally {
             setLoading(false);
         }
@@ -71,15 +72,15 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-           
-            <div 
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300" 
-                onClick={onClose} 
+
+            <div
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+                onClick={onClose}
             />
 
 
             <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden transform transition-all duration-300 scale-100">
-              
+
                 <div className="bg-white px-8 py-6 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
@@ -91,8 +92,8 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
                                 <p className="text-gray-500 text-sm mt-1">Update user account details and settings</p>
                             </div>
                         </div>
-                        <button 
-                            onClick={onClose} 
+                        <button
+                            onClick={onClose}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                             aria-label="Close modal"
                         >
@@ -150,7 +151,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
                                             onChange={handleChange}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white"
                                         >
-                                           
+
                                             <option value="M">Male</option>
                                             <option value="F">Female</option>
                                         </select>
@@ -262,7 +263,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
                                     >
                                         <option value={UserAccountStatus.ACTIVE}>Active</option>
                                         <option value={UserAccountStatus.INACTIVE}>Inactive</option>
-                                    
+
                                         <option value={UserAccountStatus.SUSPENDED}>Suspended</option>
                                     </select>
                                 </div>

@@ -1,8 +1,9 @@
 // src/app/my-events/[id]/attendance/page.tsx
 'use client'; // This is a client component for interactivity and data fetching
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation'; // To get event ID from URL
+import Image from 'next/image';
 
 // We no longer need a client-side QR generation library like qrcode.react
 // import QRCode from 'qrcode.react';
@@ -100,6 +101,50 @@ export default function EventAttendancePage() {
 
     }, [eventId]); // Rerun if eventId changes
 
+    const fetchParticipants = useCallback(async (page: number, size: number) => {
+        setLoading(true);
+        try {
+            const pageIndex = page - 1; // Convert to 0-based for backend
+            const data: PageData<Attendee> = await attendanceService.getCheckInParticipantsBySessionId(
+                eventId,
+                Number(selectedSessionId),
+                pageIndex,
+                size
+            );
+            setParticipants(data.content);
+            setTotalItems(data.totalElements);
+            setTotalPages(data.totalPages);
+            setOffset(data.pageable.offset + 1);
+        } catch (error) {
+            console.error("Error fetching participants:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [eventId, selectedSessionId]);
+
+    // Get the currently selected session object from the sessions list
+    const selectedSession = useMemo(() => {
+        console.log("Enter useMemo");
+        // Guard Clause 1: Check dependencies are ready
+        if (!selectedSessionId || !sessions) {
+            console.log("useMemo returning null because selectedSessionId or sessions is missing", { selectedSessionId, sessions });
+            return null;
+        }
+        console.log("useMemo dependencies present. Searching sessions:", sessions, "for ID:", selectedSessionId);
+
+        // The core logic: Find the session
+        const foundSession = sessions.find(session => {
+            // Log the comparison being made inside find
+            console.log(`Comparing session.id (${typeof session.id}):`, session.id, `with selectedSessionId (${typeof selectedSessionId}):`, selectedSessionId, `Result: ${String(session.id) === selectedSessionId}`);
+            // Ensure type-safe comparison (IDs from <option> values are strings)
+            return String(session.id) === String(selectedSessionId);
+        });
+
+
+        console.log("Result of find:", foundSession);
+        return foundSession || null; // Return found session or explicitly null if find returns undefined
+
+    }, [selectedSessionId, sessions]);
 
     // --- Effect to Fetch QR Code when Session Changes ---
     useEffect(() => {
@@ -115,14 +160,11 @@ export default function EventAttendancePage() {
             return; // Do nothing if no session is selected or data isn't ready
         }
 
-        console.log(selectedSession?.qrCodeImage);
         if (selectedSession?.qrCodeImage == null) {
             return;
         }
 
-
         // This effect fetches the QR code whenever the selected session changes
-
 
         setQrCodeLoading(true); // Start loading indicator for this automatic fetch
 
@@ -168,12 +210,11 @@ export default function EventAttendancePage() {
             }
         };
 
-
-    }, [selectedSessionId,]); // Add qrCodeImageUrl to dependencies for cleanup correctness. Also sessionService if it's not stable.
+    }, [selectedSessionId, numericEventId, sessions, qrCodeImageUrl, selectedSession?.qrCodeImage]); // Add all dependencies for cleanup correctness
 
     useEffect(() => {
         fetchParticipants(currentPage, pageSize);
-    }, [selectedSessionId, currentPage, pageSize]);
+    }, [fetchParticipants, currentPage, pageSize]);
 
     const handlePageChange = (newPage: number) => {
         setCurrentPage(newPage);
@@ -183,85 +224,6 @@ export default function EventAttendancePage() {
         setPageSize(newSize);
         setCurrentPage(1); // Reset to the first page on page size change
     };
-
-    const fetchParticipants = async (page: number, size: number) => {
-        setLoading(true);
-        try {
-            const pageIndex = page - 1; // Convert to 0-based for backend
-            const data: PageData<Attendee> = await attendanceService.getCheckInParticipantsBySessionId(
-                eventId,
-                Number(selectedSessionId),
-                pageIndex,
-                size
-            );
-            setParticipants(data.content);
-            setTotalItems(data.totalElements);
-            setTotalPages(data.totalPages);
-            setOffset(data.pageable.offset + 1);
-        } catch (error) {
-            console.error("Error fetching participants:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-
-    // Get the currently selected session object from the sessions list
-    const selectedSession = useMemo(() => {
-        console.log("Enter useMemo");
-        // Guard Clause 1: Check dependencies are ready
-        if (!selectedSessionId || !sessions) {
-            console.log("useMemo returning null because selectedSessionId or sessions is missing", { selectedSessionId, sessions });
-            return null;
-        }
-        console.log("useMemo dependencies present. Searching sessions:", sessions, "for ID:", selectedSessionId);
-
-        // The core logic: Find the session
-        const foundSession = sessions.find(session => {
-            // Log the comparison being made inside find
-            console.log(`Comparing session.id (${typeof session.id}):`, session.id, `with selectedSessionId (${typeof selectedSessionId}):`, selectedSessionId, `Result: ${String(session.id) === selectedSessionId}`);
-            // Ensure type-safe comparison (IDs from <option> values are strings)
-            return String(session.id) === String(selectedSessionId);
-        });
-
-
-        console.log("Result of find:", foundSession);
-        return foundSession || null; // Return found session or explicitly null if find returns undefined
-
-    }, [selectedSessionId, sessions]);
-
-    // // Generate the data structure for the attendance list table
-    // const participantAttendanceList = useMemo<ParticipantAttendanceStatus[]>(() => {
-    //     console.log("Enter useMemo for participantAttendanceList");
-    //     if (!event || !event.participants || !selectedSessionId || attendanceRecords.length === 0) {
-    //         console.log("useMemo participantAttendanceList returning empty array");
-    //         return [];
-    //     }
-
-    //     const recordsForSelectedSession = attendanceRecords.filter(record => record.sessionId === selectedSessionId);
-    //     const attendedParticipantIds = new Set(recordsForSelectedSession.map(record => record.participantId));
-
-    //     const list = event.participants.map((participant: any) => {
-    //         const attended = attendedParticipantIds.has(participant.id);
-    //         const attendanceRecord = recordsForSelectedSession.find(record => record.participantId === participant.id);
-
-    //         return {
-    //             id: participant.id,
-    //             name: participant.name,
-    //             email: participant.email,
-    //             faculty: participant.faculty,
-    //             course: participant.course,
-    //             year: participant.year,
-    //             attended: attended,
-    //             attendanceTime: attendanceRecord?.timestamp,
-
-    //         };
-    //     });
-    //     console.log("useMemo participantAttendanceList result count:", list.length);
-    //     return list;
-
-    // }, [event, attendanceRecords, selectedSessionId]); // Depends on event, attendanceRecords, and selectedSessionId
-
 
     // --- Handlers ---
 
@@ -276,7 +238,6 @@ export default function EventAttendancePage() {
         setIsGeneratingQr(false);
         // qrCodeLoading and qrCodeError are handled by the effect now
     };
-
 
     // Handle opening the Generate QR Modal
     const handleOpenGenerateQrModal = () => {
@@ -321,7 +282,6 @@ export default function EventAttendancePage() {
         setIsGeneratingQr(false); // Ensure generating state is false
     };
 
-
     // Handle the actual QR code generation from the modal (using custom expiry)
     const handleGenerateQrCode = async () => {
         if (!numericEventId || !selectedSessionId) {
@@ -362,13 +322,11 @@ export default function EventAttendancePage() {
             }
         }
 
-
         // Clean up previous QR code URL before fetching the new one triggered by this button click
         if (qrCodeImageUrl) {
             URL.revokeObjectURL(qrCodeImageUrl);
         }
         setQrCodeImageUrl(null); // Clear the previous image while loading
-
 
         try {
             // Log the format being sent
@@ -388,7 +346,6 @@ export default function EventAttendancePage() {
                 throw new Error("Received empty or invalid response from QR generation.");
             }
 
-
         } catch (e: unknown) {
             console.error("Failed to generate QR code:", e);
             if (e instanceof Error) {
@@ -404,7 +361,6 @@ export default function EventAttendancePage() {
             // qrCodeLoading is managed by the effect
         }
     };
-
 
     // Handle downloading the fetched QR code image
     const handleDownloadQRCode = () => {
@@ -430,16 +386,6 @@ export default function EventAttendancePage() {
         // It's automatically called when qrCodeImageUrl changes or component unmounts.
     };
 
-
-    // Handle exporting attendance data (e.g., as CSV)
-    const handleExportAttendance = () => {
-        console.log("Exporting attendance data for event:", eventId);
-        // TODO: Implement logic to fetch and format attendanceRecords into CSV or other format
-        // This might be a separate API endpoint that returns a CSV file directly.
-        // Example: window.open(`/api/events/${eventId}/attendance/export-csv`);
-    };
-
-
     // --- Render Logic ---
     if (loading) {
         return (
@@ -461,7 +407,6 @@ export default function EventAttendancePage() {
 
     const sessionsExist = sessions && sessions.length > 0;
     // Use event?.participants.length > 0 or similar if fetching event data
-
 
     return (
         <div className="page-content-wrapper"> {/* Wrapper for padding/spacing */}
@@ -502,8 +447,6 @@ export default function EventAttendancePage() {
                 </div>
             )}
 
-
-
             {/* --- Attendance QR Code Section --- */}
             {/* Show QR code section if sessions exist */}
             {sessionsExist && (
@@ -524,10 +467,11 @@ export default function EventAttendancePage() {
                             // Case 4: Session is selected, QR code image is available, and no loading/error
                             <div className={styles["qr-code-section"]}>
                                 <div className={styles["qr-code-container"]}>
-                                    <img
+                                    <Image
                                         src={qrCodeImageUrl} // Use the dynamically generated object URL
                                         alt={`QR Code for ${selectedSession.sessionName}`}
-                                        style={{ width: 256, height: 256 }}
+                                        width={256}
+                                        height={256}
                                     />
                                 </div>
                                 <button className="button-secondary" onClick={handleDownloadQRCode}>
@@ -598,25 +542,11 @@ export default function EventAttendancePage() {
                 </div>
             )}
 
-
-
-
-            {/* --- Participants Attendance List Section --- */}
-            {/* Show list only if a session is selected */}
             {/* --- Participants Attendance List Section --- */}
             {/* Show list only if a session is selected */}
             {selectedSessionId && (
                 <div className="form-container"> {/* Use form-container for card styling */}
                     <h3>Participants Attendance - {selectedSession?.sessionName || 'Selected Session'}</h3> {/* Display selected session name */}
-
-                    {/* Export Button */}
-                    {/* {participants && (
-                        <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
-                            <button className="button-secondary" onClick={handleExportAttendance}>
-                                Export Attendance (CSV)
-                            </button>
-                        </div>
-                    )} */}
 
                     {/* Render the new ParticipantAttendanceTable component */}
                     <AttendanceTable

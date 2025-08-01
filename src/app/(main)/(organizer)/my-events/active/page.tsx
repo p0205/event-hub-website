@@ -58,7 +58,7 @@ export default function ActiveEventsPage() {
         }
       };
       fetchActiveEvents();
-    }, []); 
+    }, [user?.id]); 
   
     // --- Conditional Rendering based on Fetch Result ---
 
