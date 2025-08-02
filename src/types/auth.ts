@@ -27,5 +27,12 @@ interface UserSignUpDTO {
 
 }
 
+  // Add these methods to your existing authService
+
+  interface PasswordResetRequest {
+    email: string;
+    newPassword: string;
+  }
+
 // Export the interfaces so they can be used in other files
-export type { LoginCredentials, RegistrationData , UserSignUpDTO};
+export type { LoginCredentials, RegistrationData , UserSignUpDTO,PasswordResetRequest};

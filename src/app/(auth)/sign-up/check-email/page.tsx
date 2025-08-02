@@ -5,17 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState, FormEvent, useEffect } from 'react';
 
-interface UserSignUpDTO {
-    id: number;
-    email: string;
-    name: string;
-}
+
 
 const CheckEmailPage: React.FC = () => {
     const [email, setEmail] = useState<string>('');
     const [verificationCode, setVerificationCode] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
     const [showVerificationForm, setShowVerificationForm] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [resendTimer, setResendTimer] = useState<number>(0);

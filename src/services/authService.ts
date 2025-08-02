@@ -1,5 +1,5 @@
 // src/services/authService.ts
-import { UserSignUpDTO } from '@/types/auth';
+import { PasswordResetRequest, UserSignUpDTO } from '@/types/auth';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
 import { User } from '@/types/user';
@@ -60,10 +60,11 @@ const authService = {
     }
   },
 
-  verifyCode: async (email: string, code:string): Promise<User | null> => {
+  verifyCode: async (email: string, code: string): Promise<User | null> => {
     try {
-      const response = await api.get('/auth/verify-code', { params: { email,code } });
+      const response = await api.get('/auth/verify-code', { params: { email, code } });
       // If valid email found, backend returns userDTO
+      console.log(response.data);
       return response.data as UserSignUpDTO;
     } catch (error: unknown) {
       throw new Error('Invalid Verification Code');
@@ -94,6 +95,71 @@ const authService = {
       throw new Error(errorResponse.response?.data?.message || 'Sign Out failed');
     }
   },
+
+
+
+  // Method to request password reset (forgot password)
+  requestResetPasswordOTP: async (email: string): Promise<string> => {
+    try {
+      const response = await api.get('/auth/reset-password/send-code', {
+        params: { email }
+      });
+      return response.data; // "Reset OTP sent to your email."
+    } catch (error: unknown) {
+      const errorResponse = error as { response?: { status?: number; data?: string } };
+      if (errorResponse.response) {
+        if (errorResponse.response.status === HttpStatusCode.NotFound) {
+          throw new Error('Email not found in our system.');
+        } else if (errorResponse.response.data) {
+          throw new Error(errorResponse.response.data);
+        }
+      }
+      throw new Error('Failed to send reset email. Please try again.');
+    }
+  },
+
+  verifyResetPasswordCode: async (email: string, code: string): Promise<boolean | null> => {
+    try {
+      const response = await api.get('/auth/verify-password-reset-code', { params: { email, code } });
+      console.log(response.status);
+      return true;
+    } catch (error: unknown) {
+      throw new Error('Invalid Verification Code');
+    }
+  },
+
+
+
+  // Method to reset password with token
+  resetPassword: async (email: string, newPassword: string): Promise<string> => {
+    try {
+      const requestBody: PasswordResetRequest = {
+        email: email,
+        newPassword: newPassword
+      };
+
+      const response = await api.post('/auth/reset-password', requestBody);
+      return response.data; // "Password reset successful."
+    } catch (error: unknown) {
+      const errorResponse = error as { response?: { status?: number; data?: string } };
+      if (errorResponse.response) {
+        if (errorResponse.response.status === HttpStatusCode.BadRequest) {
+          // Token expired, invalid, or other validation errors
+          const errorMessage = errorResponse.response.data;
+          if (errorMessage?.includes('expired')) {
+            throw new Error('Reset token has expired. Please request a new password reset link.');
+          } else if (errorMessage?.includes('invalid')) {
+            throw new Error('Invalid reset token. Please request a new password reset link.');
+          } else {
+            throw new Error(errorMessage || 'Invalid request. Please check your input.');
+          }
+        } else if (errorResponse.response.data) {
+          throw new Error(errorResponse.response.data);
+        }
+      }
+      throw new Error('Failed to reset password. Please try again.');
+    }
+  }
 };
 
 export default authService;
