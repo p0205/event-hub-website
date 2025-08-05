@@ -1,5 +1,5 @@
 // src/services/budgetService.ts
-import { Role, SearchUserInTeam, TeamMember } from '@/types/event';
+import { Role, SearchUserInTeam, TeamEventList, TeamMember } from '@/types/event';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
 import { PageData } from '@/types/api';
@@ -55,21 +55,48 @@ const teamService = {
         return;
     },
 
-    searchUserInTeam: async(eventId: number, query: string, roleId:number): Promise<SearchUserInTeam[]> => { // Replace 'any' with actual types
-    const response = await api.get(`/events/${eventId}/teams/search`,
-        {
-            params:
+    searchUserInTeam: async (eventId: number, query: string, roleId: number): Promise<SearchUserInTeam[]> => { // Replace 'any' with actual types
+        const response = await api.get(`/events/${eventId}/teams/search`,
             {
-                query,
-                roleId
+                params:
+                {
+                    query,
+                    roleId
+                }
+            }
+        );
+        if (response.status !== HttpStatusCode.Ok) {
+            throw new Error('Failed to search team member');
+        }
+        return response.data;
+    },
+
+    fetchTeamEvents:
+        async (userId: number): Promise<TeamEventList> => {
+            try {
+                // Updated to match your backend API endpoint
+                const response = await api.get(`/events/team-events`, {
+                    params:
+                    {
+                        'userId' : userId
+                    }
+                });
+
+                if (response.status!=HttpStatusCode.Ok) {
+                    const errorText = await response.data();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                console.log(response.status);
+                console.log(response.data);
+        
+                
+                return response.data;
+            } catch (error) {
+                console.error('Error fetching team events:', error);
+                throw error;
             }
         }
-    );
-    if (response.status !== HttpStatusCode.Ok) {
-        throw new Error('Failed to search team member');
-    }
-    return response.data;
-}
+
 };
 
 export default teamService;

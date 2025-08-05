@@ -210,7 +210,7 @@ export default function EventAttendancePage() {
             }
         };
 
-    }, [selectedSessionId, numericEventId, sessions, qrCodeImageUrl, selectedSession?.qrCodeImage]); // Add all dependencies for cleanup correctness
+    }, [selectedSessionId, numericEventId, sessions, selectedSession?.qrCodeImage]); // Add all dependencies for cleanup correctness
 
     useEffect(() => {
         fetchParticipants(currentPage, pageSize);

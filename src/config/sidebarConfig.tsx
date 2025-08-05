@@ -16,10 +16,11 @@ interface SidebarNavItem {
 // Define the navigation items with icons, labels, and role restrictions
 const navigationItems: SidebarNavItem[] = [
     // Using the imported components as JSX elements (values)
-    { label: 'Home', href: '/', icon: <FaHome />, roles: ['EVENT ORGANIZER', 'Participant'] },
+    { label: 'Home', href: '/', icon: <FaHome />, roles: ['EVENT ORGANIZER'] },
     { label: 'Dashboard', href: '/dashboard', icon: <FaChartLine />, roles: ['ADMIN'] },
-    { label: 'Create Event', href: '/create-event', icon: <FaCalendarPlus />, roles: [ 'EVENT ORGANIZER', 'Participant'] },
-    { label: 'My Events', href: '/my-events', icon: <FaCalendarAlt />, roles: [ 'EVENT ORGANIZER', 'Participant'] },
+    { label: 'Create Event', href: '/create-event', icon: <FaCalendarPlus />, roles: [ 'EVENT ORGANIZER'] },
+    { label: 'My Events', href: '/my-events', icon: <FaCalendarAlt />, roles: [ 'EVENT ORGANIZER'] },
+    { label: 'My Teams', href: '/my-teams', icon: <FaUsers />, roles: [ 'EVENT ORGANIZER'] },
     // { label: 'Notifications', href: '/notifications', icon: <FaBell />, roles: ['Admin', 'Event Organizer', 'Participant'] },
    
     { label: 'Budgets', href: '/budgets', icon: <FaDollarSign />, roles: ['ADMIN'] },

@@ -1,0 +1,89 @@
+// src/components/EventCard.tsx
+import { EventStatus, SimpleTeamEvent } from '@/types/event';
+import Link from 'next/link';
+import React from 'react';
+
+export default function EventCard({ event }: { event: SimpleTeamEvent }) {
+    // Determine a simple visual representation (like initials) based on the title
+    const initials = event.name.split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .substring(0, 2) // Take up to 2 initials
+        .toUpperCase();
+
+    // Determine a color based on status (example)
+    const statusColor = () => {
+        switch (event.status) {
+            case EventStatus.ACTIVE: return 'bg-green-500'; // Example Tailwind classes or use CSS variables
+            case EventStatus.COMPLETED: return 'bg-gray-500';
+            default: return 'bg-blue-500';
+        }
+    };
+
+    // Parse roles - handle both string and array formats
+    const parseRoles = (roles: string | string[]) => {
+        if (Array.isArray(roles)) {
+            return roles;
+        }
+        // If it's a string, split by common delimiters
+        return roles.split(/[,;|]/).map(role => role.trim()).filter(role => role.length > 0);
+    };
+
+    const rolesArray = parseRoles(event.roles);
+    const maxVisibleRoles = 3;
+    const visibleRoles = rolesArray.slice(0, maxVisibleRoles);
+    const remainingRolesCount = rolesArray.length - maxVisibleRoles;
+
+
+    return (
+        // Wrap the card content in a Next.js Link for navigation
+        <Link href={`/my-teams/${event.status.toLowerCase()}/${event.id}`} className="event-card-link" passHref>
+            {/* Use an anchor tag for semantic correctness and apply styles */}
+            <div className="event-card"> {/* The card container */}
+                <div className={`event-card-icon ${statusColor()}`}> {/* Icon/Initials area */}
+                    {/* You could use an actual icon here based on event type or status */}
+                    <span>{initials}</span>
+                </div>
+                <div className="event-card-content"> {/* Event Title and other info */}
+                    <h3 className="event-card-title">{event.name}</h3>
+                    {/* Roles - New addition */}
+                    {/* Roles Section */}
+                    <div className="space-y-2">
+                        <span className="text-sm font-medium text-gray-600">Roles:</span>
+
+                        {/* Roles Container */}
+                        <div className="flex flex-wrap gap-1.5">
+                            {visibleRoles.map((role, index) => (
+                                <span
+                                    key={index}
+                                    className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                                >
+                                    {role}
+                                </span>
+                            ))}
+
+                            {/* Show remaining roles count if there are more */}
+                            {remainingRolesCount > 0 && (
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 border border-gray-300">
+                                    +{remainingRolesCount} more
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Show all roles on hover for cards with many roles */}
+                        {remainingRolesCount > 0 && (
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
+                                <div className="text-xs text-gray-500 bg-gray-50 rounded-md p-2 border">
+                                    <span className="font-medium">All roles: </span>
+                                    {rolesArray.join(', ')}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+
+            </div>
+        </Link>
+    );
+}

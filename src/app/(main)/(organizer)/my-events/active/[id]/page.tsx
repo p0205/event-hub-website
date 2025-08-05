@@ -70,48 +70,8 @@ export default function ActiveEventDetailsPage() {
 
     fetchEventDetails();
 
-    console.log("BUDGET");
-    console.log(event?.eventBudgets[0].budgetCategoryName);
 
-  }, [eventId,event?.eventBudgets]); // Refetch if eventId changes
-
-  // // Effect 2: Process sessions AFTER event data is loaded
-  // useEffect(() => {
-  //   // Only run if event data exists, has venues, and sessions aren't already loaded/loading
-  //   if (event && event.sessions && event.sessions.length > 0 && sessions.length === 0 && !loadingSessions) {
-  //     const processSessions = async () => {
-  //       setLoadingSessions(true);
-  //       setSessionError(null);
-  //       try {
-  //         // Call the async groupSessions function
-  //         const sessions = await groupSessions(event.eventVenues ?? []);
-  //         setGroupedSessionsData(sessions); // Store results in state
-  //       } catch (err: any) {
-  //         console.error("Error processing sessions:", err);
-  //         setSessionError("Failed to load session details."); // Set session-specific error
-  //       } finally {
-  //         setLoadingSessions(false);
-  //       }
-  //     };
-  //     processSessions();
-  //   } else if (event && (!event.eventVenues || event.eventVenues.length === 0)) {
-  //        // Handle case where event exists but has no venues
-  //        set([]);
-  //        setLoadingSessions(false);
-  //   }
-
-  //   // Intentionally NOT depending on groupedSessionsData to avoid loops
-  //   // Only depends on 'event' state changing and 'loadingSessions' state
-  // }, [event, loadingSessions]); // Rerun when event data is fetched or if loading state changes
-
-
-  // --- Handlers (Keep as they are, they correctly use async/await internally) ---
-  // const handleEditClick = () => {
-  //   setIsEditing(!isEditing);
-  //   console.log('Edit Event clicked');
-  // };
-
-
+  }, [eventId]); // Refetch if eventId changes
   // --- Rendering Logic ---
   if (loading) {
     return <div className="page-container"><p className="loading-message">Loading event details...</p></div>;
@@ -140,6 +100,9 @@ export default function ActiveEventDetailsPage() {
         <div className="flex justify-between items-center">
 
         </div>
+        {event.organizerName !== undefined && (
+          <p><strong>Organizer:</strong> {event.organizerName}</p>
+        )}
 
         <p><strong>Status:</strong> {event.status.replace('_', ' ')}</p>
         {event.participantsNo !== undefined && (

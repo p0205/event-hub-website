@@ -82,14 +82,7 @@ export default function EventsLandingPage() {
     fetchEvents();
   }, [user]); // Empty dependency array means run once on mount
 
-  if (loading) {
-    return (
-      <div className="page-container"> {/* Reuse page container style */}
-        <h1>My Events</h1>
-        <p className="loading-message">Loading events...</p> {/* Reuse loading message style */}
-      </div>
-    );
-  }
+
 
   if (error) {
     return (
@@ -103,8 +96,15 @@ export default function EventsLandingPage() {
   return (
     <div className="page-container"> {/* Reuse page container style */}
       {/* Breadcrumbs will be rendered by the layout */}
-      <h1>My Events</h1>
-
+      
+      <div className='page-header'>
+                <div className={'page-title-section'}>
+                    <h2>My Events</h2>
+                    <p className={'page-subtitle'}>
+                    Events you created and manage as the organizer.
+                    </p>
+                </div>
+            </div>
 
       {/* Search Bar */}
       <div className="event-search-bar" style={{ marginBottom: '30px' }}>

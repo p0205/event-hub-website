@@ -439,8 +439,14 @@ export default function CreateEventPage() {
             // Process Budgets (Structure matches backend EventBudgetDTO)
             // Filter out budgets without a category or allocated amount
             const processedBudgets = formData.eventBudgets
-                .filter(budget => budget.budgetCategoryId !== undefined && budget.budgetCategoryId !== null && budget.amountAllocated !== null && budget.amountAllocated !== undefined)
-                .map((budget, index) => {
+                .filter(budget =>
+                    budget.budgetCategoryId !== undefined &&
+                    budget.budgetCategoryId !== null &&
+                    budget.amountAllocated !== null &&
+                    budget.amountAllocated !== undefined &&
+               
+                    Number(budget.amountAllocated) > 0
+                ).map((budget, index) => {
                     const amountAllocatedNum = Number(budget.amountAllocated);
                     if (isNaN(amountAllocatedNum) || amountAllocatedNum <= 0) { // Ensure positive allocation
                         throw new Error(`Invalid or non-positive allocated amount for Budget item ${index + 1} (${budget.budgetCategoryName || 'Unknown Category'}). Amount must be greater than 0.`);
@@ -721,7 +727,6 @@ export default function CreateEventPage() {
                                                 value={item.budgetCategoryName} // Use categoryName from state
                                                 onChange={(e) => handleBudgetChange(item.id, "categoryName", e.target.value)} // Pass categoryName
                                                 className="form-input"
-                                                required // Make category selection required
                                                 disabled={isLoading}
                                             >
                                                 <option value="">Select Category</option>
@@ -750,7 +755,6 @@ export default function CreateEventPage() {
                                                 className="form-input"
                                                 min="0"
                                                 step="0.01"
-                                                required // Make amount required
                                                 disabled={isLoading}
                                             />
                                         </div>

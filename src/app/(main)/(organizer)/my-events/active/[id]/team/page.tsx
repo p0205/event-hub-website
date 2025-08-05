@@ -25,7 +25,6 @@ export default function EventTeamPage() {
     // --- State for team members pagination
     const [currentPageNo, setCurrentPageNo] = useState(0);
     const [pageSize, setPageSize] = useState(5);
-    // const [sortBy, setSortBy] = useState<string>("user.name");
     const [totalPages, setTotalPages] = useState(0);
     const [totalMembers, setTotalMembers] = useState(0);
 

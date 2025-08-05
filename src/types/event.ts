@@ -303,10 +303,23 @@ export interface SimpleEvent {
     createdAt: string;
 }
 
+
+export interface SimpleTeamEvent {
+    id: number;
+    name: string;
+    startDateTime: string;
+    status: EventStatus;
+    roles: string;
+}
+
 export interface EventList {
     pendingEvents: SimpleEvent[];
     activeEvents: SimpleEvent[];
     completedEvents: SimpleEvent[];
+}
+export interface TeamEventList {
+    ACTIVE: SimpleTeamEvent[];
+    COMPLETED: SimpleTeamEvent[];
 }
 
 export interface Role {
