@@ -199,7 +199,7 @@ export default function EventAttendancePage() {
                 URL.revokeObjectURL(qrCodeImageUrl);
             }
         };
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedSessionId, numericEventId, sessions, selectedSession?.qrCodeImage]); // Add all dependencies for cleanup correctness
 
     useEffect(() => {

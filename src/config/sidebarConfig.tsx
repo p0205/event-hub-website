@@ -2,7 +2,7 @@
 import React from 'react'; // Still need React for JSX compilation in some setups
 // Import the IconType as well, although it's not used directly in the interface,
 // it might help TS understand the imports are component types.
-import { FaHome, FaCalendarAlt, FaUsers, FaChartBar, FaDollarSign,FaUser, FaChartLine, FaCalendarPlus } from 'react-icons/fa';
+import { FaHome, FaCalendarAlt, FaUsers, FaChartBar, FaDollarSign,FaUser, FaChartLine, FaCalendarPlus, FaMap } from 'react-icons/fa';
 
 
 // Define the structure for a navigation item
@@ -10,21 +10,22 @@ interface SidebarNavItem {
     href: string; // The path to navigate to
     icon: React.ReactNode; // <-- Correct type: React.ReactNode (Represents the JSX element)
     label: string; // The text label for the link - THIS IS REQUIRED
-    roles?: ('ADMIN' | 'EVENT ORGANIZER' | 'Participant' | 'Guest')[];
+    roles?: ('ADMIN' | 'EVENT ORGANIZER' | 'PARTICIPANT' )[];
 }
 
 // Define the navigation items with icons, labels, and role restrictions
 const navigationItems: SidebarNavItem[] = [
     // Using the imported components as JSX elements (values)
-    { label: 'Home', href: '/', icon: <FaHome />, roles: ['EVENT ORGANIZER'] },
+    { label: 'Home', href: '/', icon: <FaHome />, roles: ['EVENT ORGANIZER','PARTICIPANT'] },
     { label: 'Dashboard', href: '/dashboard', icon: <FaChartLine />, roles: ['ADMIN'] },
     { label: 'Create Event', href: '/create-event', icon: <FaCalendarPlus />, roles: [ 'EVENT ORGANIZER'] },
     { label: 'My Events', href: '/my-events', icon: <FaCalendarAlt />, roles: [ 'EVENT ORGANIZER'] },
-    { label: 'My Teams', href: '/my-teams', icon: <FaUsers />, roles: [ 'EVENT ORGANIZER'] },
+    { label: 'My Teams', href: '/my-teams', icon: <FaUsers />, roles: [ 'EVENT ORGANIZER','PARTICIPANT'] },
     // { label: 'Notifications', href: '/notifications', icon: <FaBell />, roles: ['Admin', 'Event Organizer', 'Participant'] },
    
     { label: 'Budgets', href: '/budgets', icon: <FaDollarSign />, roles: ['ADMIN'] },
     { label: 'Team Roles', href: '/roles', icon: <FaUser />, roles: ['ADMIN'] },
+    { label: 'Venues', href: '/venues', icon: <FaMap />, roles: ['ADMIN'] },
     { label: 'Users', href: '/users', icon: <FaUsers />, roles: ['ADMIN'] },
     { label: 'Reports', href: '/reports', icon: <FaChartBar />, roles: ['ADMIN'] },
 

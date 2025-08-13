@@ -24,7 +24,6 @@ export default function MyTeamsPage() {
   const { user } = useAuth();
   const [activeEvents, setActiveEvents] = useState<SimpleTeamEvent[]>([]);
   const [completedEvents, setCompletedEvents] = useState<SimpleTeamEvent[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -77,7 +76,6 @@ export default function MyTeamsPage() {
 
   useEffect(() => {
     const fetchTeamEvents = async () => {
-      setLoading(true);
       setError(null);
       try {
         if (!user) return; // Do nothing if user is null
@@ -107,9 +105,7 @@ export default function MyTeamsPage() {
       } catch (e: unknown) {
         console.error("Failed to fetch team events:", e);
         setError(`Failed to load team events: ${e || 'Unknown error'}`);
-      } finally {
-        setLoading(false);
-      }
+      } 
     };
 
     fetchTeamEvents();
@@ -145,7 +141,7 @@ export default function MyTeamsPage() {
         <div className={'page-title-section'}>
           <h2>My Teams</h2>
           <p className={'page-subtitle'}>
-            Events where you're part of the team, invited by another organizer.
+            Events where you&apos;re part of the team, invited by another organizer.
           </p>
         </div>
       </div>

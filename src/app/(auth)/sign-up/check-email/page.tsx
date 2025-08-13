@@ -76,7 +76,7 @@ const CheckEmailPage: React.FC = () => {
             setCanResend(false);
             setError(null);
         } catch (err) {
-            setError('Failed to send verification code. Please try again.');
+            setError('Failed to send verification code. Please try again. Error: ' + err);
         }
     };
 
@@ -124,7 +124,7 @@ const CheckEmailPage: React.FC = () => {
         try {
             await sendVerificationCode();
         } catch (err) {
-            setError('Failed to resend verification code. Please try again.');
+            setError('Failed to resend verification code. Please try again. Error: ' + err);
         } finally {
             setIsLoading(false);
         }
@@ -193,7 +193,7 @@ const CheckEmailPage: React.FC = () => {
                     <form onSubmit={handleVerificationSubmit}>
                         <div className="mb-4">
                             <p className="text-sm text-gray-600 mb-4">
-                                We've sent a verification code to <strong>{email}</strong>
+                            We&apos;ve sent a verification code to <strong>{email}</strong>
                             </p>
                             <button
                                 type="button"

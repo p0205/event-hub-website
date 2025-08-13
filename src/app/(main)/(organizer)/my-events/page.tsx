@@ -25,7 +25,6 @@ export default function EventsLandingPage() {
   const [activeEvents, setActiveEvents] = useState<SimpleEvent[]>([]);
   // const [pendingEvents, setPendingEvents] = useState<SimpleEvent[]>([]);
   const [completedEvents, setCompletedEvents] = useState<SimpleEvent[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -62,7 +61,6 @@ export default function EventsLandingPage() {
   // Fetch events when the component mounts
   useEffect(() => {
     const fetchEvents = async () => {
-      setLoading(true);
       setError(null);
       try {
         if (!user) return; // Do nothing if user is null
@@ -74,8 +72,6 @@ export default function EventsLandingPage() {
       } catch (e: unknown) {
         console.error("Failed to fetch events:", e);
         setError(`Failed to load events: ${e || 'Unknown error'}`);
-      } finally {
-        setLoading(false);
       }
     };
 

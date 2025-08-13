@@ -24,7 +24,7 @@ const formatSegment = (segment: string) => {
 // This Server Component receives the catch-all params
 export default async function BreadcrumbSlot({
     params,
-}: { params: { all: string[] } }) {
+}: { params: Promise<{ all: string[] }> }) {
 
     // >>> AWAIT params before accessing its properties <<<
     // This resolves the Next.js error.

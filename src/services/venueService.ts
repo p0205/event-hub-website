@@ -2,6 +2,7 @@
 import { Venue } from '@/types/event';
 import api from './api'; // Import the central API client
 import { HttpStatusCode } from 'axios';
+import { PageData } from '@/types/api';
 
 const venueService = {
     addVenue: async (venue: Venue): Promise<Venue> => { // Replace 'any' with actual types
@@ -44,6 +45,30 @@ const venueService = {
         if (response.status !== HttpStatusCode.NoContent) {
             throw new Error('Failed to delete venue');
         }
+    },
+
+
+    updateVenue: async (id: number, venue: Venue): Promise<Venue> => {
+        const response = await api.patch<Venue>(`/venue`,venue);
+        if(response.status !== HttpStatusCode.Ok) {
+            throw new Error('Failed to update venue. Please try again.');
+        }
+        return response.data;
+    },
+
+    fetchVenuesInPage: async (floorLevel?: number ,pageNumber?:number, pageSize?:number):Promise<PageData<Venue>> => {
+        const response = await api.get<PageData<Venue>>(`/venue/page`,{
+            params: {
+                floorLevel: floorLevel,
+                pageNumber: pageNumber,
+                pageSize: pageSize
+            }
+        });
+        if(response.status!=HttpStatusCode.Ok){
+            throw new Error('Failed to fetch venues. Please try again.');
+        }
+        console.log(response.data);
+        return response.data;
     },
 
 };

@@ -1,7 +1,7 @@
 // --- eventService.ts ---
 import { HttpStatusCode } from 'axios';
 import api from './api'; // Import the central API client
-import { CalendarEvent, DemographicsSummary, Event, EventDetails, EventList, SimpleEvent } from '@/types/event';
+import { CalendarEvent, DemographicsSummary, Event, EventDetails, EventList, EventStatusCard, SimpleEvent } from '@/types/event';
 import { User } from '@/types/user';
 import { PageData } from '@/types/api';
 
@@ -38,6 +38,7 @@ interface EventService {
   getParticipantsDemographicsByEventId: (eventId: number)=> Promise<DemographicsSummary>;
   saveParticipants: (eventId: number, participantList: User[]) => Promise<User[]>;
   deleteParticipants: (eventId: number, participantId: number) => Promise<void>;
+  getEventNumberByStatus : (userId: number)=> Promise<EventStatusCard[]>;
   getCalendarEvents: (userId: number) => Promise<CalendarEvent[]>;
   getAllCalendarEventsByMonth: (startDateTime: string, endDateTime:string) => Promise<CalendarEvent[]>;
   getEventDetails: (eventId: number) => Promise<EventDetails>;
@@ -257,6 +258,15 @@ const eventService: EventService = {
     }
   },
 
+  getEventNumberByStatus : async (userId: number): Promise<EventStatusCard[]> => {
+    const response = await api.get<EventStatusCard[]>(`/events/${userId}/event-number-by-status`);
+    if (response.status !== HttpStatusCode.Ok) {
+      throw new Error('Failed to fetch number of events by status ');
+    }
+    console.log(response.data);
+    return response.data;
+  },
+  
   getCalendarEvents: async (userId: number): Promise<CalendarEvent[]> => {
     const response = await api.get<CalendarEvent[]>(`/events/calendar`, {
       params: { userId }

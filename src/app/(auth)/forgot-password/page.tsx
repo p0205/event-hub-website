@@ -196,12 +196,6 @@ const ForgotPasswordPage: React.FC = () => {
         setCanResend(true);
     };
 
-    const handleBackToOTP = () => {
-        setCurrentStep('otp');
-        setNewPassword('');
-        setConfirmPassword('');
-        setError(null);
-    };
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -251,7 +245,7 @@ const ForgotPasswordPage: React.FC = () => {
                 {currentStep === 'email' && (
                     <>
                         <p className="text-sm text-gray-600 mb-6">
-                            Enter your email address and we'll send you an OTP to reset your password.
+                            Enter your email address and we&apos;ll send you an OTP to reset your password.
                         </p>
 
                         <form onSubmit={handleEmailSubmit}>
@@ -303,7 +297,7 @@ const ForgotPasswordPage: React.FC = () => {
                     <>
                         <div className="mb-4">
                             <p className="text-sm text-gray-600 mb-4">
-                                We've sent a verification code to <strong>{email}</strong>
+                            We&apos;ve sent a verification code to <strong>{email}</strong>
                             </p>
                             <button
                                 type="button"
@@ -374,7 +368,7 @@ const ForgotPasswordPage: React.FC = () => {
                     <>
                         <div className="mb-4">
                             <p className="text-sm text-gray-600 mb-4">
-                                Email verified! Enter your new password.
+                            Email verified! Enter your new password.
                             </p>
                            
                         </div>

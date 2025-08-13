@@ -1,12 +1,12 @@
 // src/app/my-events/[id]/team/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 
 import styles from './team.module.css'; // Create this CSS module
 import teamService from '@/services/teamService';
-import { Role, TeamMember } from '@/types/event'; // Ensure TeamMember type includes userId, name, email, role
+import {TeamMember } from '@/types/event'; // Ensure TeamMember type includes userId, name, email, role
 
 export default function EventTeamPage() {
     const params = useParams();
@@ -14,7 +14,6 @@ export default function EventTeamPage() {
 
     // --- State for data and loading ---
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-    const [teamRoles, setTeamRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -24,9 +23,6 @@ export default function EventTeamPage() {
     // const [sortBy, setSortBy] = useState<string>("user.name");
     const [totalPages, setTotalPages] = useState(0);
     const [totalMembers, setTotalMembers] = useState(0);
-
-    // --- State for the Add Member Modal ---
-    const [showAddMemberModal, setShowAddMemberModal] = useState(false); // Controls modal visibility
 
     // --- Data Loading (fetch team members) ---
     useEffect(() => {
@@ -55,28 +51,7 @@ export default function EventTeamPage() {
         loadTeamData();
     }, [eventId, currentPageNo, pageSize]); // Rerun if eventId or trigger changes
 
-    // --- Data Loading (fetch roles - triggered when modal is shown) ---
-    useEffect(() => {
-        const loadRoles = async () => {
-            // Use a specific loading state for roles if needed, or just reuse 'searching' briefly
-            try {
-                const data = await teamService.getRoles();
-                setTeamRoles(data);
-            } catch (e: unknown) {
-                console.error("Error loading team roles:", e);
-            } 
-        };
-
-        if (showAddMemberModal) {
-            console.log("Add Member Modal is open, loading roles...");
-            loadRoles();
-        } else {
-            // --- Cleanup modal state when it closes ---
-            setTeamRoles([]);
-        }
-
-    }, [showAddMemberModal]); // Dependency array: rerun effect when showAddMemberModal changes
-
+    
 
     // --- Handlers ---
     // Handle pagination
@@ -114,11 +89,6 @@ export default function EventTeamPage() {
     const startIndex = (currentPageNo * pageSize) + 1;
     const endIndex = Math.min((currentPageNo + 1) * pageSize, totalMembers); // Ensure end index doesn't exceed total items
 
-    // --- Modal Close Handler ---
-    const closeModal = () => {
-        setShowAddMemberModal(false);
-        // State cleanup happens via useEffect dependency
-    };
 
     return (
         <div className="page-content-wrapper">

@@ -4,7 +4,7 @@
 import { authService } from '@/services';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import React, { useState, FormEvent,Suspense } from 'react';
+import React, { useState, FormEvent, Suspense } from 'react';
 
 const SignUpForm: React.FC = () => {
   const searchParams = useSearchParams();
@@ -20,6 +20,42 @@ const SignUpForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+
+   // Password validation functions
+   const validatePassword = (password: string) => {
+    const requirements = {
+      minLength: password.length >= 8,
+      hasLowercase: /(?=.*[a-z])/.test(password),
+      hasUppercase: /(?=.*[A-Z])/.test(password),
+      hasNumber: /(?=.*\d)/.test(password),
+      hasSpecialChar: /(?=.*[@$!%*?&])/.test(password)
+    };
+    
+    return requirements;
+  };
+
+  const isPasswordValid = (password: string) => {
+    const requirements = validatePassword(password);
+    return Object.values(requirements).every(Boolean);
+  };
+
+  const getPasswordErrorMessage = (password: string) => {
+    const requirements = validatePassword(password);
+    const failedRequirements = [];
+    
+    if (!requirements.minLength) failedRequirements.push('at least 8 characters');
+    if (!requirements.hasLowercase) failedRequirements.push('one lowercase letter');
+    if (!requirements.hasUppercase) failedRequirements.push('one uppercase letter');
+    if (!requirements.hasNumber) failedRequirements.push('one number');
+    if (!requirements.hasSpecialChar) failedRequirements.push('one special character (@$!%*?&)');
+    
+    if (failedRequirements.length > 0) {
+      return `Password must contain: ${failedRequirements.join(', ')}.`;
+    }
+    return null;
+  };
+
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
@@ -30,8 +66,9 @@ const SignUpForm: React.FC = () => {
       setIsLoading(false);
       return;
     }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long.');
+      if (!isPasswordValid(password)) {
+      const errorMessage = getPasswordErrorMessage(password);
+      setError(errorMessage);
       setIsLoading(false);
       return;
     }
@@ -158,6 +195,33 @@ const SignUpForm: React.FC = () => {
                 Show password
               </label>
             </div>
+            {/* Password Requirements */}
+            <div className="mb-4 p-3 bg-gray-50 rounded-md">
+              <p className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</p>
+              <ul className="text-xs text-gray-600 space-y-1">
+                <li className={`flex items-center gap-2 ${password.length >= 8 ? 'text-green-600' : ''}`}>
+                  <span className={`w-2 h-2 rounded-full ${password.length >= 8 ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                  At least 8 characters
+                </li>
+                <li className={`flex items-center gap-2 ${/(?=.*[a-z])/.test(password) ? 'text-green-600' : ''}`}>
+                  <span className={`w-2 h-2 rounded-full ${/(?=.*[a-z])/.test(password) ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                  One lowercase letter
+                </li>
+                <li className={`flex items-center gap-2 ${/(?=.*[A-Z])/.test(password) ? 'text-green-600' : ''}`}>
+                  <span className={`w-2 h-2 rounded-full ${/(?=.*[A-Z])/.test(password) ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                  One uppercase letter
+                </li>
+                <li className={`flex items-center gap-2 ${/(?=.*\d)/.test(password) ? 'text-green-600' : ''}`}>
+                  <span className={`w-2 h-2 rounded-full ${/(?=.*\d)/.test(password) ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                  One number
+                </li>
+                <li className={`flex items-center gap-2 ${/(?=.*[@$!%*?&])/.test(password) ? 'text-green-600' : ''}`}>
+                  <span className={`w-2 h-2 rounded-full ${/(?=.*[@$!%*?&])/.test(password) ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                  One special character (@$!%*?&)
+                </li>
+              </ul>
+            </div>
+
 
             <div className='form-group'>
               <label htmlFor="phone" className="form-label">

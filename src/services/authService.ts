@@ -35,9 +35,14 @@ const authService = {
       return response.data as User; // e.g., user info or success message
     } catch (error: unknown) {
       // Handle login error (wrong credentials, server error, etc.)
-      const errorResponse = error as { response?: { data?: { message?: string } } };
-      throw new Error(errorResponse.response?.data?.message || 'Login failed');
+      const axiosError = error as {
+        response?: { data?: { message?: string } }
+      };
+  
+      const errorMessage = axiosError.response?.data?.message || 'Login failed';
+      throw new Error(errorMessage); // Pass the backend error to the UI
     }
+
   },
 
   checkEmail: async (email: string): Promise<boolean> => {
@@ -67,7 +72,7 @@ const authService = {
       console.log(response.data);
       return response.data as UserSignUpDTO;
     } catch (error: unknown) {
-      throw new Error('Invalid Verification Code');
+      throw new Error('Invalid Verification Code. Error: ' + error);
     }
   },
 
@@ -124,7 +129,9 @@ const authService = {
       console.log(response.status);
       return true;
     } catch (error: unknown) {
-      throw new Error('Invalid Verification Code');
+      console.log("Error: " + error);
+      throw new Error('Invalid Verification Code.');
+      
     }
   },
 

@@ -12,7 +12,7 @@ import navigationItems from '@/config/sidebarConfig';
 import { useAuth } from '@/context/AuthContext'
 
 // Define valid roles type
-type ValidRole = 'ADMIN' | 'EVENT ORGANIZER' | 'Participant' | 'Guest';
+type ValidRole = 'ADMIN' | 'EVENT ORGANIZER' | 'PARTICIPANT' ;
 
 export default function Sidebar() {
   const pathname = usePathname();

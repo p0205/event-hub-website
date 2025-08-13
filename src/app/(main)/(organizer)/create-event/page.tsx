@@ -624,7 +624,7 @@ export default function CreateEventPage() {
                     <div className="form-section">
                         <h2>Event Details</h2>
                         <div className="form-group">
-                            <label htmlFor="name" className="form-label">Event Title:</label>
+                            <label htmlFor="name" className="form-label">Event Title:<span style={{ color: 'red' }}> *</span></label>
                             <input
                                 type="text"
                                 id="name"
@@ -649,7 +649,7 @@ export default function CreateEventPage() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="type" className="form-label">Event Type:</label>
+                            <label htmlFor="type" className="form-label">Event Type:<span style={{ color: 'red' }}> *</span></label>
                             <select
                                 id="type"
                                 name="type"
@@ -668,7 +668,7 @@ export default function CreateEventPage() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="participantsNo" className="form-label">Total Expected Participants:</label>
+                            <label htmlFor="participantsNo" className="form-label">Total Expected Participants:<span style={{ color: 'red' }}> *</span></label>
                             <input
                                 type="number"
                                 id="participantsNo"
@@ -761,7 +761,7 @@ export default function CreateEventPage() {
 
                                         {/* Remove Budget Item Button */}
                                         {/* Only show remove button if there's more than one budget item */}
-                                        {formData.eventBudgets.length > 1 && (
+                                        {formData.eventBudgets.length >= 1 && (
                                             <button
                                                 type="button"
                                                 onClick={() => handleRemoveBudget(item.id)}
@@ -813,7 +813,7 @@ export default function CreateEventPage() {
                     {/* --- Sessions Section (Venue & Time) --- */}
                     <div className="form-section">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '1rem' }}>
-                            <h2>Event Sessions</h2> {/* Updated section title */}
+                            <h2>Event Sessions<span style={{ color: 'red' }}> *</span></h2> {/* Updated section title */}
                             {/* Button to Add More Session Blocks */}
                             <button
                                 type="button"
@@ -958,7 +958,7 @@ export default function CreateEventPage() {
                                                         </label>
 
                                                         {/* Remove button */}
-                                                        {(session.venueIds || []).length > 1 && (
+                                                        {(session.venueIds || []).length >= 1 && (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleRemoveVenueFromSession(session.id, venueIndex)}

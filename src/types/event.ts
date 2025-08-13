@@ -34,7 +34,12 @@ export enum EventType {
     CULTURAL_EVENT = 'CULTURAL_EVENT',
 }
 
+
   
+export interface EventStatusCard {
+    eventStatus: string;
+    totalEvents: number;
+}
 export interface CalendarEvent {
     eventId: number;
     eventName: string;
@@ -120,10 +125,10 @@ export interface Venue {
     id: string;
     name: string;
     fullName: string;
-    location: string; // e.g., building, room number
     capacity: number;
     // Add other venue properties
 }
+
 
 export interface SimpleVenueDTO {
     id: string;
