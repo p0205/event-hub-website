@@ -126,6 +126,7 @@ export interface Venue {
     name: string;
     fullName: string;
     capacity: number;
+    qrCodeUrl: string;
     // Add other venue properties
 }
 

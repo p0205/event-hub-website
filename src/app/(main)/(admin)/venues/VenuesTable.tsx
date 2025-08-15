@@ -60,7 +60,8 @@ const VenuesTable: React.FC<VenuesTableProps> = ({
             id: venue.id,
             name: venue.name,
             fullName: venue.fullName,
-            capacity: venue.capacity
+            capacity: venue.capacity,
+            qrCodeUrl: venue.qrCodeUrl
         });
     };
 
@@ -86,7 +87,8 @@ const VenuesTable: React.FC<VenuesTableProps> = ({
                 id: editingVenueId,
                 name: editFormData.name!.trim(),
                 fullName: editFormData.fullName!.trim(),
-                capacity: editFormData.capacity || 0
+                capacity: editFormData.capacity || 0,
+                qrCodeUrl: editFormData.qrCodeUrl ? editFormData.qrCodeUrl.trim() : ""
             };
 
             handleEditVenue(Number(editingVenueId), updatedVenue);
@@ -162,6 +164,7 @@ const VenuesTable: React.FC<VenuesTableProps> = ({
                             <th>Full Name</th>
                             <th>Capacity</th>
                             <th>Floor Level</th>
+                            <th>Location QR Code Url</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -214,6 +217,19 @@ const VenuesTable: React.FC<VenuesTableProps> = ({
                                         <span className={styles.floorBadge}>
                                             Level {currentFloorLevel || 'N/A'}
                                         </span>
+                                    </td>
+                                    <td>
+                                        {editingVenueId === venue.id ? (
+                                            <input
+                                                type="text"
+                                                value={editFormData.qrCodeUrl || ''}
+                                                onChange={(e) => handleInputChange('qrCodeUrl', e.target.value)}
+                                                className={styles.editInput}
+                                                placeholder="Qr code Url"
+                                            />
+                                        ) : (
+                                            venue.qrCodeUrl || '-'
+                                        )}
                                     </td>
                                     <td className={styles.actionColumn}>
                                         {editingVenueId === venue.id ? (
