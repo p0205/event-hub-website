@@ -13,7 +13,7 @@ import {
 import Image from 'next/image';
 import styles from './event.module.css';
 import { useParams, useRouter } from 'next/navigation';
-import { EventDetails } from '@/types/event';
+import { EventDetails, SimpleVenueDTO } from '@/types/event';
 import { eventService } from '@/services';
 
 const EventDetailsPage = () => {
@@ -88,11 +88,11 @@ const EventDetailsPage = () => {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     };
 
-    const tryOpenApp = (venueData: any) => {
+    const tryOpenApp = (venueData: SimpleVenueDTO) => {
         return new Promise((resolve) => {
             // Create the simplified deep link URL with only venue information
             const deepLinkUrl = `ftmkeventhub://navigate?venue=${encodeURIComponent(venueData.name)}`;
-            
+            console.log('Attempting to open app with URL:', deepLinkUrl); // Debug log
             // Create a hidden iframe to attempt opening the app
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
@@ -134,7 +134,7 @@ const EventDetailsPage = () => {
         });
     };
 
-    const handleGetDirections = async (venue: any) => {
+    const handleGetDirections = async (venue: SimpleVenueDTO) => {
         // For desktop/laptop or iOS, always show dialog
         if (!isMobile() || isIOS()) {
             setShowAppDialog(true);
