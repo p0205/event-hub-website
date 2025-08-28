@@ -103,6 +103,23 @@ const VenuesTable: React.FC<VenuesTableProps> = ({
             [field]: value
         }));
     };
+    const downloadQRCode = async (url: string, filename: string) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+            console.error('Download failed:', error);
+            alert('Failed to download QR code');
+        }
+    };
 
     return (
         <div>
@@ -227,8 +244,17 @@ const VenuesTable: React.FC<VenuesTableProps> = ({
                                                 className={styles.editInput}
                                                 placeholder="Qr code Url"
                                             />
+                                        ) : venue.qrCodeUrl ? (
+                                            <a
+                                                onClick={() => downloadQRCode(venue.qrCodeUrl!, `${venue.name || 'venue'}-qrcode.png`)}
+                                                className={styles.downloadLink}
+                                                title="Download QR Code"
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                {venue.qrCodeUrl}
+                                            </a>
                                         ) : (
-                                            venue.qrCodeUrl || '-'
+                                            '-'
                                         )}
                                     </td>
                                     <td className={styles.actionColumn}>

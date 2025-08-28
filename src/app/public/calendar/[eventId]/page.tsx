@@ -73,8 +73,92 @@ const EventDetailsPage = () => {
         return `${startTime} - ${endTime}`;
     };
 
-    const handleGetDirections = () => {
-        setShowAppDialog(true);
+    const isAndroid = () => {
+        if (typeof window === 'undefined') return false;
+        return /Android/i.test(navigator.userAgent);
+    };
+
+    const isIOS = () => {
+        if (typeof window === 'undefined') return false;
+        return /iPad|iPhone|iPod/.test(navigator.userAgent);
+    };
+
+    const isMobile = () => {
+        if (typeof window === 'undefined') return false;
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    };
+
+    const tryOpenApp = (venueData: any) => {
+        return new Promise((resolve) => {
+            // Create the simplified deep link URL with only venue information
+            const deepLinkUrl = `ftmkeventhub://navigate?venue=${encodeURIComponent(venueData.name)}`;
+            
+            // Create a hidden iframe to attempt opening the app
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = deepLinkUrl;
+            document.body.appendChild(iframe);
+
+            // Set a timeout to check if the app opened
+            const timeout = setTimeout(() => {
+                document.body.removeChild(iframe);
+                resolve(false); // App not installed
+            }, 2500);
+
+            // If the page loses focus quickly, it likely means the app opened
+            const handleVisibilityChange = () => {
+                if (document.hidden) {
+                    clearTimeout(timeout);
+                    document.body.removeChild(iframe);
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    resolve(true); // App opened
+                }
+            };
+
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            // Fallback: if page loses focus (blur), app likely opened
+            const handleBlur = () => {
+                setTimeout(() => {
+                    clearTimeout(timeout);
+                    if (document.body.contains(iframe)) {
+                        document.body.removeChild(iframe);
+                    }
+                    window.removeEventListener('blur', handleBlur);
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    resolve(true); // App opened
+                }, 500);
+            };
+
+            window.addEventListener('blur', handleBlur);
+        });
+    };
+
+    const handleGetDirections = async (venue: any) => {
+        // For desktop/laptop or iOS, always show dialog
+        if (!isMobile() || isIOS()) {
+            setShowAppDialog(true);
+            return;
+        }
+
+        // For Android devices, try to open the app first
+        if (isAndroid()) {
+            try {
+                const appOpened = await tryOpenApp(venue);
+                
+                // If app didn't open (not installed), show the dialog
+                if (!appOpened) {
+                    setShowAppDialog(true);
+                }
+            } catch (error) {
+                console.error('Error trying to open app:', error);
+                // Fallback to showing dialog
+                setShowAppDialog(true);
+            }
+        } else {
+            // For other mobile devices, show dialog
+            setShowAppDialog(true);
+        }
     };
 
     if (loading) {
@@ -151,7 +235,7 @@ const EventDetailsPage = () => {
                                                     <span>{venue.name}</span>
                                                     <button 
                                                         className={styles.getDirectionsButton}
-                                                        onClick={handleGetDirections}
+                                                        onClick={() => handleGetDirections(venue)}
                                                     >
                                                         <Navigation className={styles.buttonIcon} />
                                                         Get Directions
@@ -211,7 +295,12 @@ const EventDetailsPage = () => {
                             </button>
                         </div>
                         <Image src="/app_download.png" alt="FTMK App QR Code" width={160} height={160} className="w-40 h-40 mx-auto mb-4" />
-                        <p className="text-center mb-2">Scan this QR code to download the FTMK Event Hub Android App.</p>
+                        <p className="text-center mb-2">
+                            {isAndroid() ? 
+                                "App not installed. Scan this QR code to download the FTMK Event Hub Android App." :
+                                "Scan this QR code to download the FTMK Event Hub Android App."
+                            }
+                        </p>
                         <p className="text-center mb-4">
                             Can&apos;t scan? Download <a href="https://drive.google.com/uc?export=download&id=183yl-lWcoYxu3ko_UsMSNYLUBRwihIW3" className="text-amber-700 hover:text-amber-800 font-semibold underline">Here</a>
                         </p>
