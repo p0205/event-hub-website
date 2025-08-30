@@ -57,6 +57,28 @@ export default function EventsLandingPage() {
     }
   };
 
+  const filterEvents = (events: SimpleEvent[]) => {
+    if (!searchTerm.trim()) return events;
+
+    return events.filter(event => {
+      // Enhanced null/undefined checks
+      if (!event) {
+        console.warn('Filtering: Found null/undefined event in events array');
+        return false;
+      }
+
+      if (!event.name) {
+        console.warn('Filtering: Found event without name:', event);
+        return false;
+      }
+
+      // Safe filtering with fallback for roles
+      const eventName = event.name.toLowerCase();
+      const searchLower = searchTerm.toLowerCase();
+
+      return eventName.includes(searchLower);
+    });
+  };
 
   // Fetch events when the component mounts
   useEffect(() => {
@@ -89,18 +111,22 @@ export default function EventsLandingPage() {
     );
   }
 
+  // Filter events based on search term
+  const filteredActiveEvents = filterEvents(activeEvents);
+  const filteredCompletedEvents = filterEvents(completedEvents);
+
   return (
     <div className="page-container"> {/* Reuse page container style */}
       {/* Breadcrumbs will be rendered by the layout */}
-      
+
       <div className='page-header'>
-                <div className={'page-title-section'}>
-                    <h2>My Events</h2>
-                    <p className={'page-subtitle'}>
-                    Events you created and manage as the organizer.
-                    </p>
-                </div>
-            </div>
+        <div className={'page-title-section'}>
+          <h2>My Events</h2>
+          <p className={'page-subtitle'}>
+            Events you created and manage as the organizer.
+          </p>
+        </div>
+      </div>
 
       {/* Search Bar */}
       <div className="event-search-bar" style={{ marginBottom: '30px' }}>
@@ -125,7 +151,7 @@ export default function EventsLandingPage() {
 
 
 
-     
+
 
 
       {/* Active Events Section */}
@@ -141,16 +167,18 @@ export default function EventsLandingPage() {
           </button>
           {/* Section Title as Link */}
           <Link href="/my-events/active" style={styles.sectionTitleLink}>
-          <h2>Active Events</h2>
+            <h2>Active Events</h2>
           </Link>
         </div>
         {/* Conditionally render the grid based on state */}
         {isActiveExpanded && (
-          activeEvents.length === 0 ? (
-            <p className="no-events-message">No active events found.</p>
+          filteredActiveEvents.length === 0 ? (
+            <p className="no-events-message">
+              {searchTerm ? 'No active team events match your search.' : 'No active team events found.'}
+            </p>
           ) : (
             <div className="event-grid"> {/* CSS Grid container */}
-              {activeEvents.map(event => (
+              {filteredActiveEvents.map(event => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
@@ -201,16 +229,18 @@ export default function EventsLandingPage() {
           </button>
           {/* Section Title as Link */}
           <Link href="/my-events/completed" style={styles.sectionTitleLink}>
-          <h2>Completed Events</h2>
+            <h2>Completed Events</h2>
           </Link>
         </div>
         {/* Conditionally render the grid based on state */}
         {isCompletedExpanded && (
-          completedEvents.length === 0 ? (
-            <p className="no-events-message">No completed events found.</p>
+          filteredCompletedEvents.length === 0 ? (
+            <p className="no-events-message">
+              {searchTerm ? 'No completed team events match your search.' : 'No completed team events found.'}
+            </p>
           ) : (
             <div className="event-grid">
-              {completedEvents.map(event => (
+              {filteredCompletedEvents.map(event => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
