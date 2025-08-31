@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, BarChart3, DollarSign, TrendingUp, ChevronDown, Download, Search, Building2 } from 'lucide-react';
+import { Calendar, BarChart3, TrendingUp, ChevronDown, Download, Search, Building2 } from 'lucide-react';
 import venueService from '@/services/venueService';
 import adminService from '@/services/adminService';
 import { Venue } from '@/types/event';
