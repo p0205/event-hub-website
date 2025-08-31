@@ -42,16 +42,6 @@ const reportTypes: ReportType[] = [
         requiresDateRange: true,
         category: 'Analytics'
     },
-    {
-        id: 'budget-analysis',
-        name: 'Financial Performance Dashboard',
-        description: 'Executive-level financial analysis including budget utilization, cost optimization opportunities, ROI metrics, and variance analysis for informed fiscal decisions.',
-        icon: DollarSign,
-        available: false,
-        requiresVenueSelection: false,
-        requiresDateRange: true,
-        category: 'Financial'
-    },
    
 ];
 
