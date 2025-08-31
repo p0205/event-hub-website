@@ -302,7 +302,7 @@ const EventDetailsPage = () => {
                             }
                         </p>
                         <p className="text-center mb-4">
-                            Can&apos;t scan? Download <a href="https://drive.google.com/uc?export=download&id=183yl-lWcoYxu3ko_UsMSNYLUBRwihIW3" className="text-amber-700 hover:text-amber-800 font-semibold underline">Here</a>
+                            Can&apos;t scan? Download <a href="https://drive.usercontent.google.com/download?id=1zex2qPopso1pSacWvdUOFQ4eo31ymc1t&export=download&authuser=0" className="text-amber-700 hover:text-amber-800 font-semibold underline">Here</a>
                         </p>
                         <ul className="mb-4 text-sm text-gray-700 list-disc list-inside">
                             <li>✔ View all events</li>

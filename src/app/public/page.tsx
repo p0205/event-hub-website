@@ -36,7 +36,7 @@ const EventHub = () => {
             <Image src="/app_download.png" alt="FTMK App QR Code" width={200} height={200} className={styles.heroQrImage} />
             <p className={styles.heroQrText}>Scan this QR code to download the FTMK Event Hub Android App.</p>
             <p className={styles.heroQrAltDownload}>
-              Can&apos;t scan? Download <a href="https://drive.google.com/uc?export=download&id=183yl-lWcoYxu3ko_UsMSNYLUBRwihIW3" className="text-amber-700 hover:text-amber-800 font-semibold underline">Here</a>
+              Can&apos;t scan? Download <a href="https://drive.usercontent.google.com/download?id=1zex2qPopso1pSacWvdUOFQ4eo31ymc1t&export=download&authuser=0" className="text-amber-700 hover:text-amber-800 font-semibold underline">Here</a>
             </p>
             <ul className={styles.heroFeatureList}>
               <li><span className={styles.heroFeatureIcon}>✔</span> View all events</li>
